@@ -526,7 +526,7 @@ void reset_cmd_timeout(void)
 
 #define CTL_CH(c)		((c) - 'a' + 1)
 
-#if defined(CONFIG_MX53_SMD) && defined(CONFIG_SYS_CBSIZE)
+#if defined(CONFIG_SYS_CBSIZE)
 #define MAX_CMDBUF_SIZE		CONFIG_SYS_CBSIZE
 #else
 #define MAX_CMDBUF_SIZE		256
