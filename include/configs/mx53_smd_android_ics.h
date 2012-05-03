@@ -103,8 +103,7 @@
 #define CONFIG_ANDROID_RECOVERY_BOOTARGS_MMC			\
 	"setenv bootargs console=ttymxc0,115200 init=/init "	\
 	"androidboot.console=ttymxc0 "				\
-	"video=mxcdi1fb:RGB666,LDB-XGA "			\
-	"ldb=di1 di1_primary pmem=128M,64M fbmem=10M "		\
+	"pmem=128M,64M fbmem=10M "				\
 	"gpu_memory=128M vmalloc=576M fs_sdcard=0 "             \
 	"root=/dev/mmcblk0p4 rootfs=ext4"
 #define CONFIG_ANDROID_RECOVERY_BOOTCMD_MMC  \
@@ -172,8 +171,7 @@
 	"rd_loadaddr=0x70D00000\0"				\
 	"bootargs_base=console=ttymxc0,115200 init=/init "	\
 		"androidboot.console=ttymxc0 "			\
-		"video=mxcdi1fb:RGB666,LDB-XGA "		\
-		"ldb=di1 di1_primary pmem=128M,64M fbmem=10M "	\
+		"pmem=128M,64M fbmem=10M,10M "			\
 		"gpu_memory=128M vmalloc=576M\0"		\
 	"bootcmd_eMMC=setenv bootargs ${bootargs_base} fs_sdcard=0;" \
 		"mmc read 1 ${loadaddr} 0x800 0x2000;"		\
