@@ -171,7 +171,9 @@
 	"rd_loadaddr=0x70D00000\0"				\
 	"bootargs_base=console=ttymxc0,115200 init=/init "	\
 		"androidboot.console=ttymxc0 "			\
-		"pmem=128M,64M fbmem=10M,10M "			\
+		"pmem=128M,64M fbmem=12M,12M "			\
+		"video=mxcfb0:dev=ldb,LDB-XGA,if=RGB666,bpp=32 " \
+		"video=mxcfb1:dev=sii902x_hdmi,1280x720M@60,bpp=32 " \
 		"gpu_memory=128M vmalloc=576M\0"		\
 	"bootcmd_eMMC=setenv bootargs ${bootargs_base} fs_sdcard=0;" \
 		"mmc read 1 ${loadaddr} 0x800 0x2000;"		\
