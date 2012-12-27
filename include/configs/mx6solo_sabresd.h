@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Freescale Semiconductor, Inc.
+ * Copyright (C) 2012-2013 Freescale Semiconductor, Inc.
  *
  * Configuration settings for the MX6DL SabreSD Freescale board.
  * The board is configured with SOLO and 32-bit DDR bus-width.
@@ -141,7 +141,7 @@
  * Miscellaneous configurable options
  */
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
-#define CONFIG_SYS_PROMPT		"MX6SDL SABRESD U-Boot > "
+#define CONFIG_SYS_PROMPT		"MX6Solo SABRESD U-Boot > "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		1024	/* Console I/O Buffer Size */
 /* Print Buffer Size */
