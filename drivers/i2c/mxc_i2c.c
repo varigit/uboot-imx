@@ -47,7 +47,7 @@
 #define I2SR_RX_NO_AK	(1 << 0)
 
 #ifdef CONFIG_SYS_I2C_PORT
-# define I2C_BASE	CONFIG_SYS_I2C_PORT
+static u32 I2C_BASE=CONFIG_SYS_I2C_PORT;
 #else
 # error "define CONFIG_SYS_I2C_PORT(I2C base address) to use the I2C driver"
 #endif
@@ -67,6 +67,14 @@ static u16 div[] = { 30, 32, 36, 42, 48, 52, 60, 72, 80, 88, 104, 128, 144,
 	160, 192, 240, 288, 320, 384, 480, 576, 640, 768, 960,
 	1152, 1280, 1536, 1920, 2304, 2560, 3072, 3840
 };
+
+void i2c_set_base_address(u32 i2c_base_addr)
+{
+	if ((i2c_base_addr == I2C1_BASE_ADDR) ||
+			(i2c_base_addr == I2C2_BASE_ADDR) || 
+			(i2c_base_addr == I2C3_BASE_ADDR))
+		I2C_BASE = i2c_base_addr;
+}
 
 static inline void i2c_reset(void)
 {

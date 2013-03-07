@@ -28,6 +28,10 @@
 #include <u-boot/zlib.h>
 #include <asm/byteorder.h>
 
+#if CONFIG_I2C_MXC
+#include <i2c.h>
+#endif
+
 #include <bootimg.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -134,6 +138,30 @@ int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
 	return 1;
 }
 
+#ifdef CONFIG_VARISCITE_TOUCHSCREEN_AUTO_DETECT
+static char* setup_variscite_touchscreen_type(char* cmdline)
+{
+#if CONFIG_I2C_MXC
+	extern void i2c_set_base_address(u32 i2c_base_addr);
+	static char buf[512];
+
+	if (cmdline == NULL)
+		return NULL;
+
+	strcpy (buf, cmdline);
+
+	i2c_set_base_address(I2C3_BASE_ADDR);
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+	if (i2c_probe(0x38) == 0)
+		strcat (buf, " var_ts_type=ctw6120");
+
+	return buf;
+#else
+	return cmdline;	
+#endif
+}
+#endif /* CONFIG_VARISCITE_TOUCHSCREEN_AUTO_DETECT */
+
 void do_booti_linux (boot_img_hdr *hdr)
 {
 	ulong initrd_start, initrd_end;
@@ -145,6 +173,10 @@ void do_booti_linux (boot_img_hdr *hdr)
 	/* If no bootargs env, just use hdr command line */
 	if (!commandline)
 		commandline = (char *)hdr->cmdline;
+
+#ifdef CONFIG_VARISCITE_TOUCHSCREEN_AUTO_DETECT
+	commandline = setup_variscite_touchscreen_type(commandline);
+#endif
 
 	/* XXX: in production, you should always use boot.img 's cmdline !!! */
 	printf("kernel cmdline: \n");
