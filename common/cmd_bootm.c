@@ -40,6 +40,10 @@
 #include <fastboot.h>
 #include <asm/byteorder.h>
 
+#if CONFIG_I2C_MXC
+#include <i2c.h>
+#endif
+
 #if defined(CONFIG_CMD_USB)
 #include <usb.h>
 #endif
