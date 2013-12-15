@@ -286,6 +286,10 @@ static int mxc_fec_mii_read(char *devname, unsigned char addr,
 		return -1;
 	info = dev->priv;
 	fecp = (fec_t *) (info->iobase);
+
+	fec_reset(dev);
+	mxc_fec_mii_init(fecp);
+
 	return __fec_mii_read(fecp, addr, reg, value);
 }
 
@@ -299,6 +303,10 @@ static int mxc_fec_mii_write(char *devname, unsigned char addr,
 		return -1;
 	info = dev->priv;
 	fecp = (fec_t *) (info->iobase);
+
+	fec_reset(dev);
+	mxc_fec_mii_init(fecp);
+
 	return __fec_mii_write(fecp, addr, reg, value);
 }
 
