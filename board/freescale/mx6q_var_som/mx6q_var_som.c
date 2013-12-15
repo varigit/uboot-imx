@@ -345,6 +345,9 @@ static int setup_sata(void)
 
 int dram_init(void)
 {
+unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM_1;
+unsigned int volatile * const port2 = (unsigned int *) (PHYS_SDRAM_1 + (PHYS_SDRAM_1_SIZE / 2));
+
 	/*
 	 * Switch PL301_FAST2 to DDR Dual-channel mapping
 	 * however this block the boot up, temperory redraw
@@ -356,6 +359,15 @@ int dram_init(void)
 
 	gd->bd->bi_dram[0].start = PHYS_SDRAM_1;
 	gd->bd->bi_dram[0].size = PHYS_SDRAM_1_SIZE;
+
+	/*
+	 * Check if we have only 1/2 GB
+	 */
+	*port2 = 0;
+	*port1 = 0x3f3f3f3f;
+
+	if (0x3f3f3f3f == *port2)
+		gd->bd->bi_dram[0].size = PHYS_SDRAM_1_SIZE / 2;
 
 	return 0;
 }
