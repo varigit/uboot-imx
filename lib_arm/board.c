@@ -176,6 +176,9 @@ static int init_baudrate (void)
 
 static int display_banner (void)
 {
+#ifdef CONFIG_VAR_SOM_MX6
+	udelay(500000);
+#endif
 	printf ("\n\n%s\n\n", version_string);
 	debug ("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
 	       _armboot_start, _bss_start, _bss_end);
