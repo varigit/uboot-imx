@@ -26,7 +26,6 @@
 
 #include "mx6q_var_som_nand.h"
 
-#if 0
 #define CONFIG_USB_DEVICE
 #define CONFIG_IMX_UDC             1
 #define CONFIG_FASTBOOT            1
@@ -45,7 +44,6 @@
 	*   to receive the system.img*/
 #define CONFIG_FASTBOOT_TRANSFER_BUF    0x2c000000
 #define CONFIG_FASTBOOT_TRANSFER_BUF_SIZE 0x14000000 /* 320M byte */
-#endif
 
 #define CONFIG_CMD_BOOTI
 #define CONFIG_ANDROID_RECOVERY
@@ -78,6 +76,6 @@
 		"netdev=eth0\0"						\
 		"ethprime=FEC0\0"					\
 		"fastboot_dev=mmc0\0"                                   \
-		"fbparts=16m@16m(boot) 32m@32m(recovery) 448m@48m(android_root)\0" \
+		"fbparts=16m@16m(boot) 32m@32m(recovery) 448m@64m(android_root)\0" \
 		"bootcmd=nand read 0x12800000 0x1000000 0x600000;booti 0x12800000\0"
 #endif
