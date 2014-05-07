@@ -300,7 +300,7 @@
  */
 #define CONFIG_NR_DRAM_BANKS	1
 #define PHYS_SDRAM_1		CSD0_DDR_BASE_ADDR
-//#define PHYS_SDRAM_2GB		1	/* Un comment if you have 2GB DRAM */
+#define PHYS_SDRAM_2GB		1	/* Un comment if you have 2GB DRAM */
 #ifndef PHYS_SDRAM_2GB
 #define PHYS_SDRAM_1_SIZE	(1u * 1024 * 1024 * 1024)
 #else
