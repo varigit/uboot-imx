@@ -10,6 +10,21 @@
 
 #include <asm/imx-common/regs-common.h>
 
+enum boot_device {
+        MX6_SD0_BOOT,
+        MX6_SD1_BOOT,
+        MX6_MMC_BOOT,
+        MX6_NAND_BOOT,
+        MX6_SATA_BOOT,
+        MX6_WEIM_NOR_BOOT,
+        MX6_ONE_NAND_BOOT,
+        MX6_PATA_BOOT,
+        MX6_I2C_BOOT,
+        MX6_SPI_NOR_BOOT,
+        MX6_UNKNOWN_BOOT,
+        MX6_BOOT_DEV_NUM = MX6_UNKNOWN_BOOT,
+};
+
 #define MXC_CPU_MX51		0x51
 #define MXC_CPU_MX53		0x53
 #define MXC_CPU_MX6SL		0x60

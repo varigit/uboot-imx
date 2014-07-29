@@ -13,6 +13,8 @@
 #include <asm/imx-common/gpio.h>
 #include <asm/sizes.h>
 
+#include "imx6_spl.h"
+
 #define CONFIG_MX6
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
@@ -48,7 +50,7 @@
 #define CONFIG_CMD_BMODE
 #define CONFIG_CMD_SETEXPR
 
-#define CONFIG_BOOTDELAY		5
+#define CONFIG_BOOTDELAY		3
 
 #define CONFIG_SYS_MEMTEST_START	0x10000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 500 * SZ_1M)
@@ -96,12 +98,16 @@
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
+#define CONFIG_VIDEO_BMP_GZIP
+#define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (1 << 20)
 #define CONFIG_IPUV3_CLK 260000000
 #define CONFIG_IMX_HDMI
 
 #if defined(CONFIG_MX6DL) || defined(CONFIG_MX6S)
 #define CONFIG_DEFAULT_FDT_FILE		"imx6dl-wandboard.dtb"
 #elif defined(CONFIG_MX6Q)
+#define CONFIG_DEFAULT_FDT_FILE		"imx6q-wandboard.dtb"
+#else
 #define CONFIG_DEFAULT_FDT_FILE		"imx6q-wandboard.dtb"
 #endif
 

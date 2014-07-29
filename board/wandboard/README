@@ -27,6 +27,11 @@ To build U-Boot for the Wandboard Quad version:
 $ make wandboard_quad_config
 $ make
 
+To build U-Boot for Wandboard SPL version:
+
+$ make wandboard_config
+$ make 
+
 Flashing U-boot into the SD card
 --------------------------------
 
@@ -43,3 +48,22 @@ as the mx6 processor)
 - Connect the serial cable to the host PC
 
 - Power up the board and U-boot messages will appear in the serial console.
+
+Flashing SPL U-boot into the SD card
+--------------------------------
+
+- After the 'make' command completes, the generated 'u-boot.imx' binary must be
+flashed into the SD card;
+
+$ sudo dd if=SPL of=/dev/mmcblk0 bs=1K seek=1; sync
+$ sudo dd if=u-boot.img of=/dev/mmcblk0 bs=1K seek=69; sync
+
+(Note - the SD card node may vary, so adjust this as needed).
+
+- Insert the SD card into the slot located in the bottom of the board (same side
+as the mx6 processor)
+
+- Connect the serial cable to the host PC
+
+- Power up the board and U-boot messages will appear in the serial console.
+
