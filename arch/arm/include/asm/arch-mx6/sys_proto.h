@@ -34,6 +34,12 @@ enum boot_device {
 
 #define is_soc_rev(rev)	((get_cpu_rev() & 0xFF) - rev)
 u32 get_cpu_rev(void);
+#define is_soc(soc)		(((get_cpu_rev() >> 12) & 0xFF) ==  (soc))
+#define is_mx6dq()		is_soc(MXC_CPU_MX6Q)
+#define is_mx6dl()		is_soc(MXC_CPU_MX6DL)
+#define is_mx6solo()		is_soc(MXC_CPU_MX6SOLO)
+#define is_mx6dlsolo()		(is_mx6dl() || is_mx6solo())
+#define is_mx6sl()		is_soc(MXC_CPU_MX6SL)
 
 /* returns MXC_CPU_ value */
 #define cpu_type(rev) (((rev) >> 12)&0xff)
