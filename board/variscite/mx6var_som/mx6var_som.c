@@ -50,10 +50,12 @@
 #include <ipu_pixfmt.h>
 #include <asm/io.h>
 #include <asm/arch/sys_proto.h>
+#include "asm/arch/mx6_ddr_regs.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define MX6QDL_SET_PAD(p, q) \
-        if (is_cpu_type(MXC_CPU_MX6Q)) \
+        if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) \
                 imx_iomux_v3_setup_pad(MX6Q_##p | q);\
         else \
                 imx_iomux_v3_setup_pad(MX6DL_##p | q)
@@ -96,12 +98,10 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_DSE_40ohm | PAD_CTL_HYS |			\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
-#ifdef CONFIG_I2C_MXC
-#undef CONFIG_I2C_MXC
-#endif
 #if CONFIG_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
+#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_CSI0_DAT9__I2C1_SCL | PC,
@@ -141,6 +141,64 @@ struct i2c_pads_info i2c_pad_info3 = {
 	}
 };
 #endif
+#if defined(CONFIG_MX6QDL)
+
+#define I2C_PADS(name, scl_i2c, scl_gpio, scl_gp, sda_i2c, sda_gpio, sda_gp) \
+	struct i2c_pads_info mx6q_##name = {		\
+		.scl = {				\
+			.i2c_mode = MX6Q_##scl_i2c,	\
+			.gpio_mode = MX6Q_##scl_gpio,	\
+			.gp = scl_gp,			\
+		},					\
+		.sda = {				\
+			.i2c_mode = MX6Q_##sda_i2c,	\
+			.gpio_mode = MX6Q_##sda_gpio,	\
+			.gp = sda_gp,			\
+		}					\
+	};						\
+	struct i2c_pads_info mx6s_##name = {		\
+		.scl = {				\
+			.i2c_mode = MX6DL_##scl_i2c,	\
+			.gpio_mode = MX6DL_##scl_gpio,	\
+			.gp = scl_gp,			\
+		},					\
+		.sda = {				\
+			.i2c_mode = MX6DL_##sda_i2c,	\
+			.gpio_mode = MX6DL_##sda_gpio,	\
+			.gp = sda_gp,			\
+		}					\
+	};
+I2C_PADS(i2c_pad_info1,
+	 PAD_CSI0_DAT9__I2C1_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 PAD_CSI0_DAT9__GPIO_5_27 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 IMX_GPIO_NR(5, 27),
+	 PAD_CSI0_DAT8__I2C1_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 PAD_CSI0_DAT8__GPIO_5_26 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 IMX_GPIO_NR(5, 26));
+
+I2C_PADS(i2c_pad_info2,
+	 PAD_KEY_COL3__I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 PAD_KEY_COL3__GPIO_4_12 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 IMX_GPIO_NR(4, 12),
+	 PAD_KEY_ROW3__I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 PAD_KEY_ROW3__GPIO_4_13 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 IMX_GPIO_NR(4, 13));
+
+I2C_PADS(i2c_pad_info3,
+	 PAD_GPIO_5__I2C3_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 PAD_GPIO_5__GPIO_1_5 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 IMX_GPIO_NR(1, 5),
+	 PAD_GPIO_16__I2C3_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 PAD_GPIO_16__GPIO_7_11 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+	 IMX_GPIO_NR(7, 11));
+
+#define I2C_PADS_INFO(name)	\
+		(is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) ? \
+						&mx6q_##name : &mx6s_##name
+
+#endif
+
+#endif
 
 static void p_udelay(int time)
 {
@@ -154,25 +212,32 @@ static void p_udelay(int time)
 	}
 }
 
-int dram_init(void)
-{
-unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
-unsigned int volatile * const port2 = (unsigned int *) (PHYS_SDRAM + ((CONFIG_DDR_MB * 1024 * 1024) / 2));
 
-	gd->ram_size = ((ulong)CONFIG_DDR_MB * 1024 * 1024);
 
-	/*
-	 * Check if we have only 1/2 GB and input was 1 GB
-	 */
-	if (CONFIG_DDR_MB == 1024) {
-		*port2 = 0;
-		*port1 = 0x3f3f3f3f;
+int dram_init(void){
+volatile struct mmdc_p_regs *mmdc_p0;
+ulong sdram_size, sdram_cs;
 
-		if (0x3f3f3f3f == *port2)
-			gd->ram_size = (((ulong)CONFIG_DDR_MB * 1024 * 1024)) / 2;
+	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
+	sdram_cs = mmdc_p0->mdasp;
+
+	switch(sdram_cs) {
+		case 0x00000017:
+			sdram_size = 512;
+			break;
+		case 0x00000027:
+			sdram_size = 1024;
+			break;
+		case 0x00000047:
+			sdram_size = 2048;
+			break;
+		case 0x00000087:
+			sdram_size = 4096;
+			break;
 	}
 
-	return 0;
+	gd->ram_size = ((ulong)sdram_size * 1024 * 1024);
+
 }
 
 #if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
@@ -932,9 +997,16 @@ int board_init(void)
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
 #ifdef CONFIG_I2C_MXC
+#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info3);
+#endif
+#if defined(CONFIG_MX6QDL)
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info1));
+	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info2));
+	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info3));
+#endif
 
 	ret = setup_pmic_voltages();
 	if (ret)
@@ -955,10 +1027,11 @@ int checkboard(void)
 {
 	int rev = var_som_rev();
 
-	print_cpuinfo();
 	printf("Board: Variscite VAR_SOM_MX6 ");
-	if (is_mx6dq())
-		printf ("Quad/Dual\n");
+	if (is_mx6q())
+		printf ("Quad\n");
+	else if (is_mx6d())
+		printf ("Dual\n");
 	else if (is_mx6dl())
 		printf ("Dual Lite\n");
 	else if (is_mx6solo())

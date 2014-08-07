@@ -29,6 +29,10 @@
 #define CONFIG_MX6DL
 #endif
 
+/*
+ #define CONFIG_LDO_BYPASS_CHECK
+*/
+
 /* uncomment for PLUGIN mode support */
 /* #define CONFIG_USE_PLUGIN */
 
@@ -403,6 +407,7 @@
 #define CONFIG_SYS_I2C_BASE             I2C2_BASE_ADDR
 #define CONFIG_SYS_I2C_SPEED            100000
 #define CONFIG_SYS_I2C_SLAVE            0x8
+#define CONFIG_I2C_MULTI_BUS
 
 /* Framebuffer */
 #define CONFIG_VIDEO
