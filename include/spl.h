@@ -17,6 +17,7 @@
 #define MMCSD_MODE_FAT		2
 #define MMCSD_MODE		3
 #define SATA_MODE		4
+#define NAND_MODE		5
 
 
 

@@ -134,6 +134,11 @@ int print_cpuinfo(void)
 		(cpurev & 0x000F0) >> 4,
 		(cpurev & 0x0000F) >> 0,
 		mxc_get_clock(MXC_ARM_CLK) / 1000000);
+
+#if defined(CONFIG_MX6)
+	check_cpu_temperature();
+#endif
+
 	printf("Reset cause: %s\n", get_reset_cause());
 	return 0;
 }
@@ -173,10 +178,13 @@ u32 get_ahb_clk(void)
 	return get_periph_clk() / (ahb_podf + 1);
 }
 
-#if defined(CONFIG_VIDEO_IPUV3)
 void arch_preboot_os(void)
 {
+#if defined(CONFIG_LDO_BYPASS_CHECK)
+	ldo_mode_set(check_ldo_bypass());
+#endif
+#if defined(CONFIG_VIDEO_IPUV3)
 	/* disable video before launching O/S */
 	ipuv3_fb_shutdown();
-}
 #endif
+}

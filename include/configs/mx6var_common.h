@@ -29,9 +29,7 @@
 #define CONFIG_MX6DL
 #endif
 
-/*
- #define CONFIG_LDO_BYPASS_CHECK
-*/
+#define CONFIG_LDO_BYPASS_CHECK
 
 /* uncomment for PLUGIN mode support */
 /* #define CONFIG_USE_PLUGIN */

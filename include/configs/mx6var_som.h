@@ -31,8 +31,6 @@
 #define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS	0
 
-/* #define CONFIG_SYS_USE_NAND */
-
 
 #ifdef CONFIG_MX6SOLO
 #ifdef CONFIG_SYS_BOOT_NAND
@@ -60,9 +58,9 @@
 
 #ifdef CONFIG_MX6QDL
 #ifdef CONFIG_SYS_BOOT_NAND
-#define CONFIG_SYS_PROMPT		"MX6 VAR_SOM (nand) U-Boot > "
+#define CONFIG_SYS_PROMPT		"VAR_SOM_MX6(nand) U-Boot > "
 #else
-#define CONFIG_SYS_PROMPT		"MX6 VAR_SOM (sd) U-Boot > "
+#define CONFIG_SYS_PROMPT		"VAR_SOM_mx6(sd) U-Boot > "
 #endif
 #endif
 

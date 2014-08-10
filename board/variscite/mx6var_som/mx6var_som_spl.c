@@ -606,14 +606,10 @@ static void spl_dram_init(void)
 		break;
 	case MXC_CPU_MX6Q:
 		spl_mx6qd_dram_setup_iomux();
-#ifdef CONFIG_LDO_BYPASS_CHECK
-		if (check_1_2G())
+		if (check_1_2G_only())
 			spl_dram_init_mx6q_2g();
 		else
 			spl_dram_init_mx6q_1g();
-#else
-		spl_dram_init_mx6q_2g();
-#endif
 		ram_size();
 		break;
 	case MXC_CPU_MX6D:
@@ -666,7 +662,11 @@ u32 spl_boot_device(void)
 
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
-	printf("i.MX%s SOC\n", get_imx_type(imxtype));
+	printf("i.MX%s SOC ", get_imx_type(imxtype));
+	if (check_1_2G_only())
+		printf("LDO\n");
+	else
+		printf("PMIC\n");
 
 	ram_size();
 	printf("Ram size %d\n", sdram_size);
@@ -706,9 +706,9 @@ u32 spl_boot_mode(void)
 	case BOOT_DEVICE_SATA:
 		return SATA_MODE;
 		break;
-	//case BOOT_DEVICE_NAND:
-	//	return 0;
-	//	break;
+	case BOOT_DEVICE_NAND:
+		return NAND_MODE;
+		break;
 	default:
 		puts("spl: ERROR:  unsupported device\n");
 		hang();

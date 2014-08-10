@@ -563,6 +563,7 @@ int board_mmc_init(bd_t *bis)
 
 
 #ifdef CONFIG_SYS_USE_NAND
+#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 iomux_v3_cfg_t gpmi_pads[] = {
 	MX6_PAD_NANDF_CLE__RAWNAND_CLE		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
 	MX6_PAD_NANDF_ALE__RAWNAND_ALE		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
@@ -581,6 +582,7 @@ iomux_v3_cfg_t gpmi_pads[] = {
 	MX6_PAD_NANDF_D7__RAWNAND_D7		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
 	MX6_PAD_SD4_DAT0__RAWNAND_DQS		| MUX_PAD_CTRL(GPMI_PAD_CTRL1),
 };
+#endif
 
 static void setup_gpmi_nand(void)
 {

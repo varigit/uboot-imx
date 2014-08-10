@@ -53,6 +53,12 @@ const char *get_imx_type(u32 imxtype);
 unsigned imx_ddr_size(void);
 
 void set_vddsoc(u32 mv);
+#ifdef CONFIG_LDO_BYPASS_CHECK
+int check_ldo_bypass(void);
+int check_1_2G(void);
+void set_anatop_bypass(void);
+void ldo_mode_set(int ldo_bypass);
+#endif
 
 /*
  * Initializes on-chip ethernet controllers.
@@ -62,6 +68,7 @@ void set_vddsoc(u32 mv);
 int fecmxc_initialize(bd_t *bis);
 u32 get_ahb_clk(void);
 u32 get_periph_clk(void);
+int get_hab_status(void);
 
 int mxs_reset_block(struct mxs_register_32 *reg);
 int mxs_wait_mask_set(struct mxs_register_32 *reg,

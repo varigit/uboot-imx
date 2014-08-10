@@ -161,6 +161,7 @@
 #define DCIC2_BASE_ADDR             (AIPS1_OFF_BASE_ADDR + 0x68000)
 #define DMA_REQ_PORT_HOST_BASE_ADDR (AIPS1_OFF_BASE_ADDR + 0x6C000)
 #endif
+#define EPDC_BASE_ADDR              (AIPS1_OFF_BASE_ADDR + 0x74000)
 
 #define AIPS2_ON_BASE_ADDR          (ATZ2_BASE_ADDR + 0x7C000)
 #define AIPS2_OFF_BASE_ADDR         (ATZ2_BASE_ADDR + 0x80000)
@@ -198,6 +199,7 @@
 
 #define WEIM_BASE_ADDR              (AIPS2_OFF_BASE_ADDR + 0x38000)
 #define OCOTP_BASE_ADDR             (AIPS2_OFF_BASE_ADDR + 0x3C000)
+
 #define CSU_BASE_ADDR               (AIPS2_OFF_BASE_ADDR + 0x40000)
 #define IP2APB_PERFMON1_BASE_ADDR   (AIPS2_OFF_BASE_ADDR + 0x44000)
 #define IP2APB_PERFMON2_BASE_ADDR   (AIPS2_OFF_BASE_ADDR + 0x48000)
@@ -216,7 +218,13 @@
 #define IP2APB_USBPHY2_BASE_ADDR    (AIPS2_OFF_BASE_ADDR + 0x7C000)
 
 #define CHIP_REV_1_0                 0x10
+#define CHIP_REV_1_1                 0x11
+#define CHIP_REV_1_2                 0x12
+#define CHIP_REV_1_3                 0x13
+#define CHIP_REV_1_4                 0x14
+#define CHIP_REV_1_5                 0x15
 #define IRAM_SIZE                    0x00040000
+#define IMX_IIM_BASE                 OCOTP_BASE_ADDR
 #define FEC_QUIRK_ENET_MAC
 
 #if !(defined(__KERNEL_STRICT_NAMES) || defined(__ASSEMBLY__))
@@ -243,6 +251,12 @@ struct src {
 	u32     gpr8;
 	u32     gpr9;
 	u32     gpr10;
+};
+
+/* OCOTP Registers */
+struct ocotp_regs {
+	u32	reserved[0x198];
+	u32	gp1;	/* 0x660 */
 };
 
 /* GPR3 bitfields */
@@ -419,7 +433,59 @@ struct cspi_regs {
 	ECSPI5_BASE_ADDR
 #endif
 
-struct ocotp_regs {
+/* gpio and gpio based interrupt handling */
+#define GPIO_DR                 0x00
+#define GPIO_GDIR               0x04
+#define GPIO_PSR                0x08
+#define GPIO_ICR1               0x0C
+#define GPIO_ICR2               0x10
+#define GPIO_IMR                0x14
+#define GPIO_ISR                0x18
+#define GPIO_INT_LOW_LEV        0x0
+#define GPIO_INT_HIGH_LEV       0x1
+#define GPIO_INT_RISE_EDGE      0x2
+#define GPIO_INT_FALL_EDGE      0x3
+#define GPIO_INT_NONE           0x4
+
+#define CLKCTL_CCR              0x00
+#define	CLKCTL_CCDR             0x04
+#define CLKCTL_CSR              0x08
+#define CLKCTL_CCSR             0x0C
+#define CLKCTL_CACRR            0x10
+#define CLKCTL_CBCDR            0x14
+#define CLKCTL_CBCMR            0x18
+#define CLKCTL_CSCMR1           0x1C
+#define CLKCTL_CSCMR2           0x20
+#define CLKCTL_CSCDR1           0x24
+#define CLKCTL_CS1CDR           0x28
+#define CLKCTL_CS2CDR           0x2C
+#define CLKCTL_CDCDR            0x30
+#define CLKCTL_CHSCCDR          0x34
+#define CLKCTL_CSCDR2           0x38
+#define CLKCTL_CSCDR3           0x3C
+#define CLKCTL_CSCDR4           0x40
+#define CLKCTL_CWDR             0x44
+#define CLKCTL_CDHIPR           0x48
+#define CLKCTL_CDCR             0x4C
+#define CLKCTL_CTOR             0x50
+#define CLKCTL_CLPCR            0x54
+#define CLKCTL_CISR             0x58
+#define CLKCTL_CIMR             0x5C
+#define CLKCTL_CCOSR            0x60
+#define CLKCTL_CGPR             0x64
+#define CLKCTL_CCGR0            0x68
+#define CLKCTL_CCGR1            0x6C
+#define CLKCTL_CCGR2            0x70
+#define CLKCTL_CCGR3            0x74
+#define CLKCTL_CCGR4            0x78
+#define CLKCTL_CCGR5            0x7C
+#define CLKCTL_CCGR6            0x80
+#define CLKCTL_CCGR7            0x84
+#define CLKCTL_CMEOR            0x88
+
+#define ANATOP_PLL_VIDEO        0xA0
+
+struct iim_regs {
 	u32	ctrl;
 	u32	ctrl_set;
 	u32     ctrl_clr;
@@ -430,9 +496,9 @@ struct ocotp_regs {
 	u32     rsvd1[3];
 	u32     read_ctrl;
 	u32     rsvd2[3];
-	u32	read_fuse_data;
+	u32     fuse_data;
 	u32     rsvd3[3];
-	u32	sw_sticky;
+	u32     sticky;
 	u32     rsvd4[3];
 	u32     scs;
 	u32     scs_set;
@@ -447,22 +513,32 @@ struct ocotp_regs {
 
 	struct fuse_bank {
 		u32	fuse_regs[0x20];
-	} bank[16];
+	} bank[15];
 };
 
 struct fuse_bank0_regs {
-	u32	lock;
-	u32	rsvd0[3];
-	u32	uid_low;
-	u32	rsvd1[3];
-	u32	uid_high;
-	u32	rsvd2[3];
-	u32	rsvd3[4];
-	u32	rsvd4[4];
-	u32	rsvd5[4];
+	u32     lock;
+	u32     rsvd0[3];
+	u32	cfg0;
+	u32     rsvd1[3];
+	u32	cfg1;
+	u32     rsvd2[3];
+	u32	cfg2;
+	u32     rsvd3[3];
+	u32	cfg3;
+	u32     rsvd4[3];
+	u32	cfg4;
+	u32     rsvd5[3];
 	u32	cfg5;
-	u32	rsvd6[3];
-	u32	rsvd7[4];
+	u32     rsvd6[3];
+	u32	cfg6;
+	u32     rsvd7[3];
+};
+
+struct fuse_bank1_regs {
+	u32     mem[0x18];
+	u32	ana1;
+	u32     ana2;
 };
 
 struct fuse_bank4_regs {
@@ -473,11 +549,7 @@ struct fuse_bank4_regs {
 	u32	mac_addr_low;
 	u32     rsvd2[3];
 	u32     mac_addr_high;
-	u32	rsvd3[0xb];
-	u32	gp1;
-	u32	rsvd4[3];
-	u32	gp2;
-	u32	rsvd5[3];
+	u32	rsvd3[0x13];
 };
 
 struct aipstz_regs {
@@ -635,12 +707,29 @@ struct anatop_regs {
 	u32	digprog_sololite;	/* 0x280 */
 };
 
-#define ANATOP_PFD_FRAC_SHIFT(n)	((n)*8)
-#define ANATOP_PFD_FRAC_MASK(n)	(0x3f<<ANATOP_PFD_FRAC_SHIFT(n))
-#define ANATOP_PFD_STABLE_SHIFT(n)	(6+((n)*8))
-#define ANATOP_PFD_STABLE_MASK(n)	(1<<ANATOP_PFD_STABLE_SHIFT(n))
-#define ANATOP_PFD_CLKGATE_SHIFT(n)	(7+((n)*8))
-#define ANATOP_PFD_CLKGATE_MASK(n)	(1<<ANATOP_PFD_CLKGATE_SHIFT(n))
+#define ANATOP_PFD_480_PFD0_FRAC_SHIFT		0
+#define ANATOP_PFD_480_PFD0_FRAC_MASK		(0x3f<<ANATOP_PFD_480_PFD0_FRAC_SHIFT)
+#define ANATOP_PFD_480_PFD0_STABLE_SHIFT	6
+#define ANATOP_PFD_480_PFD0_STABLE_MASK		(1<<ANATOP_PFD_480_PFD0_STABLE_SHIFT)
+#define ANATOP_PFD_480_PFD0_CLKGATE_SHIFT	7
+#define ANATOP_PFD_480_PFD0_CLKGATE_MASK	(1<<ANATOP_PFD_480_PFD0_CLKGATE_SHIFT)
+#define ANATOP_PFD_480_PFD1_FRAC_SHIFT		8
+#define ANATOP_PFD_480_PFD1_FRAC_MASK		(0x3f<<ANATOP_PFD_480_PFD1_FRAC_SHIFT)
+#define ANATOP_PFD_480_PFD1_STABLE_SHIFT	14
+#define ANATOP_PFD_480_PFD1_STABLE_MASK		(1<<ANATOP_PFD_480_PFD1_STABLE_SHIFT)
+#define ANATOP_PFD_480_PFD1_CLKGATE_SHIFT	15
+#define ANATOP_PFD_480_PFD1_CLKGATE_MASK	(0x3f<<ANATOP_PFD_480_PFD1_CLKGATE_SHIFT)
+#define ANATOP_PFD_480_PFD2_FRAC_SHIFT		16
+#define ANATOP_PFD_480_PFD2_FRAC_MASK		(1<<ANATOP_PFD_480_PFD2_FRAC_SHIFT)
+#define ANATOP_PFD_480_PFD2_STABLE_SHIFT	22
+#define ANATOP_PFD_480_PFD2_STABLE_MASK	(1<<ANATOP_PFD_480_PFD2_STABLE_SHIFT)
+#define ANATOP_PFD_480_PFD2_CLKGATE_SHIFT	23
+#define ANATOP_PFD_480_PFD2_CLKGATE_MASK	(0x3f<<ANATOP_PFD_480_PFD2_CLKGATE_SHIFT)
+#define ANATOP_PFD_480_PFD3_FRAC_SHIFT		24
+#define ANATOP_PFD_480_PFD3_FRAC_MASK		(1<<ANATOP_PFD_480_PFD3_FRAC_SHIFT)
+#define ANATOP_PFD_480_PFD3_STABLE_SHIFT	30
+#define ANATOP_PFD_480_PFD3_STABLE_MASK		(1<<ANATOP_PFD_480_PFD3_STABLE_SHIFT)
+#define ANATOP_PFD_480_PFD3_CLKGATE_SHIFT	31
 
 struct iomuxc_base_regs {
 	u32     gpr[14];        /* 0x000 */
@@ -658,6 +747,13 @@ struct wdog_regs {
 	u16	wicr;	/* Interrupt Control */
 	u16	wmcr;	/* Miscellaneous Control */
 };
+
+extern void check_cpu_temperature(void);
+
+/* If ROM fail back to USB recover mode, USBPH0_PWD will be clear to use USB
+ * If boot from the other mode, USB0_PWD will keep reset value
+ */
+#define  is_boot_from_usb(void) (!(readl(USB_PHY0_BASE_ADDR) & (1<<20)))
 
 #endif /* __ASSEMBLER__*/
 #endif /* __ASM_ARCH_MX6_IMX_REGS_H__ */

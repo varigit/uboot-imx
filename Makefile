@@ -918,6 +918,8 @@ clobber:	tidy
 	@rm -f $(obj)nand_spl/{u-boot-nand_spl.lds,u-boot-spl,u-boot-spl.map}
 	@rm -f $(obj)spl/{u-boot-spl,u-boot-spl.bin,u-boot-spl.map}
 	@rm -f $(obj)spl/u-boot-spl.lds
+	@rm -rf $(obj)spl/arch $(obj)spl/board $(obj)spl/common $(obj)spl/disk $(obj)spl/drivers $(obj)spl/fs $(obj)spl/lib $(obj)spl/spl
+
 	@rm -f $(obj)tpl/{u-boot-tpl,u-boot-tpl.bin,u-boot-tpl.map}
 	@rm -f $(obj)tpl/u-boot-spl.lds
 	@rm -f $(obj)MLO MLO.byteswap
