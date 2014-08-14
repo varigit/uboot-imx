@@ -643,7 +643,7 @@ void board_init_f(ulong dummy)
 
 	board_early_init_f();	
 
-	timer_init();
+//	timer_init();
 
 	preloader_console_init();
 
@@ -654,11 +654,13 @@ void spl_board_init(void)
 {
 	setup_boot_device();
 }
+extern int board_init_flag;
 
 u32 spl_boot_device(void)
 {
 	u32 imxtype, cpurev;
-	printf("\n\n\n\n\n\nVariscite VAR-SOM-MX6 SPL Boot\n");
+
+	printf("\nVariscite VAR-SOM-MX6 SPL Boot\n");
 
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
@@ -717,6 +719,9 @@ u32 spl_boot_mode(void)
 
 void reset_cpu(ulong addr)
 {
+	struct wdog_regs *wdog1 = (struct wdog_regs *)WDOG1_BASE_ADDR;
+
+	writew(4, &wdog1->wcr);
 //	__REG16(WDOG1_BASE_ADDR) = 4;
 }
 #endif

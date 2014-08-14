@@ -18,6 +18,7 @@ NORMAL_DRIVERS=y
 endif
 
 COBJS-$(CONFIG_SPL_NAND_AM33XX_BCH) += am335x_spl_bch.o
+COBJS-$(CONFIG_SPL_NAND_MXS) += mxs_nand_spl.o
 COBJS-$(CONFIG_SPL_NAND_DOCG4) += docg4_spl.o
 COBJS-$(CONFIG_SPL_NAND_SIMPLE) += nand_spl_simple.o
 COBJS-$(CONFIG_SPL_NAND_LOAD) += nand_spl_load.o

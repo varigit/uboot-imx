@@ -25,10 +25,6 @@
 #define CONFIG_SYS_PL310_BASE		0x00A02000
 #define CONFIG_SYS_CACHELINE_SIZE	32
 
-#ifdef CONFIG_MX6SOLO
-#define CONFIG_MX6DL
-#endif
-
 #define CONFIG_LDO_BYPASS_CHECK
 
 /* uncomment for PLUGIN mode support */
@@ -56,6 +52,7 @@
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
+/* #define CONFIG_CMD_MEMTEST */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(10 * SZ_1M)
@@ -274,7 +271,6 @@
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2     	"> "
-/* #define CONFIG_SYS_PROMPT              "U-Boot > " */
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE              1024
 
@@ -363,6 +359,12 @@
 #define CONFIG_APBH_DMA
 #define CONFIG_APBH_DMA_BURST
 #define CONFIG_APBH_DMA_BURST8
+
+/* NAND boot config */
+#define CONFIG_SYS_NAND_U_BOOT_START	CONFIG_SYS_TEXT_BASE
+#define CONFIG_SYS_NAND_U_BOOT_OFFS 0x11000
+#define CONFIG_SYS_NAND_PAGE_SIZE	2048
+
 #endif
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
@@ -381,6 +383,7 @@
 #define CONFIG_ENV_OFFSET		(4 * CONFIG_SYS_FLASH_SECT_SIZE)
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #undef CONFIG_ENV_SIZE
+
 #define CONFIG_ENV_OFFSET		(8 << 20)
 #define CONFIG_ENV_SECT_SIZE		(128 << 10)
 #define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE

@@ -212,8 +212,6 @@ static void p_udelay(int time)
 	}
 }
 
-
-
 int dram_init(void){
 volatile struct mmdc_p_regs *mmdc_p0;
 ulong sdram_size, sdram_cs;
@@ -461,9 +459,10 @@ void ldo_mode_set(int ldo_bypass)
 	unsigned char value;
 	/* increase VDDARM/VDDSOC to support 1.2G chip */
 
+	printf("Check ldo_bypass mode ...\n");
 	if (check_1_2G()) {
 		ldo_bypass = 0;	/* ldo_enable on 1.2G chip */
-		printf("1.2G chip, increase VDDARM_IN/VDDSOC_IN\n");
+		printf("1.2G chip, ldo mode, increase VDDARM_IN/VDDSOC_IN\n");
 		/* increase VDDARM to 1.425V */
 		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
 			printf("Read SW1AB error!\n");
@@ -513,7 +512,7 @@ void ldo_mode_set(int ldo_bypass)
 		}
 
 		set_anatop_bypass();
-		printf("switch to ldo_bypass mode!\n");
+		printf("switched to ldo_bypass mode!\n");
 	}
 }
 #endif
@@ -997,6 +996,9 @@ int board_init(void)
 	int ret;
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+	gd->bd->bi_arch_number = CONFIG_MACH_VAR_SOM_MX6;
+
+#if  !defined(CONFIG_SYS_BOOT_NAND) || (defined(CONFIG_SYS_BOOT_NAND) &&  !defined(CONFIG_SPL))
 
 #ifdef CONFIG_I2C_MXC
 #if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
@@ -1014,6 +1016,8 @@ int board_init(void)
 	if (ret)
 		return -1;
 #endif
+#endif
+
 	return 0;
 }
 
@@ -1025,6 +1029,7 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+void * get_pc () { return __builtin_return_address(0); }
 int checkboard(void)
 {
 	int rev = var_som_rev();
@@ -1039,6 +1044,7 @@ int checkboard(void)
 	else if (is_mx6solo())
 		printf ("Solo\n");
 	else printf ("????\n");
+    printf("PC=%p\n", get_pc());
 
 	return 0;
 }
