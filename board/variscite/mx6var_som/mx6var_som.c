@@ -24,6 +24,7 @@
  */
 
 #include <common.h>
+#include <malloc.h>
 #include <asm/io.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/imx-regs.h>
@@ -218,6 +219,7 @@ ulong sdram_size, sdram_cs;
 
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
 	sdram_cs = mmdc_p0->mdasp;
+	sdram_size = 1024;
 
 	switch(sdram_cs) {
 		case 0x00000017:
@@ -236,6 +238,7 @@ ulong sdram_size, sdram_cs;
 
 	gd->ram_size = ((ulong)sdram_size * 1024 * 1024);
 
+	return 0;
 }
 
 #if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
@@ -569,6 +572,7 @@ iomux_v3_cfg_t gpmi_pads[] = {
 	MX6_PAD_NANDF_WP_B__RAWNAND_RESETN	| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
 	MX6_PAD_NANDF_RB0__RAWNAND_READY0	| MUX_PAD_CTRL(GPMI_PAD_CTRL0),
 	MX6_PAD_NANDF_CS0__RAWNAND_CE0N		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
+	MX6_PAD_NANDF_CS1__RAWNAND_CE1N		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
 	MX6_PAD_SD4_CMD__RAWNAND_RDN		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
 	MX6_PAD_SD4_CLK__RAWNAND_WRN		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
 	MX6_PAD_NANDF_D0__RAWNAND_D0		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
@@ -665,6 +669,7 @@ int setup_sata(void)
 
 int mx6_rgmii_rework(struct phy_device *phydev)
 {
+#if  !defined(CONFIG_SPL_BUILD)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x9, 0x1c00);
 
 	/* min rx data delay */
@@ -691,10 +696,11 @@ int mx6_rgmii_rework(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0b, 0x8104);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0c, 0xf0f0);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0b, 0x104);
-
+#endif
 	return 0;
 }
 
+#if  !defined(CONFIG_SPL_BUILD)
 #if defined(CONFIG_VIDEO_IPUV3)
 struct display_info_t {
 	int	bus;
@@ -880,6 +886,22 @@ static void setup_display(void)
 	writel(reg, &iomux->gpr[3]);
 }
 #endif /* CONFIG_VIDEO_IPUV3 */
+#endif /* #if  !defined(CONFIG_SPL_BUILD) */
+
+#ifdef CONFIG_I2C_MXC
+static void setup_local_i2c(void){
+#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
+	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info3);
+#endif
+#if defined(CONFIG_MX6QDL)
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info1));
+	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info2));
+	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info3));
+#endif
+}
+#endif
 
 /*
  * Do not overwrite the console
@@ -893,6 +915,7 @@ int overwrite_console(void)
 int board_phy_config(struct phy_device *phydev)
 {
 
+#if  !defined(CONFIG_SPL_BUILD)
     /* min rx data delay */
 	ksz9021_phy_extended_write(phydev,
 			MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
@@ -907,11 +930,12 @@ int board_phy_config(struct phy_device *phydev)
 		phydev->drv->config(phydev);
 
 	mx6_rgmii_rework(phydev);
-
+#endif
 	return 0;
 }
 int board_eth_init(bd_t *bis)
 {
+#if  !defined(CONFIG_SPL_BUILD)
 	uint32_t base = IMX_FEC_BASE;
 	struct mii_dev *bus = NULL;
 	struct phy_device *phydev = NULL;
@@ -946,6 +970,7 @@ int board_eth_init(bd_t *bis)
 	if (ret)
 		printf("FEC MXC: %s:failed\n", __func__);
 
+#endif /* #if  !defined(CONFIG_SPL_BUILD) */
 	return 0;
 }
 
@@ -968,6 +993,7 @@ int board_early_init_f(void)
 
 	setup_iomux_uart();
 
+#if  !defined(CONFIG_SPL_BUILD)
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
 #endif
@@ -980,13 +1006,16 @@ int board_early_init_f(void)
 	setup_eimnor();
 #endif
 
+#ifdef CONFIG_CMD_SATA
+	setup_sata();
+#endif
+
+#endif /* #if  !defined(CONFIG_SPL_BUILD) */
+
 #ifdef CONFIG_SYS_USE_NAND
 	setup_gpmi_nand();
 #endif
 
-#ifdef CONFIG_CMD_SATA
-	setup_sata();
-#endif
 	p_udelay(1000);
 	return 0;
 }
@@ -994,31 +1023,21 @@ int board_early_init_f(void)
 int board_init(void)
 {
 	int ret;
+
 	/* address of boot parameters */
-	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
 	gd->bd->bi_arch_number = CONFIG_MACH_VAR_SOM_MX6;
 
-#if  !defined(CONFIG_SYS_BOOT_NAND) || (defined(CONFIG_SYS_BOOT_NAND) &&  !defined(CONFIG_SPL))
-
 #ifdef CONFIG_I2C_MXC
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
-	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
-	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
-	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info3);
-#endif
-#if defined(CONFIG_MX6QDL)
-	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info1));
-	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info2));
-	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info3));
-#endif
-
+#if  !defined(CONFIG_SPL_BUILD)
+	setup_local_i2c();
 	ret = setup_pmic_voltages();
 	if (ret)
 		return -1;
-#endif
+#endif /* !defined(CONFIG_SPL_BUILD) */
 #endif
 
-	return 0;
+	return ret;
 }
 
 #ifdef CONFIG_CMD_BMODE
@@ -1029,22 +1048,36 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
-void * get_pc () { return __builtin_return_address(0); }
 int checkboard(void)
 {
-	int rev = var_som_rev();
+//	int rev = var_som_rev();
+	char *s;
 
 	printf("Board: Variscite VAR_SOM_MX6 ");
-	if (is_mx6q())
+
+
+	s = getenv ("var_auto_fdt_file");
+	if (is_mx6q()){
 		printf ("Quad\n");
-	else if (is_mx6d())
+		if (s[0] == 'Y'){
+			if (check_1_2G_only())
+				setenv("fdt_file", "imx6q-var-som-ldo.dtb");
+			else
+				setenv("fdt_file", "imx6q-var-som.dtb");
+		}
+	} else if (is_mx6d()){
 		printf ("Dual\n");
-	else if (is_mx6dl())
+		if (s[0] == 'Y')
+			setenv("fdt_file", "imx6q-var-som.dtb");
+	}else if (is_mx6dl()) {
 		printf ("Dual Lite\n");
-	else if (is_mx6solo())
+		if (s[0] == 'Y')
+			setenv("fdt_file", "imx6dl-var-som.dtb");
+	} else if (is_mx6solo()){
 		printf ("Solo\n");
-	else printf ("????\n");
-    printf("PC=%p\n", get_pc());
+		if (s[0] == 'Y')
+			setenv("fdt_file", "imx6sl-var-som.dtb");
+	} else printf ("????\n");
 
 	return 0;
 }
@@ -1057,7 +1090,9 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
+#if  !defined(CONFIG_SPL_BUILD)
 	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);		// Turn on backlight.
+#endif /* #if  !defined(CONFIG_SPL_BUILD) */
 	checkboard();
 	return 0;
 }

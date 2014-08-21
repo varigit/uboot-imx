@@ -108,8 +108,9 @@
 
 #define CONFIG_BOOTDELAY			1
 
-#define CONFIG_LOADADDR					0x12000000
+#define CONFIG_LOADADDR				0x12000000
 #define CONFIG_SYS_TEXT_BASE			0x17800000
+
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 #define CONFIG_SYS_MMC_ENV_DEV 			0
 
@@ -149,9 +150,9 @@
 #if defined(CONFIG_SYS_BOOT_NAND)
 	/*
 	 * Partions' layout for NAND is:
-	 *     mtd1: 1920K    (uboot)
-	 *     mtd2: 128K     (dtb)
-	 *     mtd3: 6M       (kernel)
+	 *     mtd0: 2M       (spl) First boot loader
+	 *     mtd1: 2M       (u-boot, dtb)
+	 *     mtd2: 6M       (kernel)
 	 *     mtd4: left     (rootfs)
 	 */
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -160,8 +161,8 @@
 	"fdt_high=0xffffffff\0"	  \
 	"bootargs=console=" CONFIG_CONSOLE_DEV ",115200 ubi.mtd=3 "  \
 		"root=ubi0:rootfs rootfstype=ubifs \0"		     \
-	"bootcmd=nand read ${loadaddr} 0x200000 0x600000;"\
-		"nand read ${fdt_addr} 0x1e0000 0x20000;"\
+	"bootcmd=nand read ${loadaddr} 0x400000 0x600000;"\
+		"nand read ${fdt_addr} 0x3e0000 0x20000;"\
 		"bootm ${loadaddr} - ${fdt_addr}\0"\
 	"netargs=setenv bootargs console=${console},${baudrate} ${smp} " \
 		"root=/dev/nfs " \
@@ -193,6 +194,7 @@
 	"script=boot.scr\0" \
 	"uimage=uImage\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"var_auto_fdt_file=Y\0" \
 	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
@@ -362,13 +364,13 @@
 
 /* NAND boot config */
 #define CONFIG_SYS_NAND_U_BOOT_START	CONFIG_SYS_TEXT_BASE
-#define CONFIG_SYS_NAND_U_BOOT_OFFS 0x11000
+#define CONFIG_SYS_NAND_U_BOOT_OFFS 	0x200000
 #define CONFIG_SYS_NAND_PAGE_SIZE	2048
 
 #endif
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
-#define CONFIG_ENV_OFFSET		(8 * 64 * 1024)
+#define CONFIG_ENV_OFFSET		(0x3E0000)
 #elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
 #define CONFIG_ENV_OFFSET		(768 * 1024)
 #define CONFIG_ENV_SECT_SIZE		(64 * 1024)
@@ -384,7 +386,7 @@
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #undef CONFIG_ENV_SIZE
 
-#define CONFIG_ENV_OFFSET		(8 << 20)
+#define CONFIG_ENV_OFFSET		(0x3D0000)
 #define CONFIG_ENV_SECT_SIZE		(128 << 10)
 #define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
 #elif defined(CONFIG_ENV_IS_IN_SATA)

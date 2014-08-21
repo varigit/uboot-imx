@@ -415,6 +415,11 @@ ALL-y += $(obj)u-boot-nodtb-tegra.bin
 endif
 endif
 
+ifneq ($(CONFIG_MX6QDL),)
+ALL-y += $(obj)u-boot.img
+endif
+
+
 all:		$(ALL-y) $(SUBDIR_EXAMPLES)
 
 $(obj)u-boot.dtb:	checkdtc $(obj)u-boot

@@ -19,7 +19,6 @@ SECTIONS
 	{
 		*(.__image_copy_start)
 		CPUDIR/start.o (.text*)
-		arch/arm/lib/libarm.o (.text*) 
 		*(.text*)
 	}
 

@@ -20,6 +20,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static enum boot_device boot_dev;
 enum boot_device get_boot_device(void);
+int check_1_2G_only(void);
 static ulong sdram_size;
 
 static inline void setup_boot_device(void)
@@ -76,7 +77,7 @@ static void spl_dram_init_mx6dl_1g(void);
 static void spl_dram_init_mx6q_2g(void);
 static void spl_dram_init(void);
 
-static ram_size(void)
+static void ram_size(void)
 {
 unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 unsigned int volatile * port2;
@@ -235,9 +236,7 @@ static void spl_mx6dlsl_dram_setup_iomux(void)
 static void spl_dram_init_mx6solo_512mb(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
-	volatile struct mmdc_p_regs *mmdc_p1;
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
-	mmdc_p1 = (struct mmdc_p_regs *) MMDC_P1_BASE_ADDR;
 
 	/* ZQ */
 	mmdc_p0->mpzqhwctrl 	= (u32)0xa1390003;
@@ -289,9 +288,7 @@ static void spl_dram_init_mx6solo_512mb(void)
 static void spl_dram_init_mx6solo_1gb(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
-	volatile struct mmdc_p_regs *mmdc_p1;
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
-	mmdc_p1 = (struct mmdc_p_regs *) MMDC_P1_BASE_ADDR;
 
 	/* ZQ */
 	mmdc_p0->mpzqhwctrl 	= (u32)0xa1390003;
@@ -643,7 +640,7 @@ void board_init_f(ulong dummy)
 
 	board_early_init_f();	
 
-//	timer_init();
+	timer_init();
 
 	preloader_console_init();
 
@@ -660,7 +657,7 @@ u32 spl_boot_device(void)
 {
 	u32 imxtype, cpurev;
 
-	printf("\nVariscite VAR-SOM-MX6 SPL Boot\n");
+	printf("\n\nVariscite VAR-SOM-MX6 SPL Boot\n");
 
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
@@ -671,7 +668,7 @@ u32 spl_boot_device(void)
 		printf("PMIC\n");
 
 	ram_size();
-	printf("Ram size %d\n", sdram_size);
+	printf("Ram size %ld\n", sdram_size);
 
 	puts("Boot Device: ");
 	switch (get_boot_device()) {

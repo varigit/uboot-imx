@@ -160,7 +160,6 @@ void spl_mmc_load_image(void)
 {
 	struct mmc *mmc;
 	int err;
-	u32 boot_mode;
 
 	mmc_initialize(gd->bd);
 	/* We register only one device. So, the dev id is always 0 */

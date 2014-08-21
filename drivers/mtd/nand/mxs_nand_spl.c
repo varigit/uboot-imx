@@ -4,6 +4,7 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+#define DEBUG
 #include <common.h>
 #include <nand.h>
 #include <malloc.h>
@@ -41,7 +42,7 @@ static void mxs_nand_command(struct mtd_info *mtd, unsigned int command,
 
 	/* wait for nand ready */
 	ndelay(100);
-	timeo = (CONFIG_SYS_HZ * 20) / 1000;
+	timeo = (CONFIG_SYS_HZ * 20*2) / 1000;
 	time_start = get_timer(0);
 	while (get_timer(time_start) < timeo) {
 		if (chip->dev_ready(mtd))
@@ -77,33 +78,51 @@ static int mxs_flash_ident(struct mtd_info *mtd)
 	}
 	debug("0x%02x:0x%02x ", mfg_id, dev_id);
 
-	/* read ONFI */
-	chip->onfi_version = 0;
-	chip->cmdfunc(mtd, NAND_CMD_READID, 0x20, -1);
-	if (chip->read_byte(mtd) != 'O' || chip->read_byte(mtd) != 'N' ||
-	    chip->read_byte(mtd) != 'F' || chip->read_byte(mtd) != 'I') {
-		return -2;
-	}
+	if ((mfg_id == 0xec) && (dev_id == 0xd3)){
+		/* Samsung 1GB nand no ONFI */
+		mtd->name = 	"K9K8G08U0D";
+		mtd->writesize = 2048;
+		mtd->erasesize = 131072;
+		mtd->oobsize   = 64;
+		chip->chipsize = 1024*1024*1024;
+		chip->page_shift = 11;
+		chip->phys_erase_shift = 17 ;
+		chip->pagemask = 40786658710257760;
+		chip->badblockbits = 8;
 
-	/* we have ONFI, probe it */
-	chip->cmdfunc(mtd, NAND_CMD_PARAM, 0, -1);
-	chip->read_buf(mtd, (uint8_t *)p, sizeof(*p));
-	mtd->name = p->model;
-	mtd->writesize = le32_to_cpu(p->byte_per_page);
-	mtd->erasesize = le32_to_cpu(p->pages_per_block) * mtd->writesize;
-	mtd->oobsize = le16_to_cpu(p->spare_bytes_per_page);
-	chip->chipsize = le32_to_cpu(p->blocks_per_lun);
-	chip->chipsize *= (uint64_t)mtd->erasesize * p->lun_count;
-	/* Calculate the address shift from the page size */
-	chip->page_shift = ffs(mtd->writesize) - 1;
-	chip->phys_erase_shift = ffs(mtd->erasesize) - 1;
-	/* Convert chipsize to number of pages per chip -1 */
-	chip->pagemask = (chip->chipsize >> chip->page_shift) - 1;
-	chip->badblockbits = 8;
+	} else {
+		/* read ONFI */
+		chip->onfi_version = 0;
+		chip->cmdfunc(mtd, NAND_CMD_READID, 0x20, -1);
+		if (chip->read_byte(mtd) != 'O' || chip->read_byte(mtd) != 'N' ||
+		    chip->read_byte(mtd) != 'F' || chip->read_byte(mtd) != 'I') {
+			return -2;
+		}
+
+		/* we have ONFI, probe it */
+		chip->cmdfunc(mtd, NAND_CMD_PARAM, 0, -1);
+		chip->read_buf(mtd, (uint8_t *)p, sizeof(*p));
+		mtd->name = p->model;
+		mtd->writesize = le32_to_cpu(p->byte_per_page);
+		mtd->erasesize = le32_to_cpu(p->pages_per_block) * mtd->writesize;
+		mtd->oobsize = le16_to_cpu(p->spare_bytes_per_page);
+		chip->chipsize = le32_to_cpu(p->blocks_per_lun);
+		chip->chipsize *= (uint64_t)mtd->erasesize * p->lun_count;
+		/* Calculate the address shift from the page size */
+		chip->page_shift = ffs(mtd->writesize) - 1;
+		chip->phys_erase_shift = ffs(mtd->erasesize) - 1;
+		/* Convert chipsize to number of pages per chip -1 */
+		chip->pagemask = (chip->chipsize >> chip->page_shift) - 1;
+		chip->badblockbits = 8;
+	}
+	if ((mfg_id == 0x2c) && (dev_id == 0x48)){
+		chip->chipsize *=2;
+	}
 
 	debug("erasesize=%d (>>%d)\n", mtd->erasesize, chip->phys_erase_shift);
 	debug("writesize=%d (>>%d)\n", mtd->writesize, chip->page_shift);
 	debug("oobsize=%d\n", mtd->oobsize);
+	debug("pagemask=%lld\n", chip->pagemask);
 	debug("chipsize=%lld\n", chip->chipsize);
 
 	return 0;
@@ -153,9 +172,8 @@ static int mxs_nand_init(void)
 	nand_chip.numchips = 1;
 
 	/* identify flash device */
-	puts("NAND : ");
 	if (mxs_flash_ident(&mtd)) {
-		printf("Failed to identify\n");
+		printf("NAND: Failed to identify ONFI\n");
 		return -1;
 	}
 
@@ -167,7 +185,7 @@ static int mxs_nand_init(void)
 	mtd.size = nand_chip.chipsize;
 	nand_chip.scan_bbt(&mtd);
 
-	printf("%llu MiB\n", (mtd.size / (1024 * 1024)));
+	printf("NAND: %llu MiB\n", (mtd.size / (1024 * 1024)));
 	return 0;
 }
 

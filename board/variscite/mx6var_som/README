@@ -1,0 +1,43 @@
+U-Boot for Variscite VAR-SOM-MX6
+-------------------------------------
+
+This file contains information for the port of U-Boot to the VAR-SOM-MX6.
+This u-boot versions supports
+	MX6Q, MX6D, MX6DL, MX6SOLO with the same binary.
+Also support 0.5GB, 1GB, 2GB RAM configurations.
+
+
+For more details about Wandboard, please refer to:
+http://www.variscite.com/
+
+
+Flashing SPL U-boot into the SD card
+--------------------------------
+
+- After the 'make' command completes, the generated 'u-boot.imx' binary must be
+flashed into the SD card;
+
+$ sudo dd if=SPL of=/dev/mmcblk0 bs=1K seek=1; sync
+$ sudo dd if=u-boot.img of=/dev/mmcblk0 bs=1K seek=69; sync
+
+(Note - the SD card node may vary, so adjust this as needed).
+
+- Insert the SD card into the slot located in the bottom of the board (same side
+as the mx6 processor)
+
+- Connect the serial cable to the host PC
+
+- Power up the board and U-boot messages will appear in the serial console.
+
+Flashing SPL U-boot into the nand
+----------------------------------
+Boot from Linux sd-card
+
+- After Boot complete 
+flashed into the NAND;
+
+$ flash_eraseall /dev/mtd0
+$ kobs-ng init -x /opt/images/SPL  --search_exponent=1 -v
+$ flash_erase /dev/mtd0 0x40000 8
+$ nandwrite -p /dev/mtd0 -s 0x40000 u-boot.img
+

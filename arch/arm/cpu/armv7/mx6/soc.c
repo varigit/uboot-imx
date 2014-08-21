@@ -296,6 +296,15 @@ static void imx_reset_pfd(void)
 		BM_ANADIG_PFD_480_PFD2_CLKGATE |
 		BM_ANADIG_PFD_480_PFD1_CLKGATE |
 		BM_ANADIG_PFD_480_PFD0_CLKGATE, &anatop->pfd_480_set);
+#ifdef CONFIG_MX6QQDL
+	if (is_mx6q())
+		writel(BM_ANADIG_PFD_528_PFD2_CLKGATE  |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE, &anatop->pfd_528_set);
+	else
+		writel(BM_ANADIG_PFD_528_PFD1_CLKGATE  |
+		BM_ANADIG_PFD_528_PFD0_CLKGATE, &anatop->pfd_528_set);
+#else
 #ifdef CONFIG_MX6Q
 	writel(BM_ANADIG_PFD_528_PFD2_CLKGATE  |
 		BM_ANADIG_PFD_528_PFD1_CLKGATE |
@@ -304,10 +313,21 @@ static void imx_reset_pfd(void)
 	writel(BM_ANADIG_PFD_528_PFD1_CLKGATE  |
 		BM_ANADIG_PFD_528_PFD0_CLKGATE, &anatop->pfd_528_set);
 #endif
+#endif
+
 	writel(BM_ANADIG_PFD_480_PFD3_CLKGATE  |
 		BM_ANADIG_PFD_480_PFD2_CLKGATE |
 		BM_ANADIG_PFD_480_PFD1_CLKGATE |
 		BM_ANADIG_PFD_480_PFD0_CLKGATE, &anatop->pfd_480_clr);
+#ifdef CONFIG_MX6QQDL
+	if (is_mx6q())
+		writel(BM_ANADIG_PFD_528_PFD2_CLKGATE  |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE, &anatop->pfd_528_clr);
+	else
+		writel(BM_ANADIG_PFD_528_PFD1_CLKGATE  |
+		BM_ANADIG_PFD_528_PFD0_CLKGATE, &anatop->pfd_528_clr);
+#else
 #ifdef CONFIG_MX6Q
 	writel(BM_ANADIG_PFD_528_PFD2_CLKGATE  |
 		BM_ANADIG_PFD_528_PFD1_CLKGATE |
@@ -315,6 +335,7 @@ static void imx_reset_pfd(void)
 #else
 	writel(BM_ANADIG_PFD_528_PFD1_CLKGATE  |
 		BM_ANADIG_PFD_528_PFD0_CLKGATE, &anatop->pfd_528_clr);
+#endif
 #endif
 }
 

@@ -1097,6 +1097,14 @@ int mxs_nand_init(struct mxs_nand_info *info)
 			GPMI_CTRL1_ATA_IRQRDY_POLARITY | GPMI_CTRL1_DEV_RESET |
 			GPMI_CTRL1_BCH_MODE);
 
+	/*
+	 * Decouple the chip select from dma channel. We use dma0 for all
+	 * the chips.
+	 */
+	clrsetbits_le32(&gpmi_regs->hw_gpmi_ctrl1,
+			GPMI_CTRL1_GPMI_MODE,
+			GPMI_CTRL1_DECOUPLE_CS);
+
 	return 0;
 
 err3:
