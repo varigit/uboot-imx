@@ -216,6 +216,8 @@ static void p_udelay(int time)
 int dram_init(void){
 volatile struct mmdc_p_regs *mmdc_p0;
 ulong sdram_size, sdram_cs;
+unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
+unsigned int volatile * port2;
 
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
 	sdram_cs = mmdc_p0->mdasp;
@@ -235,6 +237,21 @@ ulong sdram_size, sdram_cs;
 			sdram_size = 4096;
 			break;
 	}
+
+	do {
+		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
+
+		*port2 = 0;				// write zero to start of second half of memory.
+		*port1 = 0x3f3f3f3f;	// write pattern to start of memory.
+
+		if ((0x3f3f3f3f == *port2) && (sdram_size > 512))
+			sdram_size = sdram_size / 2;	// Next step devide size by half
+		else
+
+		if (0 == *port2)		// Done actual size found.
+			break;
+
+	} while (sdram_size > 512);
 
 	gd->ram_size = ((ulong)sdram_size * 1024 * 1024);
 
