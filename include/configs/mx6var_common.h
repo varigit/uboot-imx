@@ -412,6 +412,7 @@
 #define CONFIG_I2C_MULTI_BUS
 
 /* Framebuffer */
+#if 0
 #define CONFIG_VIDEO
 #define CONFIG_VIDEO_IPUV3
 #define CONFIG_CFB_CONSOLE
@@ -426,5 +427,6 @@
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IPUV3_CLK 260000000
 #define CONFIG_IMX_HDMI
+#endif
 
 #endif                         /* __MX6VAR_COMMON_CONFIG_H */

@@ -68,6 +68,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define VAR_SOM_SD2_CD          IMX_GPIO_NR(4, 14)
 #define VAR_SOM_SD2_WP          IMX_GPIO_NR(4, 15)
 
+#define VAR_SOM_MIPI_EN         IMX_GPIO_NR(3, 15)
+
 #define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |            \
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |               \
 	PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -1033,6 +1035,9 @@ int board_early_init_f(void)
 	setup_gpmi_nand();
 #endif
 
+	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 1);
+	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 0);		// Turn off backlight.
+
 	p_udelay(1000);
 	return 0;
 }
@@ -1107,10 +1112,10 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
-#if  !defined(CONFIG_SPL_BUILD)
-	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);		// Turn on backlight.
-#endif /* #if  !defined(CONFIG_SPL_BUILD) */
 	checkboard();
+	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 1);
+	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);		// Turn off backlight.
+
 	return 0;
 }
 
