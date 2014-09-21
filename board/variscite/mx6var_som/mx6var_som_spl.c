@@ -662,10 +662,7 @@ u32 spl_boot_device(void)
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
 	printf("i.MX%s SOC ", get_imx_type(imxtype));
-	if (check_1_2G_only())
-		printf("LDO\n");
-	else
-		printf("PMIC\n");
+	printf("PMIC\n");
 
 	ram_size();
 	printf("Ram size %ld\n", sdram_size);

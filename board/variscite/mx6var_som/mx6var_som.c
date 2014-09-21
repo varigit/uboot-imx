@@ -479,55 +479,28 @@ static int setup_pmic_voltages(void)
 void ldo_mode_set(int ldo_bypass)
 {
 	unsigned char value;
-	/* increase VDDARM/VDDSOC to support 1.2G chip */
+	ldo_bypass = 1;	/* ldo disabled on any Variscite SOM  */
 
-	printf("Check ldo_bypass mode ...\n");
-	if (check_1_2G()) {
-		ldo_bypass = 0;	/* ldo_enable on 1.2G chip */
-		printf("1.2G chip, ldo mode, increase VDDARM_IN/VDDSOC_IN\n");
-		/* increase VDDARM to 1.425V */
-		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
-			printf("Read SW1AB error!\n");
-			return;
-		}
-		value &= ~0x3f;
-		value |= 0x2d;
-		if (i2c_write(0x8, 0x20, 1, &value, 1)) {
-			printf("Set SW1AB error!\n");
-			return;
-		}
-		/* increase VDDSOC to 1.425V */
-		if (i2c_read(0x8, 0x2e, 1, &value, 1)) {
-			printf("Read SW1C error!\n");
-			return;
-		}
-		value &= ~0x3f;
-		value |= 0x2d;
-		if (i2c_write(0x8, 0x2e, 1, &value, 1)) {
-			printf("Set SW1C error!\n");
-			return;
-		}
-	}
 	/* switch to ldo_bypass mode , boot on 800Mhz */
 	if (ldo_bypass) {
-		/* decrease VDDARM to 1.175V */
+		/* increase VDDARM/VDDSOC 1.42 */
 		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
 			printf("Read SW1AB error!\n");
 			return;
 		}
 		value &= ~0x3f;
-		value |= 0x23;
+		value |= 0x2d;
 		if (i2c_write(0x8, 0x20, 1, &value, 1)) {
 			printf("Set SW1AB error!\n");
 			return;
 		}
-		/* increase VDDSOC to 1.175V */
+		/* increase VDDARM/VDDSOC 1.42 */
 		if (i2c_read(0x8, 0x2e, 1, &value, 1)) {
 			printf("Read SW1C error!\n");
 			return;
 		}
 		value &= ~0x3f;
-		value |= 0x23;
+		value |= 0x2d;
 		if (i2c_write(0x8, 0x2e, 1, &value, 1)) {
 			printf("Set SW1C error!\n");
 			return;
@@ -1083,7 +1056,7 @@ int checkboard(void)
 		printf ("Quad\n");
 		if (s[0] == 'Y'){
 			if (check_1_2G_only())
-				setenv("fdt_file", "imx6q-var-som-ldo.dtb");
+				setenv("fdt_file", "imx6q-var-som-4gb-nand.dtb");
 			else
 				setenv("fdt_file", "imx6q-var-som.dtb");
 		}
