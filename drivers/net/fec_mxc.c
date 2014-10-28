@@ -983,6 +983,7 @@ static int fec_probe(bd_t *bd, int dev_id, uint32_t base_addr,
 		if (!getenv("ethaddr"))
 			eth_setenv_enetaddr("ethaddr", ethaddr);
 	}
+	printf("got MAC%d address from fuse: %pM\n", dev_id, ethaddr);
 	return ret;
 err3:
 	free(fec);

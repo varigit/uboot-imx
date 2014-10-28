@@ -43,21 +43,21 @@
 
 #define WRITE_POSTAMBLE_US		2
 
-static void wait_busy(struct ocotp_regs *regs, unsigned int delay_us)
+static void wait_busy(struct iim_regs *regs, unsigned int delay_us)
 {
 	while (readl(&regs->ctrl) & BM_CTRL_BUSY)
 		udelay(delay_us);
 }
 
-static void clear_error(struct ocotp_regs *regs)
+static void clear_error(struct iim_regs *regs)
 {
 	writel(BM_CTRL_ERROR, &regs->ctrl_clr);
 }
 
-static int prepare_access(struct ocotp_regs **regs, u32 bank, u32 word,
+static int prepare_access(struct iim_regs **regs, u32 bank, u32 word,
 				int assert, const char *caller)
 {
-	*regs = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+	*regs = (struct iim_regs *)OCOTP_BASE_ADDR;
 
 	if (bank >= ARRAY_SIZE((*regs)->bank) ||
 			word >= ARRAY_SIZE((*regs)->bank[0].fuse_regs) >> 2 ||
@@ -74,7 +74,7 @@ static int prepare_access(struct ocotp_regs **regs, u32 bank, u32 word,
 	return 0;
 }
 
-static int finish_access(struct ocotp_regs *regs, const char *caller)
+static int finish_access(struct iim_regs *regs, const char *caller)
 {
 	u32 err;
 
@@ -91,7 +91,7 @@ static int finish_access(struct ocotp_regs *regs, const char *caller)
 	return 0;
 }
 
-static int prepare_read(struct ocotp_regs **regs, u32 bank, u32 word, u32 *val,
+static int prepare_read(struct iim_regs **regs, u32 bank, u32 word, u32 *val,
 			const char *caller)
 {
 	return prepare_access(regs, bank, word, val != NULL, caller);
@@ -99,7 +99,7 @@ static int prepare_read(struct ocotp_regs **regs, u32 bank, u32 word, u32 *val,
 
 int fuse_read(u32 bank, u32 word, u32 *val)
 {
-	struct ocotp_regs *regs;
+	struct iim_regs *regs;
 	int ret;
 
 	ret = prepare_read(&regs, bank, word, val, __func__);
@@ -111,7 +111,7 @@ int fuse_read(u32 bank, u32 word, u32 *val)
 	return finish_access(regs, __func__);
 }
 
-static void set_timing(struct ocotp_regs *regs)
+static void set_timing(struct iim_regs *regs)
 {
 	u32 ipg_clk;
 	u32 relax, strobe_read, strobe_prog;
@@ -133,7 +133,7 @@ static void set_timing(struct ocotp_regs *regs)
 			BM_TIMING_STROBE_PROG, timing);
 }
 
-static void setup_direct_access(struct ocotp_regs *regs, u32 bank, u32 word,
+static void setup_direct_access(struct iim_regs *regs, u32 bank, u32 word,
 				int write)
 {
 	u32 wr_unlock = write ? BV_CTRL_WR_UNLOCK_KEY : 0;
@@ -147,7 +147,7 @@ static void setup_direct_access(struct ocotp_regs *regs, u32 bank, u32 word,
 
 int fuse_sense(u32 bank, u32 word, u32 *val)
 {
-	struct ocotp_regs *regs;
+	struct iim_regs *regs;
 	int ret;
 
 	ret = prepare_read(&regs, bank, word, val, __func__);
@@ -157,12 +157,12 @@ int fuse_sense(u32 bank, u32 word, u32 *val)
 	setup_direct_access(regs, bank, word, false);
 	writel(BM_READ_CTRL_READ_FUSE, &regs->read_ctrl);
 	wait_busy(regs, 1);
-	*val = readl(&regs->read_fuse_data);
+	*val = readl(&regs->fuse_data);
 
 	return finish_access(regs, __func__);
 }
 
-static int prepare_write(struct ocotp_regs **regs, u32 bank, u32 word,
+static int prepare_write(struct iim_regs **regs, u32 bank, u32 word,
 				const char *caller)
 {
 	return prepare_access(regs, bank, word, true, caller);
@@ -170,7 +170,7 @@ static int prepare_write(struct ocotp_regs **regs, u32 bank, u32 word,
 
 int fuse_prog(u32 bank, u32 word, u32 val)
 {
-	struct ocotp_regs *regs;
+	struct iim_regs *regs;
 	int ret;
 
 	ret = prepare_write(&regs, bank, word, __func__);
@@ -187,7 +187,7 @@ int fuse_prog(u32 bank, u32 word, u32 val)
 
 int fuse_override(u32 bank, u32 word, u32 val)
 {
-	struct ocotp_regs *regs;
+	struct iim_regs *regs;
 	int ret;
 
 	ret = prepare_write(&regs, bank, word, __func__);
