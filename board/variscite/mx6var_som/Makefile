@@ -23,7 +23,7 @@ include $(TOPDIR)/config.mk
 
 LIB    = $(obj)lib$(BOARD).o
 
-COBJS  := mx6var_som.o mx6var_som_spl.o
+COBJS  := mx6var_som.o mx6var_som_spl.o mx6var_som_eeprom.o
 
 SRCS   := $(COBJS:.o=.c)
 OBJS   := $(addprefix $(obj),$(COBJS))

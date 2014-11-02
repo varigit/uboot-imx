@@ -203,7 +203,7 @@ I2C_PADS(i2c_pad_info3,
 
 #endif
 
-static void p_udelay(int time)
+void p_udelay(int time)
 {
 	int i, j;
 
@@ -236,11 +236,12 @@ unsigned int volatile * port2;
 			sdram_size = 2048;
 			break;
 		case 0x00000087:
-			sdram_size = 4096;
+			sdram_size = 3840;
 			break;
 	}
 
 	do {
+		if (sdram_size == 3840) break;
 		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
 
 		*port2 = 0;				// write zero to start of second half of memory.
@@ -881,7 +882,7 @@ static void setup_display(void)
 #endif /* #if  !defined(CONFIG_SPL_BUILD) */
 
 #ifdef CONFIG_I2C_MXC
-static void setup_local_i2c(void){
+void setup_local_i2c(void){
 #if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
@@ -1002,16 +1003,16 @@ int board_early_init_f(void)
 	setup_sata();
 #endif
 
-#endif /* #if  !defined(CONFIG_SPL_BUILD) */
-
 #ifdef CONFIG_SYS_USE_NAND
 	setup_gpmi_nand();
 #endif
 
 	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 1);
 	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 0);		// Turn off backlight.
+#endif /* #if  !defined(CONFIG_SPL_BUILD) */
 
 	p_udelay(1000);
+
 	return 0;
 }
 

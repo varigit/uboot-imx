@@ -5,9 +5,10 @@ This file contains information for the port of U-Boot to the VAR-SOM-MX6.
 This u-boot versions supports
 	MX6Q, MX6D, MX6DL, MX6SOLO with the same binary.
 Also support 0.5GB, 1GB, 2GB RAM configurations.
+Added support for SOM version 2.x: Ram configuration from EEprom.
 
 
-For more details about Wandboard, please refer to:
+For more details about Variscite, please refer to:
 http://www.variscite.com/
 
 

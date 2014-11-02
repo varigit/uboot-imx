@@ -413,6 +413,9 @@
 #define CONFIG_SYS_I2C_SLAVE            0x8
 #define CONFIG_I2C_MULTI_BUS
 
+#define CONFIG_SPL_I2C_SUPPORT
+#define CONFIG_VARISCITE_I2C_SYS_BUS_NUM        1
+
 /* Framebuffer */
 #if 0
 #define CONFIG_VIDEO

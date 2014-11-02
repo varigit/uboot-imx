@@ -175,6 +175,8 @@ void spl_mmc_load_image(void)
 		hang();
 	}
 
+	/* Initialize to error state so even when there is no FAT it will load from raw MMC */
+	err = -1;
 
 #ifdef CONFIG_SPL_FAT_SUPPORT
 	/* FAT filesystem */

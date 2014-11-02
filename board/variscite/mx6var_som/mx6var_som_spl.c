@@ -2,6 +2,10 @@
  * Author: Tungyi Lin <tungyilin1127@gmail.com>
  *
  * Derived from EDM_CF_IMX6 code by TechNexion,Inc
+ * Copyright (C) 2014 Variscite Ltd. All Rights Reserved.
+ * Maintainer: Ron Donio <ron.d@variscite.com>
+ * Configuration settings for the Variscite VAR_SOM_MX6 board.
+ *
  *
  * SPDX-License-Identifier:     GPL-2.0+
  */
@@ -10,7 +14,10 @@
 #include <asm/arch/sys_proto.h>
 #ifdef CONFIG_SPL
 #include <spl.h>
+#include <i2c.h>
 #endif
+
+#include "mx6var_eeprom.h"
 
 #define CONFIG_SPL_STACK	0x0091FFB8
 
@@ -22,6 +29,9 @@ static enum boot_device boot_dev;
 enum boot_device get_boot_device(void);
 int check_1_2G_only(void);
 static ulong sdram_size;
+
+static var_eeprom_config_struct_t g_var_eeprom_cfg;
+static bool g_b_dram_set_by_var_eeprom_config;
 
 static inline void setup_boot_device(void)
 {
@@ -75,7 +85,6 @@ enum boot_device get_boot_device(void) {
 static void spl_dram_init_mx6solo_512mb(void);
 static void spl_dram_init_mx6dl_1g(void);
 static void spl_dram_init_mx6q_2g(void);
-static void spl_dram_init(void);
 
 static void ram_size(void)
 {
@@ -118,7 +127,113 @@ ulong sdram_cs;
 	} while (sdram_size > 512);
 }
 
-static void reset_ddr(void){
+#ifdef EEPROM_DEBUG
+void sdram_long_test_spl(unsigned int capacity)
+{
+	unsigned int volatile *mem_ptr = (unsigned int *)PHYS_SDRAM;
+	unsigned int volatile *mem_end_ptr = (unsigned int *)((unsigned int)PHYS_SDRAM + (1024*1024*capacity) - 4);
+	bool result = true;
+	unsigned int val;
+	unsigned int fail_cnt = 0;
+
+	printf("sdram_long_test() - Writing... mem_ptr=0x%08x mem_end_ptr=0x%08x\n", (unsigned int)mem_ptr, (unsigned int)mem_end_ptr);
+
+	// zero memory
+	memset(mem_ptr, 0x00, (1024*1024*4));
+	memset((void *)0x90000000, 0x00, (1024*1024*4));
+
+	mem_ptr = (unsigned int *)PHYS_SDRAM;
+	while (mem_ptr < mem_end_ptr)
+	{
+		if (0 == ((unsigned int)mem_ptr % 0x1000000))
+		{
+			printf("Writing... mem_ptr=0x%08x\n", (unsigned int)mem_ptr);
+		}
+
+		val = (unsigned int)mem_ptr;
+
+		if ((0x10000000 == (unsigned int)mem_ptr) || (0x90000000 == (unsigned int)mem_ptr))
+		{
+			volatile unsigned int *ptr1 = 0x10000000;
+			volatile unsigned int *ptr2 = 0x90000000;
+			printf("*ptr1<0x%x>=0x%x, *ptr2<0x%x>=0x%x\n", (unsigned int)ptr1, *ptr1, (unsigned int)ptr2, *ptr2);
+		}
+
+		/* Write to memory */
+		*mem_ptr = val;
+
+		if ((0x10000000 == (unsigned int)mem_ptr) || (0x90000000 == (unsigned int)mem_ptr))
+		{
+			volatile unsigned int *ptr1 = 0x10000000;
+			volatile unsigned int *ptr2 = 0x90000000;
+			printf("*ptr1<0x%x>=0x%x, *ptr2<0x%x>=0x%x\n", (unsigned int)ptr1, *ptr1, (unsigned int)ptr2, *ptr2);
+		}
+
+		mem_ptr++;
+	}
+	
+	mem_ptr = (unsigned int *)PHYS_SDRAM;
+	printf("sdram_long_test() - Reading and comparing... mem_ptr=0x%08x mem_end_ptr=0x%08x\n", (unsigned int)mem_ptr, (unsigned int)mem_end_ptr);
+	while (mem_ptr < mem_end_ptr)
+	{
+		if (0 == ((unsigned int)mem_ptr % 0x1000000))
+		{
+			printf("Reading... mem_ptr=0x%08x\n", (unsigned int)mem_ptr);
+		}
+
+		val = (unsigned int)mem_ptr;
+
+		/* Read from memory and compare... */
+		if (val != *mem_ptr)
+		{
+			fail_cnt++;
+			result = false;
+			if (0 == ((unsigned int)mem_ptr % 0x1000000))
+			{
+				printf("Test failure: val != *mem_ptr: mem_ptr=0x%x, val=0x%x, *mem_ptr=0x%x\n", (unsigned int)mem_ptr, val, *mem_ptr);
+			}
+		}
+
+		mem_ptr++;
+	}
+	printf("sdram_long_test() - Finished! Result=%d, fail_cnt=%d\n", result, fail_cnt);
+}
+static void sdram_test(unsigned int capacity)
+{
+	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
+	unsigned int volatile * port2;
+	unsigned int sdram_size_temp;
+	volatile struct mmdc_p_regs *mmdc_p0;
+	ulong sdram_cs;
+
+	sdram_size_temp = capacity;
+
+	do {
+		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size_temp * 1024 * 1024) / 2));
+
+		*port2 = 0;				// write zero to start of second half of memory.
+		*port1 = 0x3f3f3f3f;	// write pattern to start of memory.
+
+		printf("sdram_test(): sdram_size_temp=%d, *port1=0x%x, *port2=0x%x\n", sdram_size_temp, *port1, *port2);
+
+		if ((0x3f3f3f3f == *port2) && (sdram_size_temp > 512))
+		{
+			sdram_size_temp = sdram_size_temp / 2;	// Next step devide size by half
+		}
+		else
+		{
+			if (0 == *port2)		// Done actual size found.
+				break;
+		}
+
+		printf("sdram_test(): detecting... sdram_size_temp=%d\n", sdram_size_temp);
+	} while (sdram_size_temp > 512);
+
+	printf("sdram_test(): Detected sdram_size=%d\n", sdram_size_temp);
+}
+#endif
+
+static void reset_ddr_solo(void){
 	volatile struct mmdc_p_regs *mmdc_p0;
 	u32 conack;
 
@@ -131,7 +246,6 @@ static void reset_ddr(void){
 		conack = (mmdc_p0->mdscr & 0x4000);
 	} while (conack == 0);
 }
-
 
 static void spl_mx6qd_dram_setup_iomux(void)
 {
@@ -581,14 +695,17 @@ static void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mdscr 			= (u32)0x00000000;
 }
 
-static void spl_dram_init(void)
+/* 
+ * First phase ddr init. Use legacy autodetect
+ */
+static void legacy_spl_dram_init(void)
 {	
 	u32 cpurev, imxtype;
 
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
 
-	get_imx_type(imxtype);	
+	get_imx_type(imxtype);
 
 	switch (imxtype){
 	case MXC_CPU_MX6SOLO:
@@ -596,7 +713,7 @@ static void spl_dram_init(void)
 		spl_dram_init_mx6solo_1gb();
 		ram_size();
 		if (sdram_size == 512){
-			reset_ddr();
+			reset_ddr_solo();
 			spl_mx6dlsl_dram_setup_iomux();
 			spl_dram_init_mx6solo_512mb();
 		}
@@ -623,12 +740,76 @@ static void spl_dram_init(void)
 	}
 }
 
+/* 
+ * Second phase ddr init. Use eeprom values.
+ */
+static int  spl_dram_init(void)
+{
+	u32 cpurev, imxtype;
+	bool b_is_valid_eeprom_cfg_struct = false;
+	int ret;
+
+	cpurev = get_cpu_rev();
+	imxtype = (cpurev & 0xFF000) >> 12;
+
+	get_imx_type(imxtype);
+
+	/* Add here: Read EEPROM and parse Variscite struct */
+	var_eeprom_i2c_init();
+	memset(&g_var_eeprom_cfg, 0x00, sizeof(var_eeprom_config_struct_t));
+	ret = var_eeprom_read_struct(&g_var_eeprom_cfg);
+	if (ret)
+		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
+
+	/* is valid Variscite EEPROM? */
+	b_is_valid_eeprom_cfg_struct = var_eeprom_is_valid(&g_var_eeprom_cfg);
+	if (!b_is_valid_eeprom_cfg_struct)
+		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
+
+        switch (imxtype) {
+        case MXC_CPU_MX6DL:
+        case MXC_CPU_MX6SOLO:
+               	var_eeprom_mx6dlsl_dram_setup_iomux_from_struct(&g_var_eeprom_cfg.pinmux_group);
+                break;
+        case MXC_CPU_MX6Q:
+        case MXC_CPU_MX6D:
+        default:
+                var_eeprom_mx6qd_dram_setup_iomux_from_struct(&g_var_eeprom_cfg.pinmux_group);
+                break;  
+        }
+
+	var_eeprom_dram_init_from_struct(&g_var_eeprom_cfg);
+
+	sdram_size = g_var_eeprom_cfg.header.ddr_size;
+	g_b_dram_set_by_var_eeprom_config = true;
+
+	return SPL_DRAM_INIT_STATUS_OK;
+}
+
+
+/* 
+ * board dram init legacy or eeprom.
+ */
+static int spl_status;
+
+void board_dram_init(void)
+{
+	/* Initialize DDR based on eeprom if exist */
+	spl_status = spl_dram_init();
+	if (spl_status != SPL_DRAM_INIT_STATUS_OK)
+	{
+	 	legacy_spl_dram_init();
+	}
+}
+
+/* 
+ * board init callback.
+ */
+
 void board_init_f(ulong dummy)
 {	
 	/* Set the stack pointer. */
 	asm volatile("mov sp, %0\n" : : "r"(CONFIG_SPL_STACK));
-
-	spl_dram_init();
 
 	arch_cpu_init();
 
@@ -638,11 +819,10 @@ void board_init_f(ulong dummy)
 	/* Set global data pointer. */
 	gd = &gdata;
 
-	board_early_init_f();	
-
 	timer_init();
 
-	preloader_console_init();
+	/* Initialize DDR based on eeprom if exist */
+	board_dram_init();
 
 	board_init_r(NULL, 0);
 }
@@ -651,23 +831,44 @@ void spl_board_init(void)
 {
 	setup_boot_device();
 }
-extern int board_init_flag;
 
 u32 spl_boot_device(void)
 {
 	u32 imxtype, cpurev;
+	int i;
 
-	printf("\n\nVariscite VAR-SOM-MX6 SPL Boot\n");
+	/* Set global data pointer. */
+	gd = &gdata;
+
+	board_early_init_f();	
+
+	p_udelay(1000);
+
+	mem_malloc_init(CONFIG_SYS_SPL_MALLOC_DDR_START, 
+			CONFIG_SYS_SPL_MALLOC_DDR_SIZE);
+
+	preloader_console_init();
 
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
 	printf("i.MX%s SOC ", get_imx_type(imxtype));
 	printf("PMIC\n");
 
-	ram_size();
+	if (spl_status ==SPL_DRAM_INIT_STATUS_OK	) {
+		printf("DDR EEPROM configuration\n");
+		var_eeprom_strings_print(&g_var_eeprom_cfg);
+#ifdef EEPROM_DEBUG
+		/* Test SDRAM size... */
+		sdram_test(sdram_size);
+		sdram_long_test_spl(sdram_size);
+#endif
+	} else {
+		printf("DDR LEGACY configuration\n");
+		ram_size();
+	}
 	printf("Ram size %ld\n", sdram_size);
 
-	puts("Boot Device: ");
+	printf("Boot Device: ");
 	switch (get_boot_device()) {
 	case MX6_SD0_BOOT:
 		printf("MMC0\n");
@@ -689,6 +890,7 @@ u32 spl_boot_device(void)
 		printf("UNKNOWN\n");
 		return BOOT_DEVICE_NONE;
 	}
+
 }
 
 u32 spl_boot_mode(void)

@@ -14,7 +14,7 @@
 
 #define	CONFIG_SPL_LDSCRIPT	"arch/arm/cpu/armv7/mx6/u-boot-spl.lds"
 #define CONFIG_SPL_TEXT_BASE	0x00908000 
-#define CONFIG_SPL_MAX_SIZE	(68 * 1024)
+#define CONFIG_SPL_MAX_SIZE	(64 * 1024)
 #define CONFIG_SPL_START_S_PATH	"arch/arm/cpu/armv7"
 #define CONFIG_SPL_STACK	0x0091FFB8
 
@@ -24,7 +24,9 @@
 
 #define CONFIG_SPL_GPIO_SUPPORT
 
-#define CONFIG_SPL_FAT_SUPPORT
+/* #define CONFIG_SPL_FAT_SUPPORT
+   reduce BSS usage.
+ */
 
 #if defined(CONFIG_SPL_FAT_SUPPORT) || defined(CONFIG_SPL_EXT_SUPPORT)
 #define CONFIG_SYS_MMC_SD_FAT_BOOT_PARTITION	1
@@ -47,10 +49,15 @@
 
 #define CONFIG_SPL_BOARD_INIT
 
-#define CONFIG_SPL_BSS_START_ADDR	0x18200000
-#define CONFIG_SPL_BSS_MAX_SIZE		0x100000	/* 1 MB */
-#define CONFIG_SYS_SPL_MALLOC_START	0x18300000
-#define CONFIG_SYS_SPL_MALLOC_SIZE	0x3200000  	/* 50 MB */
+/* BSS and malloc from OCRAM only. Size to limted to Solo OCRAM */
+#define CONFIG_SPL_BSS_START_ADDR	0x912000
+#define CONFIG_SPL_BSS_MAX_SIZE		0x1800
+#define CONFIG_SYS_SPL_MALLOC_START	0x912800
+#define CONFIG_SYS_SPL_MALLOC_SIZE	0x4800
+/* Late malloc re init for printf to work */
+#define CONFIG_SYS_SPL_MALLOC_DDR_START	0x18300000
+#define CONFIG_SYS_SPL_MALLOC_DDR_SIZE	0x3200000  	/* 50 MB */
+
 #endif
 
 #endif
