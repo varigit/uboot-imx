@@ -293,7 +293,7 @@ __LIBS := $(subst $(obj),,$(LIBS)) $(subst $(obj),,$(LIBBOARD))
 #########################################################################
 
 # Always append ALL so that arch config.mk's can add custom ones
-ALL += $(obj)u-boot.srec $(obj)u-boot.bin $(obj)System.map $(U_BOOT_NAND) $(U_BOOT_ONENAND)
+ALL += $(obj)u-boot.srec $(obj)u-boot.bin $(obj)u-boot.img $(obj)System.map $(U_BOOT_NAND) $(U_BOOT_ONENAND)
 
 all:		$(ALL)
 
