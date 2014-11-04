@@ -150,10 +150,10 @@ static u32 __decode_pll(enum pll_clocks pll, u32 infreq)
 		}
 	case AUD_PLL4:
 	case VID_PLL5:
-#ifndef CONFIG_MX6SL
+//#ifndef CONFIG_MX6SL
 	case MLB_PLL6:
 	case USBHOST_PLL7:
-#endif
+//#endif
 	default:
 		return 0;
 	}
@@ -219,10 +219,12 @@ static u32 __get_ipg_per_clk(void)
 	u32 clk_root = __get_ipg_clk();
 
 	reg = __REG(MXC_CCM_CSCMR1);
-#ifdef CONFIG_MX6SL
-	if (reg & 0x40) /* PERCLK from 24M OSC */
-		clk_root = CONFIG_MX6_HCLK_FREQ;
-#endif
+//#ifdef CONFIG_MX6SL
+	if (mx6_chip_is_solo()){
+		if (reg & 0x40) /* PERCLK from 24M OSC */
+			clk_root = CONFIG_MX6_HCLK_FREQ;
+	}
+//#endif
 	podf = reg & MXC_CCM_CSCMR1_PERCLK_PODF_MASK;
 	return clk_root / (podf + 1);
 }
@@ -232,10 +234,11 @@ static u32 __get_uart_clk(void)
 	u32 freq = PLL3_80M, reg, podf;
 
 	reg = __REG(MXC_CCM_CSCDR1);
-#ifdef CONFIG_MX6SL
-	if (reg & 0x40) /* UART clock from 24M OSC */
-		freq = CONFIG_MX6_HCLK_FREQ;
-#endif
+	if (mx6_chip_is_solo()){
+		if (reg & 0x40) /* UART clock from 24M OSC */
+			freq = CONFIG_MX6_HCLK_FREQ;
+	}
+
 	podf = (reg & MXC_CCM_CSCDR1_UART_CLK_PODF_MASK) >>
 		MXC_CCM_CSCDR1_UART_CLK_PODF_OFFSET;
 	freq /= (podf + 1);
@@ -334,8 +337,7 @@ static u32 __get_nfc_clk(void)
 	return  clkroot / (pred + 1) / (podf + 1);
 }
 
-#ifdef CONFIG_MX6SL
-static u32 __get_ddr_clk(void)
+static u32 __get_ddr_clk_sl(void)
 {
 	u32 cbcmr = __REG(MXC_CCM_CBCMR);
 	u32 cbcdr = __REG(MXC_CCM_CBCDR);
@@ -362,8 +364,8 @@ static u32 __get_ddr_clk(void)
 	return freq / (podf + 1);
 
 }
-#else
-static u32 __get_ddr_clk(void)
+
+static u32 __get_ddr_clk_other(void)
 {
 	u32 cbcdr = __REG(MXC_CCM_CBCDR);
 	u32 podf = (cbcdr & MXC_CCM_CBCDR_MMDC_CH0_PODF_MASK) >>
@@ -371,7 +373,13 @@ static u32 __get_ddr_clk(void)
 
 	return __get_periph_clk() / (podf + 1);
 }
-#endif
+
+static u32 __get_ddr_clk(void){
+	if(mx6_chip_is_solo())
+		return __get_ddr_clk_sl();
+	else
+		__get_ddr_clk_other();
+}
 
 static u32 __get_usdhc1_clk(void)
 {
@@ -503,9 +511,8 @@ void mxc_dump_clocks(void)
 	printf("usdhc2 clock  : %dHz\n", mxc_get_clock(MXC_ESDHC2_CLK));
 	printf("usdhc3 clock  : %dHz\n", mxc_get_clock(MXC_ESDHC3_CLK));
 	printf("usdhc4 clock  : %dHz\n", mxc_get_clock(MXC_ESDHC4_CLK));
-#ifndef CONFIG_MX6SL
-	printf("nfc clock     : %dHz\n", mxc_get_clock(MXC_NFC_CLK));
-#endif
+	if (mx6_chip_is_solo())
+		printf("nfc clock     : %dHz\n", mxc_get_clock(MXC_NFC_CLK));
 }
 
 #ifdef CONFIG_CMD_CLOCK
@@ -1044,31 +1051,50 @@ int arch_cpu_init(void)
 	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
 	 * workaround in ROM code, as bus clock need it
 	 */
-	writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
-		BM_ANADIG_PFD_480_PFD2_CLKGATE |
-		BM_ANADIG_PFD_480_PFD1_CLKGATE |
-		BM_ANADIG_PFD_480_PFD0_CLKGATE,
-		ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
-	writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
-#ifdef CONFIG_MX6Q
-		BM_ANADIG_PFD_528_PFD2_CLKGATE |
-#endif
-		BM_ANADIG_PFD_528_PFD1_CLKGATE |
-		BM_ANADIG_PFD_528_PFD0_CLKGATE,
-		ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
+	if (mx6_chip_is_dq()) {
+		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
+			BM_ANADIG_PFD_480_PFD2_CLKGATE |
+			BM_ANADIG_PFD_480_PFD1_CLKGATE |
+			BM_ANADIG_PFD_480_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
+		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
+			BM_ANADIG_PFD_528_PFD2_CLKGATE |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
 
-	writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
-		BM_ANADIG_PFD_480_PFD2_CLKGATE |
-		BM_ANADIG_PFD_480_PFD1_CLKGATE |
-		BM_ANADIG_PFD_480_PFD0_CLKGATE,
-		ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
-	writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
-#ifdef CONFIG_MX6Q
-		BM_ANADIG_PFD_528_PFD2_CLKGATE |
-#endif
-		BM_ANADIG_PFD_528_PFD1_CLKGATE |
-		BM_ANADIG_PFD_528_PFD0_CLKGATE,
-		ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
+		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
+			BM_ANADIG_PFD_480_PFD2_CLKGATE |
+			BM_ANADIG_PFD_480_PFD1_CLKGATE |
+			BM_ANADIG_PFD_480_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
+		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
+			BM_ANADIG_PFD_528_PFD2_CLKGATE |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
+		} else {
+		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
+			BM_ANADIG_PFD_480_PFD2_CLKGATE |
+			BM_ANADIG_PFD_480_PFD1_CLKGATE |
+			BM_ANADIG_PFD_480_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
+		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
+
+		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
+			BM_ANADIG_PFD_480_PFD2_CLKGATE |
+			BM_ANADIG_PFD_480_PFD1_CLKGATE |
+			BM_ANADIG_PFD_480_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
+		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
+			BM_ANADIG_PFD_528_PFD2_CLKGATE |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE,
+			ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
+		}
 
 	icache_enable();
 	dcache_enable();

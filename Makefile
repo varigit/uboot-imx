@@ -3348,6 +3348,8 @@ mx6dl_var_som_android_config             \
 mx6dl_var_som_nand_android_config \
 mx6q_var_som_config                    \
 mx6q_var_som_nand_config                       \
+mx6_var_som_android_config                    \
+mx6_var_som_nand_android_config                    \
 mx6q_var_som_android_config                    \
 mx6q_var_som_nand_android_config       : unconfig
 	@[ -z "$(findstring iram_,$@)" ] || \
