@@ -897,7 +897,7 @@ void spi_io_init(struct imx_spi_dev_t *dev)
 	default:
 		break;
 	}
-	return 0;
+	return;
 }
 #endif
 
@@ -945,8 +945,7 @@ int setup_gpmi_nand(void)
 	unsigned int reg;
 
 	/* config gpmi nand iomux */
-		if (mx6_chip_is_dq()) {
-{
+	if (mx6_chip_is_dq())
 		mxc_iomux_v3_setup_multiple_pads(nfc_pads_qd, ARRAY_SIZE(nfc_pads_qd));
 	else
 		mxc_iomux_v3_setup_multiple_pads(nfc_pads_dl, ARRAY_SIZE(nfc_pads_dl));
