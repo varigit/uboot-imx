@@ -401,10 +401,10 @@ unsigned int *sdram_global;
 	}
 
 	sdram_global =  (u32 *)0x917000;
-	if (*sdram_global  > sdram_size) sdram_size = *sdram_global;
+	if (*sdram_global  > sdram_size) sdram_size = 3588;	//Android limitation 3.5GB.;
 
 	do {
-		if (sdram_size == 3840) break;
+		if (sdram_size > 3000) break;
 		port2 = (unsigned int volatile *) (PHYS_SDRAM_1 + ((sdram_size * 1024 * 1024) / 2));
 
 		*port2 = 0;				// write zero to start of second half of memory.
