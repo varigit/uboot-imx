@@ -235,13 +235,13 @@ unsigned int *sdram_global;
 			break;
 		case 0x00000047:
 			sdram_size = 2048;
-			sdram_global =  (u32 *)0x917000;
 			break;
 		case 0x00000087:
 			sdram_size = 3840;
 			break;
 	}
 
+	sdram_global =  (u32 *)0x917000;
 	if (*sdram_global  > sdram_size) sdram_size = *sdram_global;
 
 	do {
