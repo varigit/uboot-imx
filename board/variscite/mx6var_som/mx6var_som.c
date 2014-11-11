@@ -220,6 +220,7 @@ volatile struct mmdc_p_regs *mmdc_p0;
 ulong sdram_size, sdram_cs;
 unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 unsigned int volatile * port2;
+unsigned int *sdram_global;
 
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
 	sdram_cs = mmdc_p0->mdasp;
@@ -234,11 +235,14 @@ unsigned int volatile * port2;
 			break;
 		case 0x00000047:
 			sdram_size = 2048;
+			sdram_global =  (u32 *)0x917000;
 			break;
 		case 0x00000087:
 			sdram_size = 3840;
 			break;
 	}
+
+	if (*sdram_global  > sdram_size) sdram_size = *sdram_global;
 
 	do {
 		if (sdram_size == 3840) break;

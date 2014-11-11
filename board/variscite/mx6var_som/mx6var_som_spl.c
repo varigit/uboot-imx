@@ -836,6 +836,8 @@ u32 spl_boot_device(void)
 {
 	u32 imxtype, cpurev;
 	int i;
+	u32 *sdram_global;
+	
 
 	/* Set global data pointer. */
 	gd = &gdata;
@@ -867,7 +869,8 @@ u32 spl_boot_device(void)
 		ram_size();
 	}
 	printf("Ram size %ld\n", sdram_size);
-
+	sdram_global =  (u32 *)0x917000;
+	*sdram_global = sdram_size;
 	printf("Boot Device: ");
 	switch (get_boot_device()) {
 	case MX6_SD0_BOOT:
