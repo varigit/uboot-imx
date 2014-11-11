@@ -379,6 +379,7 @@ volatile struct mmdc_p_regs *mmdc_p0;
 ulong sdram_size, sdram_cs;
 unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM_1;
 unsigned int volatile * port2;
+unsigned int *sdram_global;
 
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
 	sdram_cs = mmdc_p0->mdasp;
@@ -395,11 +396,15 @@ unsigned int volatile * port2;
 			sdram_size = 2048;
 			break;
 		case 0x00000087:
-			sdram_size = 4096;
+			sdram_size = 3840;
 			break;
 	}
 
+	sdram_global =  (u32 *)0x917000;
+	if (*sdram_global  > sdram_size) sdram_size = *sdram_global;
+
 	do {
+		if (sdram_size == 3840) break;
 		port2 = (unsigned int volatile *) (PHYS_SDRAM_1 + ((sdram_size * 1024 * 1024) / 2));
 
 		*port2 = 0;				// write zero to start of second half of memory.
