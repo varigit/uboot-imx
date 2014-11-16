@@ -76,6 +76,6 @@
 		"netdev=eth0\0"						\
 		"ethprime=FEC0\0"					\
 		"fastboot_dev=mmc0\0"                                   \
-		"fbparts=16m@16m(boot) 32m@32m(recovery) 448m@64m(android_root)\0" \
-		"bootcmd=nand read 0x12800000 0x1000000 0x600000;booti 0x12800000\0"
+		"fbparts=16m@4m(boot) 28m@20m(recovery) 464m@48m(android_root)\0" \
+		"bootcmd=nand read 0x12800000 0x400000 0x1000000;booti 0x12800000\0"
 #endif
