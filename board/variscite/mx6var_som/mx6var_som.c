@@ -65,8 +65,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define I2C3_STEER  IMX_GPIO_NR(5, 4)
 
 #define VAR_SOM_BACKLIGHT_EN    IMX_GPIO_NR(4, 30)
-#define VAR_SOM_SD2_CD          IMX_GPIO_NR(4, 14)
-#define VAR_SOM_SD2_WP          IMX_GPIO_NR(4, 15)
 
 #define VAR_SOM_MIPI_EN         IMX_GPIO_NR(3, 15)
 
@@ -536,8 +534,7 @@ struct fsl_esdhc_cfg usdhc_cfg[1] = {
 
 int board_mmc_getcd(struct mmc *mmc)
 {
-	gpio_direction_input(VAR_SOM_SD2_CD);
-	return !gpio_get_value(VAR_SOM_SD2_CD);
+	return 1;
 }
 
 int board_mmc_init(bd_t *bis)
@@ -1050,20 +1047,15 @@ static const struct boot_mode board_boot_modes[] = {
 
 int checkboard(void)
 {
-//	int rev = var_som_rev();
 	char *s;
 
 	printf("Board: Variscite VAR_SOM_MX6 ");
 
-
 	s = getenv ("var_auto_fdt_file");
 	if (is_mx6q()){
 		printf ("Quad\n");
-		if (s[0] == 'Y'){
-			if (check_1_2G_only())
-				setenv("fdt_file", "imx6q-var-som-4gb-nand.dtb");
-			else
-				setenv("fdt_file", "imx6q-var-som.dtb");
+		if (s[0] == 'Y') {
+			setenv("fdt_file", "imx6q-var-som.dtb");
 		}
 	} else if (is_mx6d()){
 		printf ("Dual\n");
@@ -1076,7 +1068,7 @@ int checkboard(void)
 	} else if (is_mx6solo()){
 		printf ("Solo\n");
 		if (s[0] == 'Y')
-			setenv("fdt_file", "imx6sl-var-som.dtb");
+			setenv("fdt_file", "imx6dl-var-som.dtb");
 	} else printf ("????\n");
 
 	return 0;
