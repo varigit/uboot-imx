@@ -53,7 +53,11 @@
 #include <asm/arch/sys_proto.h>
 #include "asm/arch/mx6_ddr_regs.h"
 
+#include "mx6var_eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
+
+static var_eeprom_config_struct_t *g_var_eeprom_cfg = (var_eeprom_config_struct_t *)0x917004;
 
 #define MX6QDL_SET_PAD(p, q) \
         if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) \
@@ -1048,6 +1052,7 @@ static const struct boot_mode board_boot_modes[] = {
 int checkboard(void)
 {
 	char *s;
+	char *part = (char *)0x917004;
 
 	printf("Board: Variscite VAR_SOM_MX6 ");
 
@@ -1066,9 +1071,15 @@ int checkboard(void)
 		if (s[0] == 'Y')
 			setenv("fdt_file", "imx6dl-var-som.dtb");
 	} else if (is_mx6solo()){
-		printf ("Solo\n");
-		if (s[0] == 'Y')
-			setenv("fdt_file", "imx6dl-var-som.dtb");
+		if (0 == memcmp(part, "VSM-SOLO", 8)){
+			printf ("SOM-Solo\n");
+			if (s[0] == 'Y')
+				setenv("fdt_file", "imx6dl-var-som-solo.dtb");
+		} else {
+			printf ("Solo\n");
+			if (s[0] == 'Y')
+				setenv("fdt_file", "imx6dl-var-som.dtb");
+		}
 	} else printf ("????\n");
 
 	return 0;

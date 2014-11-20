@@ -835,7 +835,6 @@ void spl_board_init(void)
 u32 spl_boot_device(void)
 {
 	u32 imxtype, cpurev;
-	int i;
 	u32 *sdram_global;
 	
 
@@ -871,6 +870,9 @@ u32 spl_boot_device(void)
 	printf("Ram size %ld\n", sdram_size);
 	sdram_global =  (u32 *)0x917000;
 	*sdram_global = sdram_size;
+	sdram_global =  (u32 *)0x917004;
+	memcpy(sdram_global, (char *)g_var_eeprom_cfg.header.part_number,8);
+
 	printf("Boot Device: ");
 	switch (get_boot_device()) {
 	case MX6_SD0_BOOT:
