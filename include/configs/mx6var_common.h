@@ -161,6 +161,7 @@
 	CONFIG_MFG_ENV_SETTINGS \
 	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0"	  \
+	"var_auto_fdt_file=Y\0" \
 	"bootargs=console=" CONFIG_CONSOLE_DEV ",115200 ubi.mtd=3 video=mxcfb1:off "  \
 		"root=ubi0:rootfs rootfstype=ubifs \0"		     \
 	"bootcmd=nand read ${loadaddr} 0x400000 0x600000;"\
