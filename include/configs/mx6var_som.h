@@ -43,7 +43,7 @@
 #if defined(CONFIG_MX6DL)
 #define CONFIG_DEFAULT_FDT_FILE		"imx6dl-var-som.dtb"
 #elif defined(CONFIG_MX6S)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6sl-var-som.dtb"
+#define CONFIG_DEFAULT_FDT_FILE		"imx6dl-var-som.dtb"
 #elif defined(CONFIG_MX6Q)
 #define CONFIG_DEFAULT_FDT_FILE		"imx6q-var-som.dtb"
 #else

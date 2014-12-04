@@ -1049,6 +1049,48 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+static void setup_variscite_touchscreen_type(void)
+{
+#if CONFIG_I2C_MXC
+extern void i2c_set_base_address(u32 i2c_base_addr);
+char buf[256];
+char *bootargs;
+char *mmcargs;
+char *netargs;
+char flag;
+
+	bootargs = getenv ("bootargs");
+	mmcargs = getenv ("mmcargs");
+	netargs = getenv ("netargs");
+
+	i2c_set_bus_num(2);
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+	if (i2c_probe(0x38) == 0)
+		flag = true;
+	else
+		flag = false;
+
+	if ((bootargs != NULL) && flag ){
+		strcpy (buf, bootargs);
+		strcat (buf, " screen_alternate=yes");
+		setenv ("mmcargs", buf);
+	}
+
+	if ((mmcargs != NULL) && flag ){
+		strcpy (buf, mmcargs);
+		strcat (buf, " screen_alternate=yes");
+		setenv ("mmcargs", buf);
+	}
+
+	if ((netargs != NULL) && flag ){
+		strcpy (buf, netargs);
+		strcat (buf, " screen_alternate=yes");
+		setenv ("netargs", buf);
+	}
+
+#endif
+}
+
 int checkboard(void)
 {
 	char *s;
@@ -1081,6 +1123,9 @@ int checkboard(void)
 				setenv("fdt_file", "imx6dl-var-som.dtb");
 		}
 	} else printf ("????\n");
+
+	if (s[0] == 'Y') 
+		setup_variscite_touchscreen_type();
 
 	return 0;
 }

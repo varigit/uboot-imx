@@ -161,12 +161,12 @@
 	CONFIG_MFG_ENV_SETTINGS \
 	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0"	  \
-	"bootargs=console=" CONFIG_CONSOLE_DEV ",115200 ubi.mtd=3 "  \
+	"bootargs=console=" CONFIG_CONSOLE_DEV ",115200 ubi.mtd=3 video=mxcfb1:off "  \
 		"root=ubi0:rootfs rootfstype=ubifs \0"		     \
 	"bootcmd=nand read ${loadaddr} 0x400000 0x600000;"\
 		"nand read ${fdt_addr} 0x3e0000 0x20000;"\
 		"bootm ${loadaddr} - ${fdt_addr}\0"\
-	"netargs=setenv bootargs console=${console},${baudrate} ${smp} " \
+	"netargs=setenv bootargs console=${console},${baudrate} ${smp} video=mxcfb1:off " \
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
@@ -208,7 +208,7 @@
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"smp=" CONFIG_SYS_NOSMP "\0"\
-	"mmcargs=setenv bootargs console=${console},${baudrate} ${smp} " \
+	"mmcargs=setenv bootargs console=${console},${baudrate} ${smp} video=mxcfb1:off " \
 		"root=${mmcroot}\0" \
 	"loadbootscript=" \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
@@ -231,7 +231,7 @@
 		"else " \
 			"bootm; " \
 		"fi;\0" \
-	"netargs=setenv bootargs console=${console},${baudrate} ${smp} " \
+	"netargs=setenv bootargs console=${console},${baudrate} ${smp} video=mxcfb1:off " \
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
