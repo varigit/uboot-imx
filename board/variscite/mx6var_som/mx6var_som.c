@@ -1073,7 +1073,7 @@ char flag;
 	if ((bootargs != NULL) && flag ){
 		strcpy (buf, bootargs);
 		strcat (buf, " screen_alternate=yes");
-		setenv ("mmcargs", buf);
+		setenv ("bootargs", buf);
 	}
 
 	if ((mmcargs != NULL) && flag ){
