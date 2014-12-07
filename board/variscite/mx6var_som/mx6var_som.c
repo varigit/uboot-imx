@@ -391,7 +391,9 @@ static int setup_pmic_voltages(void)
 	unsigned char value, rev_id = 0 ;
 
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
-	if (!i2c_probe(0x8)) {
+	if (i2c_probe(0x8))
+		printf("Failed to probe PMIC error!!!\n");
+	else {
 		if (i2c_read(0x8, 0, 1, &value, 1)) {
 			printf("Read device ID error!\n");
 			return -1;
@@ -478,6 +480,7 @@ static int setup_pmic_voltages(void)
 			return -1;
 		}
 	}
+
 
 	return 0;
 }
@@ -1058,31 +1061,38 @@ char *bootargs;
 char *mmcargs;
 char *netargs;
 char flag;
+int oldbus;
 
-	bootargs = getenv ("bootargs");
-	mmcargs = getenv ("mmcargs");
-	netargs = getenv ("netargs");
-
+	oldbus = i2c_get_bus_num();
 	i2c_set_bus_num(2);
-	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	if (i2c_probe(0x38) == 0)
 		flag = true;
 	else
 		flag = false;
+	i2c_set_bus_num(oldbus);
 
-	if ((bootargs != NULL) && flag ){
+
+	if (flag)
+		printf("Switching to alternate screen\n");
+	else
+		return;
+
+	bootargs = getenv ("bootargs");
+	if (bootargs != NULL){
 		strcpy (buf, bootargs);
 		strcat (buf, " screen_alternate=yes");
 		setenv ("bootargs", buf);
 	}
 
-	if ((mmcargs != NULL) && flag ){
+	mmcargs = getenv ("mmcargs");
+	if (mmcargs != NULL){
 		strcpy (buf, mmcargs);
 		strcat (buf, " screen_alternate=yes");
 		setenv ("mmcargs", buf);
 	}
 
-	if ((netargs != NULL) && flag ){
+	netargs = getenv ("netargs");
+	if (netargs != NULL){
 		strcpy (buf, netargs);
 		strcat (buf, " screen_alternate=yes");
 		setenv ("netargs", buf);
