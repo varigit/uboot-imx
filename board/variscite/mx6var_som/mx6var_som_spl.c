@@ -18,7 +18,9 @@
 #endif
 
 #include "mx6var_eeprom.h"
+void p_udelay(int time);
 
+//#define EEPROM_DEBUG 1
 #define CONFIG_SPL_STACK	0x0091FFB8
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -132,104 +134,41 @@ void sdram_long_test_spl(unsigned int capacity)
 {
 	unsigned int volatile *mem_ptr = (unsigned int *)PHYS_SDRAM;
 	unsigned int volatile *mem_end_ptr = (unsigned int *)((unsigned int)PHYS_SDRAM + (1024*1024*capacity) - 4);
-	bool result = true;
-	unsigned int val;
-	unsigned int fail_cnt = 0;
+	unsigned int volatile mem_size = 1024*1024*capacity;
+	unsigned int val, prev_val, i;
 
 	printf("sdram_long_test() - Writing... mem_ptr=0x%08x mem_end_ptr=0x%08x\n", (unsigned int)mem_ptr, (unsigned int)mem_end_ptr);
 
 	// zero memory
-	memset(mem_ptr, 0x00, (1024*1024*4));
-	memset((void *)0x90000000, 0x00, (1024*1024*4));
+	printf("Testing... mem_ptr=0x%08x data=0x%08x \n", (unsigned int)mem_ptr, 0);
+	memset(mem_ptr, 0x00, mem_size);
 
-	mem_ptr = (unsigned int *)PHYS_SDRAM;
-	while (mem_ptr < mem_end_ptr)
-	{
-		if (0 == ((unsigned int)mem_ptr % 0x1000000))
-		{
-			printf("Writing... mem_ptr=0x%08x\n", (unsigned int)mem_ptr);
+	for (i=0; i<3; i++) {
+		switch (i) {
+			case 0:
+				prev_val =0;val = 0x37373737;
+			break;
+			case 1:
+				prev_val =0x37373737;val =0x73737373 ;
+			break;
+			case 2:
+				prev_val =0x73737373;val = 0;
+			break;
 		}
 
-		val = (unsigned int)mem_ptr;
-
-		if ((0x10000000 == (unsigned int)mem_ptr) || (0x90000000 == (unsigned int)mem_ptr))
+		mem_ptr = (unsigned int *)PHYS_SDRAM;
+		while (mem_ptr < mem_end_ptr)
 		{
-			volatile unsigned int *ptr1 = 0x10000000;
-			volatile unsigned int *ptr2 = 0x90000000;
-			printf("*ptr1<0x%x>=0x%x, *ptr2<0x%x>=0x%x\n", (unsigned int)ptr1, *ptr1, (unsigned int)ptr2, *ptr2);
-		}
-
-		/* Write to memory */
-		*mem_ptr = val;
-
-		if ((0x10000000 == (unsigned int)mem_ptr) || (0x90000000 == (unsigned int)mem_ptr))
-		{
-			volatile unsigned int *ptr1 = 0x10000000;
-			volatile unsigned int *ptr2 = 0x90000000;
-			printf("*ptr1<0x%x>=0x%x, *ptr2<0x%x>=0x%x\n", (unsigned int)ptr1, *ptr1, (unsigned int)ptr2, *ptr2);
-		}
-
-		mem_ptr++;
-	}
-	
-	mem_ptr = (unsigned int *)PHYS_SDRAM;
-	printf("sdram_long_test() - Reading and comparing... mem_ptr=0x%08x mem_end_ptr=0x%08x\n", (unsigned int)mem_ptr, (unsigned int)mem_end_ptr);
-	while (mem_ptr < mem_end_ptr)
-	{
-		if (0 == ((unsigned int)mem_ptr % 0x1000000))
-		{
-			printf("Reading... mem_ptr=0x%08x\n", (unsigned int)mem_ptr);
-		}
-
-		val = (unsigned int)mem_ptr;
-
-		/* Read from memory and compare... */
-		if (val != *mem_ptr)
-		{
-			fail_cnt++;
-			result = false;
 			if (0 == ((unsigned int)mem_ptr % 0x1000000))
-			{
-				printf("Test failure: val != *mem_ptr: mem_ptr=0x%x, val=0x%x, *mem_ptr=0x%x\n", (unsigned int)mem_ptr, val, *mem_ptr);
-			}
-		}
+				printf("Testing... mem_ptr=0x%08x data=0x%08x \n", (unsigned int)mem_ptr, val);
 
-		mem_ptr++;
+			if (prev_val != *mem_ptr)
+				printf("Address <0x%x> excpected 0x%x found 0x%x\n", (unsigned int)mem_ptr, prev_val, *mem_ptr);
+
+			*mem_ptr = val;
+			mem_ptr++;
+		}
 	}
-	printf("sdram_long_test() - Finished! Result=%d, fail_cnt=%d\n", result, fail_cnt);
-}
-static void sdram_test(unsigned int capacity)
-{
-	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
-	unsigned int volatile * port2;
-	unsigned int sdram_size_temp;
-	volatile struct mmdc_p_regs *mmdc_p0;
-	ulong sdram_cs;
-
-	sdram_size_temp = capacity;
-
-	do {
-		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size_temp * 1024 * 1024) / 2));
-
-		*port2 = 0;				// write zero to start of second half of memory.
-		*port1 = 0x3f3f3f3f;	// write pattern to start of memory.
-
-		printf("sdram_test(): sdram_size_temp=%d, *port1=0x%x, *port2=0x%x\n", sdram_size_temp, *port1, *port2);
-
-		if ((0x3f3f3f3f == *port2) && (sdram_size_temp > 512))
-		{
-			sdram_size_temp = sdram_size_temp / 2;	// Next step devide size by half
-		}
-		else
-		{
-			if (0 == *port2)		// Done actual size found.
-				break;
-		}
-
-		printf("sdram_test(): detecting... sdram_size_temp=%d\n", sdram_size_temp);
-	} while (sdram_size_temp > 512);
-
-	printf("sdram_test(): Detected sdram_size=%d\n", sdram_size_temp);
 }
 #endif
 
@@ -713,9 +652,11 @@ static void legacy_spl_dram_init(void)
 		spl_dram_init_mx6solo_1gb();
 		ram_size();
 		if (sdram_size == 512){
+			p_udelay(1000);
 			reset_ddr_solo();
 			spl_mx6dlsl_dram_setup_iomux();
 			spl_dram_init_mx6solo_512mb();
+			p_udelay(1000);
 		}
 		break;
 	case MXC_CPU_MX6Q:
@@ -860,7 +801,6 @@ u32 spl_boot_device(void)
 		var_eeprom_strings_print(&g_var_eeprom_cfg);
 #ifdef EEPROM_DEBUG
 		/* Test SDRAM size... */
-		sdram_test(sdram_size);
 		sdram_long_test_spl(sdram_size);
 #endif
 	} else {
