@@ -990,10 +990,28 @@ int board_eth_init(bd_t *bis)
  * Last element in struct is used to indicate 1.8V support.
  */
 struct fsl_esdhc_cfg usdhc_cfg[4] = {
-	{USDHC1_BASE_ADDR, 1, 1, 1, 0},
 	{USDHC2_BASE_ADDR, 1, 1, 1, 0},
+	{USDHC1_BASE_ADDR, 1, 1, 1, 0},
 	{USDHC3_BASE_ADDR, 1, 1, 1, 0},
 	{USDHC4_BASE_ADDR, 1, 1, 1, 0},
+};
+
+iomux_v3_cfg_t usdhc1_pads_qd[] = {
+	MX6Q_PAD_SD1_CLK__USDHC1_CLK,
+	MX6Q_PAD_SD1_CMD__USDHC1_CMD,
+	MX6Q_PAD_SD1_DAT0__USDHC1_DAT0,
+	MX6Q_PAD_SD1_DAT1__USDHC1_DAT1,
+	MX6Q_PAD_SD1_DAT2__USDHC1_DAT2,
+	MX6Q_PAD_SD1_DAT3__USDHC1_DAT3,
+};
+
+iomux_v3_cfg_t usdhc1_pads_dl[] = {
+	MX6DL_PAD_SD1_CLK__USDHC1_CLK,
+	MX6DL_PAD_SD1_CMD__USDHC1_CMD,
+	MX6DL_PAD_SD1_DAT0__USDHC1_DAT0,
+	MX6DL_PAD_SD1_DAT1__USDHC1_DAT1,
+	MX6DL_PAD_SD1_DAT2__USDHC1_DAT2,
+	MX6DL_PAD_SD1_DAT3__USDHC1_DAT3,
 };
 
 iomux_v3_cfg_t usdhc2_pads_qd[] = {
@@ -1014,6 +1032,19 @@ iomux_v3_cfg_t usdhc2_pads_dl[] = {
 	MX6DL_PAD_SD2_DAT3__USDHC2_DAT3,
 };
 
+
+#define USDHC_PAD_CTRL_DEFAULT (PAD_CTL_PKE | PAD_CTL_PUE |		\
+		PAD_CTL_PUS_47K_UP  | PAD_CTL_SPEED_LOW |		\
+		PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
+
+#define USDHC_PAD_CTRL_100MHZ (PAD_CTL_PKE | PAD_CTL_PUE |	\
+		PAD_CTL_PUS_47K_UP  | PAD_CTL_SPEED_MED |		\
+		PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
+
+#define USDHC_PAD_CTRL_200MHZ (PAD_CTL_PKE | PAD_CTL_PUE |	\
+		PAD_CTL_PUS_47K_UP  | PAD_CTL_SPEED_HIGH |		\
+		PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST   | PAD_CTL_HYS)
+
 int usdhc_gpio_init(bd_t *bis)
 {
 	s32 status = 0;
@@ -1022,14 +1053,20 @@ int usdhc_gpio_init(bd_t *bis)
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM;
 		++index) {
 		switch (index) {
-		case 0:
-			break;
-		case 1:
+		case 0:		//sdcard
 			if (mx6_chip_is_dq())
 
 				mxc_iomux_v3_setup_multiple_pads(usdhc2_pads_qd,sizeof(usdhc2_pads_qd) / sizeof(usdhc2_pads_qd[0]));
 			else
 				mxc_iomux_v3_setup_multiple_pads(usdhc2_pads_dl,sizeof(usdhc2_pads_dl) / sizeof(usdhc2_pads_dl[0]));
+			status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
+			break;
+		case 1:		//eMMC
+			if (mx6_chip_is_dq())
+
+				mxc_iomux_v3_setup_multiple_pads(usdhc1_pads_qd,sizeof(usdhc1_pads_qd) / sizeof(usdhc1_pads_qd[0]));
+			else
+				mxc_iomux_v3_setup_multiple_pads(usdhc1_pads_dl,sizeof(usdhc1_pads_dl) / sizeof(usdhc1_pads_dl[0]));
 			status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
 			break;
 		case 2:
@@ -1045,6 +1082,63 @@ int usdhc_gpio_init(bd_t *bis)
 	}
 
 	return status;
+}
+
+static void usdhc_switch_pad(iomux_v3_cfg_t *pad_list, unsigned count,
+	iomux_v3_cfg_t *new_pad_list, iomux_v3_cfg_t pad_val)
+{
+	u32 i;
+
+	for (i = 0; i < count; i++) {
+		new_pad_list[i] = pad_list[i] & (~MUX_PAD_CTRL_MASK);
+		new_pad_list[i] |= MUX_PAD_CTRL(pad_val);
+	}
+}
+
+int board_mmc_io_switch(u32 index, u32 clock)
+{
+	iomux_v3_cfg_t new_pads[14];
+	u32 count;
+	iomux_v3_cfg_t pad_ctrl = USDHC_PAD_CTRL_DEFAULT;
+
+	if (clock >= 200000000)
+		pad_ctrl = USDHC_PAD_CTRL_200MHZ;
+	else if (clock == 100000000)
+		pad_ctrl = USDHC_PAD_CTRL_100MHZ;
+
+	switch (index) {
+	case 0:
+		if (mx6_chip_is_dq()) {
+			count = sizeof(usdhc2_pads_qd) / sizeof(usdhc2_pads_qd[0]);
+			usdhc_switch_pad(usdhc2_pads_qd, count, new_pads, pad_ctrl);
+		} else {
+			count = sizeof(usdhc2_pads_dl) / sizeof(usdhc2_pads_dl[0]);
+			usdhc_switch_pad(usdhc2_pads_dl, count, new_pads, pad_ctrl);
+		}
+		break;
+	case 1:
+		if (mx6_chip_is_dq()) {
+			count = sizeof(usdhc1_pads_qd) / sizeof(usdhc1_pads_qd[0]);
+			usdhc_switch_pad(usdhc1_pads_qd, count, new_pads, pad_ctrl);
+		} else {
+			count = sizeof(usdhc1_pads_dl) / sizeof(usdhc1_pads_dl[0]);
+			usdhc_switch_pad(usdhc1_pads_dl, count, new_pads, pad_ctrl);
+		}
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	default:
+		printf("Warning: you configured more USDHC controllers"
+			"(%d) then supported by the board (%d)\n",
+			index+1, CONFIG_SYS_FSL_USDHC_NUM);
+		return -1;
+	}
+
+	mxc_iomux_v3_setup_multiple_pads(new_pads, count);
+
+	return 0;
 }
 
 int board_mmc_init(bd_t *bis)
