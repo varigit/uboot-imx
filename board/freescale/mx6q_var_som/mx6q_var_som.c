@@ -990,8 +990,8 @@ int board_eth_init(bd_t *bis)
  * Last element in struct is used to indicate 1.8V support.
  */
 struct fsl_esdhc_cfg usdhc_cfg[4] = {
-	{USDHC2_BASE_ADDR, 1, 1, 1, 0},
 	{USDHC1_BASE_ADDR, 1, 1, 1, 0},
+	{USDHC2_BASE_ADDR, 1, 1, 1, 0},
 	{USDHC3_BASE_ADDR, 1, 1, 1, 0},
 	{USDHC4_BASE_ADDR, 1, 1, 1, 0},
 };
@@ -1053,20 +1053,20 @@ int usdhc_gpio_init(bd_t *bis)
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM;
 		++index) {
 		switch (index) {
-		case 0:		//sdcard
-			if (mx6_chip_is_dq())
-
-				mxc_iomux_v3_setup_multiple_pads(usdhc2_pads_qd,sizeof(usdhc2_pads_qd) / sizeof(usdhc2_pads_qd[0]));
-			else
-				mxc_iomux_v3_setup_multiple_pads(usdhc2_pads_dl,sizeof(usdhc2_pads_dl) / sizeof(usdhc2_pads_dl[0]));
-			status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
-			break;
-		case 1:		//eMMC
+		case 0:		//eMMC
 			if (mx6_chip_is_dq())
 
 				mxc_iomux_v3_setup_multiple_pads(usdhc1_pads_qd,sizeof(usdhc1_pads_qd) / sizeof(usdhc1_pads_qd[0]));
 			else
 				mxc_iomux_v3_setup_multiple_pads(usdhc1_pads_dl,sizeof(usdhc1_pads_dl) / sizeof(usdhc1_pads_dl[0]));
+			status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
+			break;
+		case 1:		//sdcard
+			if (mx6_chip_is_dq())
+
+				mxc_iomux_v3_setup_multiple_pads(usdhc2_pads_qd,sizeof(usdhc2_pads_qd) / sizeof(usdhc2_pads_qd[0]));
+			else
+				mxc_iomux_v3_setup_multiple_pads(usdhc2_pads_dl,sizeof(usdhc2_pads_dl) / sizeof(usdhc2_pads_dl[0]));
 			status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
 			break;
 		case 2:
