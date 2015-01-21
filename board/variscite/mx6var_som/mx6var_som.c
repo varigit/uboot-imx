@@ -892,6 +892,7 @@ int board_early_init_f(void)
 int board_init(void)
 {
 	int ret;
+	char *part = (char *)0x917004;
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
@@ -900,7 +901,8 @@ int board_init(void)
 #ifdef CONFIG_I2C_MXC
 #if  !defined(CONFIG_SPL_BUILD)
 	setup_local_i2c();
-	ret = setup_pmic_voltages();
+	if (0 != memcmp(part, "VSM-SOLO", 8))
+		ret = setup_pmic_voltages();
 	if (ret)
 		return -1;
 #endif /* !defined(CONFIG_SPL_BUILD) */

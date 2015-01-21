@@ -794,7 +794,6 @@ u32 spl_boot_device(void)
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
 	printf("i.MX%s SOC ", get_imx_type(imxtype));
-	printf("PMIC\n");
 
 	if (spl_status ==SPL_DRAM_INIT_STATUS_OK	) {
 		printf("DDR EEPROM configuration\n");
