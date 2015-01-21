@@ -423,8 +423,9 @@ static void setup_iomux_uart(void)
 }
 
 #ifdef CONFIG_FSL_ESDHC
-struct fsl_esdhc_cfg usdhc_cfg[1] = {
+struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC2_BASE_ADDR},
+	{USDHC1_BASE_ADDR},
 };
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -434,6 +435,9 @@ int board_mmc_getcd(struct mmc *mmc)
 
 int board_mmc_init(bd_t *bis)
 {
+	s32 status = 0;
+
+	/* sdcard */
 	MX6QDL_SET_PAD(PAD_SD2_CLK__USDHC2_CLK	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
 	MX6QDL_SET_PAD(PAD_SD2_CMD__USDHC2_CMD	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
 	MX6QDL_SET_PAD(PAD_SD2_DAT0__USDHC2_DAT0	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
@@ -442,7 +446,22 @@ int board_mmc_init(bd_t *bis)
 	MX6QDL_SET_PAD(PAD_SD2_DAT3__USDHC2_DAT3	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
 
 	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-	return fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
+	usdhc_cfg[0].max_bus_width = 4;
+	status |= fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
+
+	/* eMMC */
+	MX6QDL_SET_PAD(PAD_SD1_CLK__USDHC1_CLK	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD1_CMD__USDHC1_CMD	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD1_DAT0__USDHC1_DAT0	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD1_DAT1__USDHC1_DAT1	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD1_DAT2__USDHC1_DAT2	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD1_DAT3__USDHC1_DAT3	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+
+	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+	usdhc_cfg[1].max_bus_width = 4;
+	status |= fsl_esdhc_initialize(bis, &usdhc_cfg[1]);
+
+	return status;
 }
 #endif
 
