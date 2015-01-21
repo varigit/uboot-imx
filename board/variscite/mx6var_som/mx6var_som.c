@@ -60,8 +60,6 @@
 #endif
 DECLARE_GLOBAL_DATA_PTR;
 
-static var_eeprom_config_struct_t *g_var_eeprom_cfg = (var_eeprom_config_struct_t *)0x917004;
-
 #define MX6QDL_SET_PAD(p, q) \
         if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) \
                 imx_iomux_v3_setup_pad(MX6Q_##p | q);\
@@ -840,6 +838,21 @@ int board_eth_init(bd_t *bis)
 	return 0;
 }
 
+static char is_som_solo(void){
+int oldbus;
+char flag;
+
+	oldbus = i2c_get_bus_num();
+	i2c_set_bus_num(0);
+
+	if (i2c_probe(0x8))
+		flag = true;
+	else
+		flag = false;
+	i2c_set_bus_num(oldbus);
+
+	return flag;
+}
 
 
 static int var_som_rev(void)
@@ -892,7 +905,6 @@ int board_early_init_f(void)
 int board_init(void)
 {
 	int ret;
-	char *part = (char *)0x917004;
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
@@ -901,7 +913,7 @@ int board_init(void)
 #ifdef CONFIG_I2C_MXC
 #if  !defined(CONFIG_SPL_BUILD)
 	setup_local_i2c();
-	if (0 != memcmp(part, "VSM-SOLO", 8))
+	if (!is_som_solo())
 		ret = setup_pmic_voltages();
 	if (ret)
 		return -1;
@@ -919,6 +931,23 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+
+static char is_solo_custom_board(void){
+int oldbus;
+char flag;
+
+	oldbus = i2c_get_bus_num();
+	i2c_set_bus_num(0);
+	if (i2c_probe(0x51) == 0)
+		flag = true;
+	else
+		flag = false;
+	i2c_set_bus_num(oldbus);
+
+	return flag;
+}
+
+
 static void setup_variscite_touchscreen_type(void)
 {
 #if CONFIG_I2C_MXC
@@ -929,6 +958,9 @@ char *mmcargs;
 char *netargs;
 char flag;
 int oldbus;
+
+	if (is_solo_custom_board())
+		return;
 
 	oldbus = i2c_get_bus_num();
 	i2c_set_bus_num(2);
@@ -945,6 +977,8 @@ int oldbus;
 		return;
 
 	bootargs = getenv ("bootargs");
+	if (NULL != strstr(bootargs, "screen_alternate=yes")) return;
+
 	if (bootargs != NULL){
 		strcpy (buf, bootargs);
 		strcat (buf, " screen_alternate=yes");
@@ -952,6 +986,7 @@ int oldbus;
 	}
 
 	mmcargs = getenv ("mmcargs");
+	if (NULL != strstr(mmcargs, "screen_alternate=yes")) return;
 	if (mmcargs != NULL){
 		strcpy (buf, mmcargs);
 		strcat (buf, " screen_alternate=yes");
@@ -959,6 +994,7 @@ int oldbus;
 	}
 
 	netargs = getenv ("netargs");
+	if (NULL != strstr(netargs, "screen_alternate=yes")) return;
 	if (netargs != NULL){
 		strcpy (buf, netargs);
 		strcat (buf, " screen_alternate=yes");
@@ -971,7 +1007,6 @@ int oldbus;
 int checkboard(void)
 {
 	char *s;
-	char *part = (char *)0x917004;
 
 	printf("Board: Variscite VAR_SOM_MX6 ");
 
@@ -990,10 +1025,13 @@ int checkboard(void)
 		if (s[0] == 'Y')
 			setenv("fdt_file", "imx6dl-var-som.dtb");
 	} else if (is_mx6solo()){
-		if (0 == memcmp(part, "VSM-SOLO", 8)){
+		if (is_som_solo()){
 			printf ("SOM-Solo\n");
 			if (s[0] == 'Y')
-				setenv("fdt_file", "imx6dl-var-som-solo.dtb");
+				if (is_solo_custom_board())
+					setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
+				else
+					setenv("fdt_file", "imx6dl-var-som-solo.dtb");
 		} else {
 			printf ("Solo\n");
 			if (s[0] == 'Y')
