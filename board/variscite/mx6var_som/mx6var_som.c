@@ -186,6 +186,9 @@ unsigned int *sdram_global;
 	sdram_size = 1024;
 
 	switch(sdram_cs) {
+	        case 0x0000000f:
+	            sdram_size = 256;
+	            break;
 		case 0x00000017:
 			sdram_size = 512;
 			break;
@@ -198,6 +201,8 @@ unsigned int *sdram_global;
 		case 0x00000087:
 			sdram_size = 3840;
 			break;
+	        default:
+			sdram_size = 1024;
 	}
 
 	sdram_global =  (u32 *)0x917000;
@@ -210,14 +215,14 @@ unsigned int *sdram_global;
 		*port2 = 0;				// write zero to start of second half of memory.
 		*port1 = 0x3f3f3f3f;	// write pattern to start of memory.
 
-		if ((0x3f3f3f3f == *port2) && (sdram_size > 512))
+		if ((0x3f3f3f3f == *port2) && (sdram_size > 256))
 			sdram_size = sdram_size / 2;	// Next step devide size by half
 		else
 
 		if (0 == *port2)		// Done actual size found.
 			break;
 
-	} while (sdram_size > 512);
+	} while (sdram_size > 256);
 
 	gd->ram_size = ((ulong)sdram_size * 1024 * 1024);
 
