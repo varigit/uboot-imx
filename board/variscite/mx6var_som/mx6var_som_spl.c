@@ -185,6 +185,22 @@ static void reset_ddr_solo(void){
 		conack = (mmdc_p0->mdscr & 0x4000);
 	} while (conack == 0);
 }
+/*
+ * Bugfix: Fix Freescale wrong processor documentation.
+ */
+static void spl_mx6qd_dram_setup_iomux_check_reset(void)
+{
+	volatile struct mx6qd_iomux_ddr_regs *mx6q_ddr_iomux;
+	volatile struct mx6qd_iomux_grp_regs *mx6q_grp_iomux;
+
+	mx6q_ddr_iomux = (struct mx6dqd_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
+	mx6q_grp_iomux = (struct mx6dqd_iomux_grp_regs *) MX6DQ_IOM_GRP_BASE;
+
+	if (mx6q_ddr_iomux->dram_reset == (u32)0x000C0030)
+		mx6q_ddr_iomux->dram_reset 		= (u32)0x00000030;
+		
+}
+
 
 static void spl_mx6qd_dram_setup_iomux(void)
 {
@@ -194,21 +210,21 @@ static void spl_mx6qd_dram_setup_iomux(void)
 	mx6q_ddr_iomux = (struct mx6dqd_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
 	mx6q_grp_iomux = (struct mx6dqd_iomux_grp_regs *) MX6DQ_IOM_GRP_BASE;
 
-	mx6q_grp_iomux->grp_ddr_type 	= (u32)0x000c0000;
+	mx6q_grp_iomux->grp_ddr_type 		= (u32)0x000c0000;
 	mx6q_grp_iomux->grp_ddrpke 		= (u32)0x00000000;
-	mx6q_ddr_iomux->dram_sdclk_0 	= (u32)0x00000030;
-	mx6q_ddr_iomux->dram_sdclk_1 	= (u32)0x00000030;
+	mx6q_ddr_iomux->dram_sdclk_0 		= (u32)0x00000030;
+	mx6q_ddr_iomux->dram_sdclk_1 		= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_cas 		= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_ras 		= (u32)0x00000030;
 	mx6q_grp_iomux->grp_addds 		= (u32)0x00000030;
-	mx6q_ddr_iomux->dram_reset 		= (u32)0x000c0030;
-	mx6q_ddr_iomux->dram_sdcke0 	= (u32)0x00003000;
-	mx6q_ddr_iomux->dram_sdcke1 	= (u32)0x00003000;
+	mx6q_ddr_iomux->dram_reset 		= (u32)0x00000030;
+	mx6q_ddr_iomux->dram_sdcke0 		= (u32)0x00003000;
+	mx6q_ddr_iomux->dram_sdcke1 		= (u32)0x00003000;
 	mx6q_ddr_iomux->dram_sdba2 		= (u32)0x00000000;
-	mx6q_ddr_iomux->dram_sdodt0 	= (u32)0x00003030;
-	mx6q_ddr_iomux->dram_sdodt1 	= (u32)0x00003030;
+	mx6q_ddr_iomux->dram_sdodt0 		= (u32)0x00003030;
+	mx6q_ddr_iomux->dram_sdodt1 		= (u32)0x00003030;
 	mx6q_grp_iomux->grp_ctlds 		= (u32)0x00000030;
-	mx6q_grp_iomux->grp_ddrmode_ctl = (u32)0x00020000;
+	mx6q_grp_iomux->grp_ddrmode_ctl 	= (u32)0x00020000;
 	mx6q_ddr_iomux->dram_sdqs0 		= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_sdqs1 		= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_sdqs2 		= (u32)0x00000030;
@@ -217,7 +233,7 @@ static void spl_mx6qd_dram_setup_iomux(void)
 	mx6q_ddr_iomux->dram_sdqs5 		= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_sdqs6 		= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_sdqs7 		= (u32)0x00000030;
-	mx6q_grp_iomux->grp_ddrmode 	= (u32)0x00020000;
+	mx6q_grp_iomux->grp_ddrmode 		= (u32)0x00020000;
 	mx6q_grp_iomux->grp_b0ds 		= (u32)0x00000030;
 	mx6q_grp_iomux->grp_b1ds 		= (u32)0x00000030;
 	mx6q_grp_iomux->grp_b2ds 		= (u32)0x00000030;
@@ -741,6 +757,7 @@ void board_dram_init(void)
 	{
 	 	legacy_spl_dram_init();
 	}
+	 spl_mx6qd_dram_setup_iomux_check_reset();
 }
 
 /* 
@@ -809,7 +826,6 @@ u32 spl_boot_device(void)
 	printf("Ram size %ld\n", sdram_size);
 	sdram_global =  (u32 *)0x917000;
 	*sdram_global = sdram_size;
-
 	printf("Boot Device: ");
 	switch (get_boot_device()) {
 	case MX6_SD0_BOOT:
