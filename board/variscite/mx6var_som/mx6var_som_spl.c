@@ -192,13 +192,19 @@ static void spl_mx6qd_dram_setup_iomux_check_reset(void)
 {
 	volatile struct mx6qd_iomux_ddr_regs *mx6q_ddr_iomux;
 	volatile struct mx6qd_iomux_grp_regs *mx6q_grp_iomux;
+	u32 cpurev, imxtype;
 
-	mx6q_ddr_iomux = (struct mx6dqd_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
-	mx6q_grp_iomux = (struct mx6dqd_iomux_grp_regs *) MX6DQ_IOM_GRP_BASE;
+	cpurev = get_cpu_rev();
+	imxtype = (cpurev & 0xFF000) >> 12;
+	get_imx_type(imxtype);
 
-	if (mx6q_ddr_iomux->dram_reset == (u32)0x000C0030)
-		mx6q_ddr_iomux->dram_reset 		= (u32)0x00000030;
-		
+	if ((imxtype == MXC_CPU_MX6D) || (imxtype == MXC_CPU_MX6Q)){
+		mx6q_ddr_iomux = (struct mx6dqd_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
+		mx6q_grp_iomux = (struct mx6dqd_iomux_grp_regs *) MX6DQ_IOM_GRP_BASE;
+	
+		if (mx6q_ddr_iomux->dram_reset == (u32)0x000C0030)
+			mx6q_ddr_iomux->dram_reset = (u32)0x00000030;
+	}
 }
 
 
