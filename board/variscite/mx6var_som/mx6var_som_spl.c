@@ -113,6 +113,7 @@ ulong sdram_cs;
 			break;
 	}
 
+	printf("Ram Size In %d\n", sdram_size);
 	do {
 		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
 
@@ -127,6 +128,9 @@ ulong sdram_cs;
 			break;
 
 	} while (sdram_size > 512);
+
+	printf("Ram Size Out %d\n", sdram_size);
+
 }
 
 #ifdef EEPROM_DEBUG
@@ -656,6 +660,22 @@ static void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mdscr 			= (u32)0x00000000;
 }
 
+static char is_som_solo(void){
+int oldbus;
+char flag;
+
+	oldbus = i2c_get_bus_num();
+	i2c_set_bus_num(1);
+
+	if (i2c_probe(0x8))
+		flag = true;
+	else
+		flag = false;
+	i2c_set_bus_num(oldbus);
+
+	return flag;
+}
+
 /* 
  * First phase ddr init. Use legacy autodetect
  */
@@ -697,7 +717,10 @@ static void legacy_spl_dram_init(void)
 	case MXC_CPU_MX6DL:
 	default:
 		spl_mx6dlsl_dram_setup_iomux();
-		spl_dram_init_mx6dl_1g();
+		if (is_som_solo())
+			spl_dram_init_mx6solo_1gb();
+		else
+ 			spl_dram_init_mx6dl_1g();
 		ram_size();
 		break;	
 	}

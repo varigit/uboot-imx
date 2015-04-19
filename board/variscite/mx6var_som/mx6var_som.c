@@ -1026,9 +1026,18 @@ int checkboard(void)
 		if (s[0] == 'Y')
 			setenv("fdt_file", "imx6q-var-som.dtb");
 	}else if (is_mx6dl()) {
+		if (is_som_solo()){
+			printf ("SOM-Dual\n");
+			if (s[0] == 'Y')
+				if (is_solo_custom_board())
+					setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
+				else
+					setenv("fdt_file", "imx6dl-var-som-solo.dtb");
+		} else {
 		printf ("Dual Lite\n");
 		if (s[0] == 'Y')
 			setenv("fdt_file", "imx6dl-var-som.dtb");
+		}
 	} else if (is_mx6solo()){
 		if (is_som_solo()){
 			printf ("SOM-Solo\n");
