@@ -22,9 +22,11 @@ struct mmdc_p_regs {
 	u32 mdref;
 	u32 res1[2];
 	u32 mdrwd;
-	u32 mdor;
-	u32 res2[3];
-	u32 mdasp;
+	u32 mdor;	//30
+	u32 res2[1];	//34
+	u32 mdcfg3lp;	//38
+	u32 res2_1[1];	//3C
+	u32 mdasp;	//40
 	u32 res3[240];
 	u32 mapsr;
 	u32 res4[254];
@@ -38,7 +40,10 @@ struct mmdc_p_regs {
 	u32 mprddqby1dl;
 	u32 mprddqby2dl;
 	u32 mprddqby3dl;
-	u32 res7[4];
+	u32 mprddqby0dls;
+	u32 mprddqby1dls;
+	u32 mprddqby2dls;
+	u32 mprddqby3dls;
 	u32 mpdgctrl0;
 	u32 mpdgctrl1;
 	u32 res8;

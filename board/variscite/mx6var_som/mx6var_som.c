@@ -174,6 +174,18 @@ void p_udelay(int time)
 	}
 }
 
+
+static inline uint get_mmc_boot_device(void)
+{
+	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	uint bt_mem_ctl = (soc_sbmr & 0x000000FF) >> 4 ;
+	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
+	uint bt_mem_mmc = (soc_sbmr & 0x00001000) >> 12;
+
+	return bt_mem_ctl;
+}
+
+
 int dram_init(void){
 volatile struct mmdc_p_regs *mmdc_p0;
 ulong sdram_size, sdram_cs;
@@ -203,6 +215,12 @@ unsigned int *sdram_global;
 			break;
 	        default:
 			sdram_size = 1024;
+	}
+
+	if (is_cpu_pop_package()){
+		sdram_size = 1024;
+		gd->ram_size = ((ulong)sdram_size * 1024 * 1024);
+		return 0;
 	}
 
 	sdram_global =  (u32 *)0x917000;
@@ -286,6 +304,7 @@ static int setup_pmic_voltages(void)
 {
 	unsigned char value, rev_id = 0 ;
 
+
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	if (i2c_probe(0x8))
 		printf("Failed to probe PMIC error!!!\n");
@@ -305,75 +324,211 @@ static int setup_pmic_voltages(void)
 		*VGEN3 for camera 2.8V power supply
 		*/
 
-		/* Set Gigbit Ethernet voltage (SOM v1.1/1.0)*/
-		value = 0x60;
-		if (i2c_write(0x8, 0x4a, 1, &value, 1)) {
-			printf("Set Gigabit Ethernet voltage error!\n");
-			return -1;
-		}
+		if (!is_cpu_pop_package()){
+			/* Set Gigbit Ethernet voltage (SOM v1.1/1.0)*/
+			value = 0x60;
+			if (i2c_write(0x8, 0x4a, 1, &value, 1)) {
+				printf("Set Gigabit Ethernet voltage error!\n");
+				return -1;
+			}
 
-		/*set VGEN3 to 2.5V*/
-		value = 0x77;
-		if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
-			printf("Set VGEN3 error!\n");
-			return -1;
-		}
-		/*increase VGEN5 from 2.8 to 3V*/
-		if (i2c_read(0x8, 0x70, 1, &value, 1)) {
-			printf("Read VGEN5 error!\n");
-			return -1;
-		}
-		value &= ~0xf;
-		value |= 0xc;
-		if (i2c_write(0x8, 0x70, 1, &value, 1)) {
-			printf("Set VGEN5 error!\n");
-			return -1;
-		}
-		/* set SW1AB staby volatage 0.975V*/
-		if (i2c_read(0x8, 0x21, 1, &value, 1)) {
-			printf("Read SW1ABSTBY error!\n");
-			return -1;
-		}
-		value &= ~0x3f;
-		value |= 0x1b;
-		if (i2c_write(0x8, 0x21, 1, &value, 1)) {
-			printf("Set SW1ABSTBY error!\n");
-			return -1;
-		}
-		/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
-		if (i2c_read(0x8, 0x24, 1, &value, 1)) {
-			printf("Read SW1ABSTBY error!\n");
-			return -1;
-		}
-		value &= ~0xc0;
-		value |= 0x40;
-		if (i2c_write(0x8, 0x24, 1, &value, 1)) {
-			printf("Set SW1ABSTBY error!\n");
-			return -1;
-		}
+			/*set VGEN3 to 2.5V*/
+			value = 0x77;
+			if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
+				printf("Set VGEN3 error!\n");
+				return -1;
+			}
+			/*increase VGEN5 from 2.8 to 3V*/
+			if (i2c_read(0x8, 0x70, 1, &value, 1)) {
+				printf("Read VGEN5 error!\n");
+				return -1;
+			}
+			value &= ~0xf;
+			value |= 0xc;
+			if (i2c_write(0x8, 0x70, 1, &value, 1)) {
+				printf("Set VGEN5 error!\n");
+				return -1;
+			}
+			/* set SW1AB staby volatage 0.975V*/
+			if (i2c_read(0x8, 0x21, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x1b;
+			if (i2c_write(0x8, 0x21, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+			/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x24, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x24, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
 
-		/* set SW1C staby volatage 0.975V*/
-		if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
-			printf("Read SW1CSTBY error!\n");
-			return -1;
-		}
-		value &= ~0x3f;
-		value |= 0x1b;
-		if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
-			printf("Set SW1CSTBY error!\n");
-			return -1;
-		}
+			/* set SW1C staby volatage 0.975V*/
+			if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
+				printf("Read SW1CSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x1b;
+			if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
+				printf("Set SW1CSTBY error!\n");
+				return -1;
+			}
 
-		/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
-		if (i2c_read(0x8, 0x32, 1, &value, 1)) {
-			printf("Read SW1ABSTBY error!\n");
-			return -1;
-		}
-		value &= ~0xc0;
-		value |= 0x40;
-		if (i2c_write(0x8, 0x32, 1, &value, 1)) {
-			printf("Set SW1ABSTBY error!\n");
-			return -1;
+			/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x32, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x32, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+		} else {
+
+			printf("Set POP Voltage\n");
+/*
+	SW1ABVOLT 	0x20 SW1AB Output voltage set point in normal operation
+	SW1ABSTBY 	0x21 SW1AB Output voltage set point on Standby
+	SW1ABOFF 	0x22 SW1AB Output voltage set point on Sleep
+
+	SW1CVOLT 	0x2E SW1C Output voltage set point in normal operation
+	SW1CSTBY 	0x2F SW1C Output voltage set point in Standby
+	SW1COFF 	0x30 SW1C Output voltage set point in Sleep
+*/
+			/* set SW1ABVOLT staby volatage 1.375 V*/
+			if (i2c_read(0x8, 0x20, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x2b;
+			if (i2c_write(0x8, 0x20, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+
+			/* set SW1ABSTBY staby volatage 1.375 V*/
+			if (i2c_read(0x8, 0x21, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x2b;
+			if (i2c_write(0x8, 0x21, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+
+			/* set SW1ABOFF staby volatage 1.375 V*/
+			if (i2c_read(0x8, 0x22, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x2b;
+			if (i2c_write(0x8, 0x22, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+			/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x24, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x24, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+
+			/* set SW1CVOLT staby volatage 1.375*/
+			if (i2c_read(0x8, 0x2e, 1, &value, 1)) {
+				printf("Read SW1CSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x2b;
+			if (i2c_write(0x8, 0x2e, 1, &value, 1)) {
+				printf("Set SW1CSTBY error!\n");
+				return -1;
+			}
+
+			/* set SW1CSTBY staby volatage 1.375*/
+			if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
+				printf("Read SW1CSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x2b;
+			if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
+				printf("Set SW1CSTBY error!\n");
+				return -1;
+			}
+
+			/* set SW1COFF staby volatage 1.375*/
+			if (i2c_read(0x8, 0x30, 1, &value, 1)) {
+				printf("Read SW1CSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x2b;
+			if (i2c_write(0x8, 0x30, 1, &value, 1)) {
+				printf("Set SW1CSTBY error!\n");
+				return -1;
+			}
+
+
+			/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x32, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x32, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+
+
+
+			/* Setup VCC (SW2) to 3.3 */
+			value = 0x72;
+			if (i2c_write(0x8, 0x35, 1, &value, 3)) {
+				printf("Set SW2 VCC error!\n");
+				return -1;
+			}
+
+			if (i2c_write(0x8, 0x36, 1, &value, 3)) {
+				printf("Set SW2 VCC standby error!\n");
+				return -1;
+			}
+
+			/*Set VGEN6 from to 3.3V*/
+			if (i2c_read(0x8, 0x71, 1, &value, 1)) {
+				printf("Read VGEN5 error!\n");
+				return -1;
+			}
+			value &= ~0xf;
+			value |= 0xf;
+			if (i2c_write(0x8, 0x71, 1, &value, 1)) {
+				printf("Set VGEN5 error!\n");
+				return -1;
+			}
+
 		}
 	}
 
@@ -431,14 +586,55 @@ struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC1_BASE_ADDR},
 };
 
+struct fsl_esdhc_cfg usdhc_cfg_dart_emmc[2] = {
+	{USDHC3_BASE_ADDR},
+	{USDHC1_BASE_ADDR},
+};
+
 int board_mmc_getcd(struct mmc *mmc)
 {
 	return 1;
 }
 
+static int board_mmc_init_dart(bd_t *bis)
+{
+	s32 status = 0;
+
+
+	MX6QDL_SET_PAD(PAD_SD3_CLK__USDHC3_CLK	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD3_CMD__USDHC3_CMD	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD3_DAT0__USDHC3_DAT0	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD3_DAT1__USDHC3_DAT1	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD3_DAT2__USDHC3_DAT2	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD3_DAT3__USDHC3_DAT3	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+
+	usdhc_cfg_dart_emmc[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+	usdhc_cfg_dart_emmc[0].max_bus_width = 4;
+	status |= fsl_esdhc_initialize(bis, &usdhc_cfg_dart_emmc[0]);
+
+	/* sdcard */
+	MX6QDL_SET_PAD(PAD_SD2_CLK__USDHC2_CLK	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD2_CMD__USDHC2_CMD	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD2_DAT0__USDHC2_DAT0	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD2_DAT1__USDHC2_DAT1	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD2_DAT2__USDHC2_DAT2	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_SD2_DAT3__USDHC2_DAT3	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
+
+	usdhc_cfg_dart_emmc[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+	usdhc_cfg_dart_emmc[1].max_bus_width = 4;
+	status |= fsl_esdhc_initialize(bis, &usdhc_cfg_dart_emmc[1]);
+
+
+	return status;
+}
+
 int board_mmc_init(bd_t *bis)
 {
 	s32 status = 0;
+
+
+	if (6 == get_mmc_boot_device())
+		return(board_mmc_init_dart(bis));
 
 	/* sdcard */
 	MX6QDL_SET_PAD(PAD_SD2_CLK__USDHC2_CLK	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
@@ -452,7 +648,6 @@ int board_mmc_init(bd_t *bis)
 	usdhc_cfg[0].max_bus_width = 4;
 	status |= fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
 
-	/* eMMC */
 	MX6QDL_SET_PAD(PAD_SD1_CLK__USDHC1_CLK	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
 	MX6QDL_SET_PAD(PAD_SD1_CMD__USDHC1_CMD	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
 	MX6QDL_SET_PAD(PAD_SD1_DAT0__USDHC1_DAT0	, MUX_PAD_CTRL(USDHC_PAD_CTRL));
@@ -466,6 +661,7 @@ int board_mmc_init(bd_t *bis)
 
 	return status;
 }
+
 #endif
 
 

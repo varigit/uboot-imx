@@ -67,6 +67,22 @@ u32 get_cpu_rev(void)
 	reg &= 0xff;		/* mx6 silicon revision */
 	return (type << 12) | (reg + 0x10);
 }
+u32 is_cpu_pop_package(void)
+{
+	struct anatop_regs *anatop = (struct anatop_regs *)ANATOP_BASE_ADDR;
+	u32 reg; 
+	u32 type;
+
+	reg = readl(&anatop->digprog);
+	type = ((reg >> 16) & 0xff);
+	if (type != MXC_CPU_MX6DL) 
+		if (reg & 0x4)
+			return 1;
+		else
+			return 0;		
+	return 0;
+}
+
 
 #ifdef CONFIG_REVISION_TAG
 u32 __weak get_board_rev(void)
