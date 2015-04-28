@@ -117,7 +117,6 @@ ulong sdram_cs;
 		return;
 	}
 
-	printf("Ram Size In %d\n", sdram_size);
 	do {
 		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
 
@@ -132,9 +131,6 @@ ulong sdram_cs;
 			break;
 
 	} while (sdram_size > 512);
-
-	printf("Ram Size Out %d\n", sdram_size);
-
 }
 
 #ifdef EEPROM_DEBUG

@@ -1039,7 +1039,7 @@ int board_eth_init(bd_t *bis)
 	return 0;
 }
 
-static char is_som_solo(void){
+char is_som_solo(void){
 int oldbus;
 char flag;
 
@@ -1211,46 +1211,80 @@ int checkboard(void)
 
 	printf("Board: Variscite VAR_SOM_MX6 ");
 
-	s = getenv ("var_auto_fdt_file");
+
 	if (is_mx6q()){
-		printf ("Quad\n");
-		if (s[0] == 'Y') {
+		if (is_cpu_pop_package()){
+			printf ("Quad-POP\n");
+		} else {
+			printf ("Quad\n");
+		}
+		
+	} else if (is_mx6d()){
+		if (is_cpu_pop_package()){
+			printf ("Dual-POP\n");
+		} else {
+			printf ("Dual\n");
+		}
+	} else if (is_mx6dl()) {
+		if (is_som_solo())
+			printf ("SOM-Dual\n");
+		else
+		   printf ("Dual Lite\n");
+	} else if (is_mx6solo()){
+		if (is_som_solo()){
+			printf ("SOM-Solo\n");
+		} else {
+			printf ("Solo\n");
+		}
+	} else printf ("????\n");
+
+
+
+	s = getenv ("var_auto_fdt_file");
+	if (s[0] != 'Y') return 0;
+
+	setenv("mmcroot" , "/dev/mmcblk0p2 rootwait rw");
+	if (is_mx6q()){
+		if (is_cpu_pop_package()){
+			setenv("fdt_file", "imx6q-var-dart.dtb");
+			if (6 == get_mmc_boot_device())
+				setenv("mmcroot" , "/dev/mmcblk2p2 rootwait rw");
+			else
+				setenv("mmcroot" , "/dev/mmcblk1p2 rootwait rw");
+		} else {
 			setenv("fdt_file", "imx6q-var-som.dtb");
 		}
 	} else if (is_mx6d()){
-		printf ("Dual\n");
-		if (s[0] == 'Y')
+		if (is_cpu_pop_package()){
+			setenv("fdt_file", "imx6q-var-dart.dtb");
+			if (6 == get_mmc_boot_device())
+				setenv("mmcroot" , "/dev/mmcblk2p2 rootwait rw");
+			else
+				setenv("mmcroot" , "/dev/mmcblk1p2 rootwait rw");
+		} else {
 			setenv("fdt_file", "imx6q-var-som.dtb");
+		}
 	}else if (is_mx6dl()) {
 		if (is_som_solo()){
-			printf ("SOM-Dual\n");
-			if (s[0] == 'Y')
 				if (is_solo_custom_board())
 					setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
 				else
 					setenv("fdt_file", "imx6dl-var-som-solo.dtb");
 		} else {
-		printf ("Dual Lite\n");
-		if (s[0] == 'Y')
 			setenv("fdt_file", "imx6dl-var-som.dtb");
 		}
 	} else if (is_mx6solo()){
 		if (is_som_solo()){
-			printf ("SOM-Solo\n");
-			if (s[0] == 'Y')
-				if (is_solo_custom_board())
-					setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
-				else
-					setenv("fdt_file", "imx6dl-var-som-solo.dtb");
+			if (is_solo_custom_board())
+				setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
+			else
+				setenv("fdt_file", "imx6dl-var-som-solo.dtb");
 		} else {
-			printf ("Solo\n");
-			if (s[0] == 'Y')
-				setenv("fdt_file", "imx6dl-var-som.dtb");
+			setenv("fdt_file", "imx6dl-var-som.dtb");
 		}
-	} else printf ("????\n");
+	}
 
-	if (s[0] == 'Y') 
-		setup_variscite_touchscreen_type();
+	setup_variscite_touchscreen_type();
 
 	return 0;
 }
