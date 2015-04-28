@@ -695,7 +695,7 @@ DO_STATIC_RELA =
 endif
 
 # Always append ALL so that arch config.mk's can add custom ones
-ALL-y += u-boot.srec u-boot.bin System.map
+ALL-y += u-boot.srec u-boot.bin u-boot.img System.map
 
 ALL-$(CONFIG_NAND_U_BOOT) += u-boot-nand.bin
 ALL-$(CONFIG_ONENAND_U_BOOT) += u-boot-onenand.bin
