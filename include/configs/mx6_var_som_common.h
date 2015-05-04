@@ -388,11 +388,20 @@
 /*
  * I2C configs
  */
-#define CONFIG_I2C_MULTI_BUS
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
-#define CONFIG_SYS_I2C_MXC
+#define CONFIG_HARD_I2C         	1
+#define CONFIG_SYS_I2C_MXC		1
+#define CONFIG_SYS_I2C_BASE             I2C1_BASE_ADDR
 #define CONFIG_SYS_I2C_SPEED		100000
+#define CONFIG_SYS_I2C_SLAVE            0x8
+
+#define CONFIG_PFUZE100_PMIC_I2C
+#ifdef CONFIG_PFUZE100_PMIC_I2C
+#define CONFIG_PMIC_I2C_BUS		1
+#define CONFIG_PMIC_I2C_SLAVE		0x8
+#endif
+//#define CONFIG_I2C_MULTI_BUS
 
 /* Framebuffer */
 #define CONFIG_VIDEO
