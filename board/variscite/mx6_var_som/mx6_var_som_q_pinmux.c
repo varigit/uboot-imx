@@ -141,6 +141,11 @@ iomux_v3_cfg_t const uart1_padsq[] = {
 	MX6_PAD_CSI0_DAT11__UART1_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
+/* Ethernet */
+iomux_v3_cfg_t const enet_reset_padsq[] = {
+	MX6_PAD_ENET_CRS_DV__GPIO1_IO25		| MUX_PAD_CTRL(0x88),	/* Reset */
+};
+
 iomux_v3_cfg_t const enet_padsq[] = {
 	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -150,7 +155,7 @@ iomux_v3_cfg_t const enet_padsq[] = {
 	MX6_PAD_RGMII_TD2__RGMII_TD2		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_TD3__RGMII_TD3		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_TX_CTL__RGMII_TX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_ENET_REF_CLK__ENET_TX_CLK	| MUX_PAD_CTRL(ENET_PAD_CTRL),
+	MX6_PAD_ENET_REF_CLK__ENET_TX_CLK	| MUX_PAD_CTRL(NO_PAD_CTRL),
 
 	/* pin 35 - 1 (PHY_AD2) on reset */
 	MX6_PAD_RGMII_RXC__GPIO6_IO30		| MUX_PAD_CTRL(NO_PAD_CTRL),
@@ -164,9 +169,7 @@ iomux_v3_cfg_t const enet_padsq[] = {
 	MX6_PAD_RGMII_RD3__GPIO6_IO29		| MUX_PAD_CTRL(NO_PAD_CTRL),
 	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
 	MX6_PAD_RGMII_RX_CTL__GPIO6_IO24	| MUX_PAD_CTRL(NO_PAD_CTRL),
-	MX6_PAD_ENET_CRS_DV__GPIO1_IO25		| MUX_PAD_CTRL(NO_PAD_CTRL),	/* Reset */
-	MX6_PAD_GPIO_0__CCM_CLKO1			| MUX_PAD_CTRL(NO_PAD_CTRL),
-	MX6_PAD_GPIO_3__CCM_CLKO2			| MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_ENET_CRS_DV__GPIO1_IO25		| MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 
@@ -212,6 +215,11 @@ iomux_v3_cfg_t const di0_padsq[] = {
 void setup_pcie_padsq(void){
 	imx_iomux_v3_setup_multiple_pads(pcie_padsq, ARRAY_SIZE(pcie_padsq));
 }
+
+void setup_enet_pads_resetq(void){
+	imx_iomux_v3_setup_multiple_pads(enet_reset_padsq, ARRAY_SIZE(enet_reset_padsq));
+}
+
 void setup_enet_padsq(void){
 	imx_iomux_v3_setup_multiple_pads(enet_padsq, ARRAY_SIZE(enet_padsq));
 }

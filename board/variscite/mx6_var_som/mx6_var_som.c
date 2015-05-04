@@ -181,27 +181,41 @@ static void setup_pcie(void)
 static void setup_iomux_enet(void)
 {
 
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)){
+		setup_enet_padsq();
+		setup_enet_pads_resetq();
+	} else {
+		setup_enet_padsdl();
+		setup_enet_pads_resetdl();
+	}
+	udelay(20);
+
+	gpio_set_value(IMX_GPIO_NR(1, 25), 0); /* Assert VAR-SOM-MX6 PHY reset */
+
 	gpio_direction_output(IMX_GPIO_NR(1, 25), 0); /* VAR-SOM-MX6 PHY rst */
 	gpio_direction_output(IMX_GPIO_NR(6, 30), 1);
 	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
 	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
 	gpio_direction_output(IMX_GPIO_NR(6, 28), 1);
 	gpio_direction_output(IMX_GPIO_NR(6, 29), 1);
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-		setup_enet_padsq();
-	else
-		setup_enet_padsdl();
+
 	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
 
 	/* Need delay 10ms according to KSZ9021 spec */
 	udelay(1000 * 10);
-	gpio_set_value(IMX_GPIO_NR(1, 25), 1); /* VAR-SOM-MX6 PHY reset */
+
+	gpio_set_value(IMX_GPIO_NR(1, 25), 1); /* Deassert VAR-SOM-MX6 PHY reset */
+
+	gpio_free(IMX_GPIO_NR(6, 30));
+	gpio_free(IMX_GPIO_NR(6, 25));
+	gpio_free(IMX_GPIO_NR(6, 27));
+	gpio_free(IMX_GPIO_NR(6, 28));
+	gpio_free(IMX_GPIO_NR(6, 29));
 
 	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
 		setup_enet_pads_finalq();
 	else
 		setup_enet_pads_finaldl();
-
 }
 
 /*
@@ -250,7 +264,10 @@ static int setup_pmic_voltages(void)
 {
 	unsigned char value, rev_id = 0 ;
 
-	i2c_set_bus_num(1);
+	i2c_set_bus_num(CONFIG_PMIC_I2C_BUS);
+
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_PMIC_I2C_SLAVE);
+
 	if (i2c_probe(0x8))
 		printf("Failed to probe PMIC error!!!\n");
 	else {
@@ -283,6 +300,7 @@ static int setup_pmic_voltages(void)
 			printf("Set VGEN3 error!\n");
 			return -1;
 		}
+
 		/*increase VGEN5 from 2.8 to 3V*/
 		if (i2c_read(0x8, 0x70, 1, &value, 1)) {
 			printf("Read VGEN5 error!\n");
@@ -351,48 +369,24 @@ void ldo_mode_set(int ldo_bypass)
 	int is_400M;
 	unsigned char vddarm;
 
-	/* increase VDDARM/VDDSOC to support 1.2G chip */
-	if (check_1_2G()) {
-		ldo_bypass = 0;	/* ldo_enable on 1.2G chip */
-		printf("1.2G chip, increase VDDARM_IN/VDDSOC_IN\n");
-		/* increase VDDARM to 1.425V */
-		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
-			printf("Read SW1AB error!\n");
-			return;
-		}
-		value &= ~0x3f;
-		value |= 0x2d;
-		if (i2c_write(0x8, 0x20, 1, &value, 1)) {
-			printf("Set SW1AB error!\n");
-			return;
-		}
-		/* increase VDDSOC to 1.425V */
-		if (i2c_read(0x8, 0x2e, 1, &value, 1)) {
-			printf("Read SW1C error!\n");
-			return;
-		}
-		value &= ~0x3f;
-		value |= 0x2d;
-		if (i2c_write(0x8, 0x2e, 1, &value, 1)) {
-			printf("Set SW1C error!\n");
-			return;
-		}
-	}
+	ldo_bypass = 1;			/* ldo disabled on any Variscite SOM  */
+
 	/* switch to ldo_bypass mode , boot on 800Mhz */
 	if (ldo_bypass) {
 		prep_anatop_bypass();
 
+		i2c_set_bus_num(1);
 		/* decrease VDDARM for 400Mhz DQ:1.1V, DL:1.275V */
 		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
 			printf("Read SW1AB error!\n");
 			return;
 		}
 		value &= ~0x3f;
-#if defined(CONFIG_MX6DL)
-		value |= 0x27;
-#else
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
 		value |= 0x20;
-#endif
+	else
+		value |= 0x27;
+
 		if (i2c_write(0x8, 0x20, 1, &value, 1)) {
 			printf("Set SW1AB error!\n");
 			return;
@@ -419,17 +413,16 @@ void ldo_mode_set(int ldo_bypass)
 		 */
 		is_400M = set_anatop_bypass(2);
 		if (is_400M)
-#if defined(CONFIG_MX6DL)
-			vddarm = 0x1f;
-#else
-			vddarm = 0x1b;
-#endif
+			if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+				vddarm = 0x1b;
+			else
+				vddarm = 0x1f;
 		else
-#if defined(CONFIG_MX6DL)
-			vddarm = 0x23;
-#else
-			vddarm = 0x22;
-#endif
+			if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+				vddarm = 0x22;
+			else
+				vddarm = 0x23;
+
 		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
 			printf("Read SW1AB error!\n");
 			return;
@@ -601,30 +594,31 @@ int mx6_rgmii_rework(struct phy_device *phydev)
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 
+#if 0
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x2);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x4);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x4002);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0);
 
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x2);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x5);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x4002);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x2);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x5);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x4002);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0);
 
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x2);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x6);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x4002);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x2);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x6);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x4002);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0);
 
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x2);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x8);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x4002);
-    phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x3ff);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x2);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x8);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, 0x4002);
+    	phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, 0x3ff);
 	/* max rx/tx clock delay, min rx/tx control delay */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0b, 0x8104);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0c, 0xf0f0);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0b, 0x104);
-
+#endif;
 
 	return 0;
 }
@@ -832,7 +826,6 @@ int board_eth_init(bd_t *bis)
 	int ret;
 
 	setup_iomux_enet();
-/*	setup_pcie(); */
 
 #ifdef CONFIG_FEC_MXC
 	bus = fec_get_miibus(base, -1);
@@ -878,10 +871,33 @@ int board_early_init_f(void)
 	return 0;
 }
 
+#ifdef CONFIG_SYS_I2C_MXC
+void setup_local_i2c(void){
+
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+		setup_i2c_padq();
+	else
+		setup_i2c_paddl();
+
+}
+#endif
+
 int board_init(void)
 {
+	int ret;
+
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+
+#ifdef CONFIG_SYS_I2C_MXC
+#if  !defined(CONFIG_SPL_BUILD)
+	setup_local_i2c();
+//	if (!is_som_solo())
+		ret = setup_pmic_voltages();
+	if (ret)
+		return -1;
+#endif /* !defined(CONFIG_SPL_BUILD) */
+#endif
 
 	return 0;
 }
