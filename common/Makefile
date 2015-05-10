@@ -19,6 +19,7 @@ COBJS-$(CONFIG_SYS_HUSH_PARSER) += hush.o
 COBJS-y += s_record.o
 COBJS-y += xyzModem.o
 COBJS-y += cmd_disk.o
+COBJS-y += cmd_imxotp.o
 
 # boards
 COBJS-$(CONFIG_SYS_GENERIC_BOARD) += board_f.o

@@ -289,7 +289,7 @@ void var_eeprom_strings_print(var_eeprom_config_struct_t *p_var_eeprom_cfg)
 
 	printf("Part number: %s\n", (char *)p_var_eeprom_cfg->header.part_number);
 	printf("Assembly: %s\n", (char *)p_var_eeprom_cfg->header.Assembly);
-	printf("Date: %s\n", (char *)p_var_eeprom_cfg->header.date);
+	printf("Date of production: %s\n", (char *)p_var_eeprom_cfg->header.date);
 }
 
 #ifdef EEPROM_DEBUG
@@ -317,3 +317,105 @@ void var_eeprom_printf_array_dwords(u32 *ptr, u32 address_mem, u32 size)
 }
 #endif
 
+
+
+int var_eeprom_write(uchar *ptr, u32 size, u32 offset)
+{
+	int ret = 0;
+	u32 size_written;
+	u32 size_to_write;
+	u32 P0_select_page_EEPROM;
+	u32 chip;
+	u32 addr;
+
+	/* Write to EEPROM device */
+	size_written = 0;
+	size_to_write = size;
+	while ((0 == ret) && (size_written < size_to_write))
+	{
+		P0_select_page_EEPROM = (offset > 0xFF);
+		chip = VARISCITE_MX6_EEPROM_CHIP + P0_select_page_EEPROM;
+		addr = (offset & 0xFF);
+		ret = i2c_write(chip,
+				addr,
+				1,
+				ptr,
+				VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE);
+
+		/* Wait for EEPROM write operation to complete (No ACK) */
+		udelay(11000);
+
+		size_written += VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE;
+		offset += VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE;
+		ptr += VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE;
+	}
+
+	return ret;
+}
+
+
+/******************************************************************************
+ * var_eeprom_params command intepreter.
+ */
+static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	var_eeprom_config_struct_t var_eeprom_cfg;
+	int offset;
+	int fail = 0;
+
+	if (argc != 4)
+	{
+		return -1;
+	}
+
+	memset(&var_eeprom_cfg, 0x00, sizeof(var_eeprom_cfg));
+
+	memcpy(&var_eeprom_cfg.header.part_number[0], argv[1], sizeof(var_eeprom_cfg.header.part_number));
+	memcpy(&var_eeprom_cfg.header.Assembly[0], argv[2], sizeof(var_eeprom_cfg.header.Assembly));
+	memcpy(&var_eeprom_cfg.header.date[0], argv[3], sizeof(var_eeprom_cfg.header.date));
+
+	var_eeprom_cfg.header.part_number[sizeof(var_eeprom_cfg.header.part_number)-1] = (u8)0x00;
+	var_eeprom_cfg.header.Assembly[sizeof(var_eeprom_cfg.header.Assembly)-1] = (u8)0x00;
+	var_eeprom_cfg.header.date[sizeof(var_eeprom_cfg.header.date)-1] = (u8)0x00;
+
+	printf("Part number: %s\n", (char *)var_eeprom_cfg.header.part_number);
+	printf("Assembly: %s\n", (char *)var_eeprom_cfg.header.Assembly);
+	printf("Date of production: %s\n", (char *)var_eeprom_cfg.header.date);
+
+	offset = (uchar *)&var_eeprom_cfg.header.part_number[0] - (uchar *)&var_eeprom_cfg.header;
+	if (var_eeprom_write((uchar *)&var_eeprom_cfg.header.part_number[0],
+				sizeof(var_eeprom_cfg.header.part_number),
+				VARISCITE_MX6_EEPROM_STRUCT_OFFSET + offset) )
+	{
+		printf("Error writing to EEPROM!\n");
+		return -1;
+	} 
+
+	offset = (uchar *)&var_eeprom_cfg.header.Assembly[0] - (uchar *)&var_eeprom_cfg;
+	if (var_eeprom_write((uchar *)&var_eeprom_cfg.header.Assembly[0],
+				sizeof(var_eeprom_cfg.header.Assembly),
+				VARISCITE_MX6_EEPROM_STRUCT_OFFSET + offset) )
+	{
+		printf("Error writing to EEPROM!\n");
+		return -1;
+	} 
+
+	offset = (uchar *)&var_eeprom_cfg.header.date[0] - (uchar *)&var_eeprom_cfg;
+	if (var_eeprom_write((uchar *)&var_eeprom_cfg.header.date[0],
+				sizeof(var_eeprom_cfg.header.date),
+				VARISCITE_MX6_EEPROM_STRUCT_OFFSET + offset) )
+	{
+		printf("Error writing to EEPROM!\n");
+		return -1;
+	}
+
+	printf("EEPROM updated successfully\n");
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	vareeprom,	5,	1,	do_var_eeprom_params,
+	"",
+	""
+);

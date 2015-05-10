@@ -247,6 +247,21 @@ unsigned int *sdram_global;
 	return 0;
 }
 
+void codec_reset(int rst)
+{
+    MX6QDL_SET_PAD(PAD_GPIO_19__GPIO_4_5, MUX_PAD_CTRL(NO_PAD_CTRL));
+	gpio_direction_output(IMX_GPIO_NR(4, 5), 1);   /* Variscite codec reset */
+
+	if (rst) {
+		printf("CODEC RESET\n");
+		gpio_set_value(IMX_GPIO_NR(4, 5), 0);
+	}
+	else {
+		printf("CODEC NORMAL\n");
+		gpio_set_value(IMX_GPIO_NR(4, 5), 1);
+	}
+}
+
 
 static void setup_iomux_enet(void)
 {
@@ -976,6 +991,23 @@ int overwrite_console(void)
 {
 	return 1;
 }
+void enet_board_reset(int rst)
+{
+	unsigned int reg;
+	iomux_v3_cfg_t enet_reset;
+
+	MX6QDL_SET_PAD(PAD_ENET_CRS_DV__GPIO_1_25, MUX_PAD_CTRL(ENET_PAD_CTRL));
+
+	gpio_direction_output(IMX_GPIO_NR(1,25) , 1);
+	if (rst) {
+		printf("1G RESET\n");
+		gpio_set_value(IMX_GPIO_NR(1,25), 0);
+	}
+	else {
+		printf("1G NORMAL\n");
+		gpio_set_value(IMX_GPIO_NR(1,25), 1);
+	}
+}
 
 int board_phy_config(struct phy_device *phydev)
 {
@@ -1098,7 +1130,9 @@ int board_early_init_f(void)
 	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 0);		// Turn off backlight.
 #endif /* #if  !defined(CONFIG_SPL_BUILD) */
 
-	p_udelay(1000);
+	//Reset CODEC to allow i2c communication
+	codec_reset(1);
+	udelay(1000 * 100);
 
 	return 0;
 }
@@ -1110,7 +1144,8 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
 	gd->bd->bi_arch_number = CONFIG_MACH_VAR_SOM_MX6;
-
+	
+	
 #ifdef CONFIG_I2C_MXC
 #if  !defined(CONFIG_SPL_BUILD)
 	setup_local_i2c();
