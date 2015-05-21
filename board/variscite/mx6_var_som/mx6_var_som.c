@@ -928,6 +928,7 @@ void board_fastboot_setup(void)
 	switch (get_boot_device()) {
 	case SD1_BOOT:
 	case MMC1_BOOT:
+	    printf("BOOT mmc1\n");
 	    if (!getenv("fastboot_dev"))
 			setenv("fastboot_dev", "mmc0");
 	    if (!getenv("bootcmd"))
@@ -935,33 +936,33 @@ void board_fastboot_setup(void)
 	    break;
 	case SD2_BOOT:
 	case MMC2_BOOT:
+	    printf("BOOT mmc2\n");
 	    if (!getenv("fastboot_dev"))
-			setenv("fastboot_dev", "mmc0");
+			setenv("fastboot_dev", "mmc1");
 	    if (!getenv("bootcmd"))
-			setenv("bootcmd", "booti mmc0");
+			setenv("bootcmd", "booti mmc1");
 	    break;
 	case SD3_BOOT:
 	case MMC3_BOOT:
+	    printf("BOOT mmc3\n");
 	    if (!getenv("fastboot_dev"))
 			setenv("fastboot_dev", "mmc1");
 	    if (!getenv("bootcmd"))
 			setenv("bootcmd", "booti mmc1");
 	    break;
 	case MMC4_BOOT:
+	    printf("BOOT mmc4\n");
 	    if (!getenv("fastboot_dev"))
 			setenv("fastboot_dev", "mmc2");
 	    if (!getenv("bootcmd"))
 			setenv("bootcmd", "booti mmc2");
 	    break;
 	case NAND_BOOT:
-		if (!getenv("fastboot_dev"))
-			setenv("fastboot_dev", "nand");
-		if (!getenv("fbparts"))
-			setenv("fbparts", ANDROID_FASTBOOT_NAND_PARTS);
-		if (!getenv("bootcmd"))
-			setenv("bootcmd",
-				"nand read ${loadaddr} ${boot_nand_offset} "
-				"${boot_nand_size};booti ${loadaddr}");
+	    printf("BOOT nand->mmc0\n");
+	    if (!getenv("fastboot_dev"))
+			setenv("fastboot_dev", "mmc0");
+	    if (!getenv("bootcmd"))
+			setenv("bootcmd", "booti mmc0");
 		break;
 
 	default:
