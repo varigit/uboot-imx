@@ -464,16 +464,17 @@ int mmc_get_env_devno(void)
 
 	/* If not boot from sd/mmc, use default value */
 	if (bootsel != 1)
-		return CONFIG_SYS_MMC_ENV_DEV;
+		dev_no = CONFIG_SYS_MMC_ENV_DEV;
+	else {
+		/* BOOT_CFG2[3] and BOOT_CFG2[4] */
+		dev_no = (soc_sbmr & 0x00001800) >> 11;
 
-	/* BOOT_CFG2[3] and BOOT_CFG2[4] */
-	dev_no = (soc_sbmr & 0x00001800) >> 11;
-
-	/* need ubstract 1 to map to the mmc device id
-	 * see the comments in board_mmc_init function
-	 */
-
-	dev_no--;
+		/* need ubstract 1 to map to the mmc device id
+		 * see the comments in board_mmc_init function
+		 */
+	
+		dev_no--;
+	}
 
 	return dev_no;
 }
@@ -483,33 +484,9 @@ int mmc_map_to_kernel_blk(int dev_no)
 	return dev_no + 1;
 }
 
-#if 0
-#define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 2)
-#define USDHC3_CD_GPIO	IMX_GPIO_NR(2, 0)
-#endif
-
 int board_mmc_getcd(struct mmc *mmc)
 {
 	return 1;
-
-#if 0
-	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-	int ret = 0;
-
-	switch (cfg->esdhc_base) {
-	case USDHC2_BASE_ADDR:
-		ret = !gpio_get_value(USDHC2_CD_GPIO);
-		break;
-	case USDHC3_BASE_ADDR:
-		ret = !gpio_get_value(USDHC3_CD_GPIO);
-		break;
-	case USDHC4_BASE_ADDR:
-		ret = 1; /* eMMC/uSDHC4 is always present */
-		break;
-	}
-
-	return ret;
-#endif
 }
 
 int board_mmc_init(bd_t *bis)
@@ -523,26 +500,26 @@ int board_mmc_init(bd_t *bis)
 	 * mmc1                    eMMC
 	 */
 	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-		setup_usdhc2_padsq();
+		setup_usdhc1_padsq();
 	else
-		setup_usdhc2_padsdl();
+		setup_usdhc1_padsdl();
 
-	usdhc_cfg[0].esdhc_base = USDHC2_BASE_ADDR;
-	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+	/* eMMC */
+	usdhc_cfg[0].esdhc_base = USDHC1_BASE_ADDR;
+	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 	usdhc_cfg[0].max_bus_width = 4;
 	status |= fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
 
 	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-		setup_usdhc1_padsq();
+		setup_usdhc2_padsq();
 	else
-		setup_usdhc1_padsdl();
-	usdhc_cfg[1].esdhc_base = USDHC1_BASE_ADDR;
-	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+		setup_usdhc2_padsdl();
+
+	/* SDCARD */
+	usdhc_cfg[1].esdhc_base = USDHC2_BASE_ADDR;
+	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
 	usdhc_cfg[1].max_bus_width = 4;
 	status |= fsl_esdhc_initialize(bis, &usdhc_cfg[1]);
-
-
-
 
 	return status;
 }
@@ -564,6 +541,8 @@ void board_late_mmc_env_init(void)
 	char cmd[32];
 	char mmcblk[32];
 	u32 dev_no = mmc_get_env_devno();
+
+	printf("MMC Board late init\n");
 
 	if (!check_mmc_autodetect())
 		return;
@@ -931,9 +910,7 @@ int board_late_init(void)
 	if (ret)
 		return -1;
 
-#ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
-#endif
 
 	return 0;
 }
@@ -949,15 +926,13 @@ int checkboard(void)
 void board_fastboot_setup(void)
 {
 	switch (get_boot_device()) {
-#if defined(CONFIG_FASTBOOT_STORAGE_SATA)
-	case SATA_BOOT:
-		if (!getenv("fastboot_dev"))
-			setenv("fastboot_dev", "sata");
-		if (!getenv("bootcmd"))
-			setenv("bootcmd", "booti sata");
-		break;
-#endif /*CONFIG_FASTBOOT_STORAGE_SATA*/
-#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	case SD1_BOOT:
+	case MMC1_BOOT:
+	    if (!getenv("fastboot_dev"))
+			setenv("fastboot_dev", "mmc0");
+	    if (!getenv("bootcmd"))
+			setenv("bootcmd", "booti mmc0");
+	    break;
 	case SD2_BOOT:
 	case MMC2_BOOT:
 	    if (!getenv("fastboot_dev"))
@@ -978,8 +953,6 @@ void board_fastboot_setup(void)
 	    if (!getenv("bootcmd"))
 			setenv("bootcmd", "booti mmc2");
 	    break;
-#endif /*CONFIG_FASTBOOT_STORAGE_MMC*/
-#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
 	case NAND_BOOT:
 		if (!getenv("fastboot_dev"))
 			setenv("fastboot_dev", "nand");
@@ -990,7 +963,6 @@ void board_fastboot_setup(void)
 				"nand read ${loadaddr} ${boot_nand_offset} "
 				"${boot_nand_size};booti ${loadaddr}");
 		break;
-#endif /*CONFIG_FASTBOOT_STORAGE_NAND*/
 
 	default:
 		printf("unsupported boot devices\n");

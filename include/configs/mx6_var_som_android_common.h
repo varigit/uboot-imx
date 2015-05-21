@@ -20,16 +20,18 @@
 #define CONFIG_FASTBOOT_PRODUCT_NAME_STR	"i.mx6 VAR-SOM-MX6 System"
 #define CONFIG_FASTBOOT_INTERFACE_STR		"Android fastboot"
 #define CONFIG_FASTBOOT_CONFIGURATION_STR	"Android fastboot"
-#define CONFIG_FASTBOOT_SERIAL_NUM			"12345"
-#define CONFIG_FASTBOOT_SATA_NO		 		0
+#define CONFIG_FASTBOOT_SERIAL_NUM		"12345"
+#define CONFIG_FASTBOOT_SATA_NO		 	0
 
+#if 0
 #if defined CONFIG_SYS_BOOT_NAND
 #define CONFIG_FASTBOOT_STORAGE_NAND
-#elif defined CONFIG_SYS_BOOT_SATA
-#define CONFIG_FASTBOOT_STORAGE_SATA
 #else
 #define CONFIG_FASTBOOT_STORAGE_MMC
 #endif
+#endif
+/* Variscite Lollipop support booti from MMC only (sdcard or eMMC) */
+#define CONFIG_FASTBOOT_STORAGE_MMC
 
 /*  For system.img growing up more than 256MB, more buffer needs
 *   to receive the system.img*/
@@ -54,8 +56,8 @@
 	"fdt_high=0xffffffff\0"	  \
 	"initrd_high=0xffffffff\0" \
 
-#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
+//#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
 #define ANDROID_FASTBOOT_NAND_PARTS "2m@2m(uboot) 16m@4m(boot) 28m@20m(recovery) 464m@48m(android_root)ubifs"
-#endif
+//#endif
 
 #endif /* MX6_VAR_SOM_ANDROID_COMMON_H */
