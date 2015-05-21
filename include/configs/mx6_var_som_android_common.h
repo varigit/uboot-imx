@@ -17,7 +17,7 @@
 #define CONFIG_FASTBOOT_PRODUCT_ID     		0x0d02
 #define CONFIG_FASTBOOT_BCD_DEVICE     		0x311
 #define CONFIG_FASTBOOT_MANUFACTURER_STR	"Variscite"
-#define CONFIG_FASTBOOT_PRODUCT_NAME_STR	"i.mx6 VAR-SOM-MX6 System"
+#define CONFIG_FASTBOOT_PRODUCT_NAME_STR	"i.mx6 VAR-MX6 System"
 #define CONFIG_FASTBOOT_INTERFACE_STR		"Android fastboot"
 #define CONFIG_FASTBOOT_CONFIGURATION_STR	"Android fastboot"
 #define CONFIG_FASTBOOT_SERIAL_NUM		"12345"
@@ -56,8 +56,8 @@
 	"fdt_high=0xffffffff\0"	  \
 	"initrd_high=0xffffffff\0" \
 
-//#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
+#if defined(CONFIG_FASTBOOT_STORAGE_NAND)
 #define ANDROID_FASTBOOT_NAND_PARTS "2m@2m(uboot) 16m@4m(boot) 28m@20m(recovery) 464m@48m(android_root)ubifs"
-//#endif
+#endif
 
 #endif /* MX6_VAR_SOM_ANDROID_COMMON_H */
