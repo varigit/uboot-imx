@@ -69,6 +69,7 @@ u32 get_cpu_rev(void)
 }
 u32 is_cpu_pop_package(void)
 {
+	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
 	struct anatop_regs *anatop = (struct anatop_regs *)ANATOP_BASE_ADDR;
 	u32 reg; 
 	u32 type;
@@ -76,7 +77,7 @@ u32 is_cpu_pop_package(void)
 	reg = readl(&anatop->digprog);
 	type = ((reg >> 16) & 0xff);
 	if (type != MXC_CPU_MX6DL) 
-		if (reg & 0x4)
+		if (soc_sbmr & 0x200000)
 			return 1;
 		else
 			return 0;		
