@@ -1603,7 +1603,7 @@ int do_booti(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			printf("booti: cannot find '%s' partition\n", ptn);
 			goto fail;
 		}
-
+		printf("pte->name=%s, pte->start=%d\n",pte->name, pte->start);
 		if (mmc->block_dev.block_read(mmcc, pte->start,
 					      1, (void *)hdr) < 0) {
 			printf("booti: mmc failed to read bootimg header\n");

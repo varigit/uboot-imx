@@ -41,10 +41,6 @@
 #define CONFIG_SYS_MMC_ENV_DEV		0	/* SDHC3 */
 #define CONFIG_SYS_MMC_ENV_PART         0       /* user partition */
 
-#ifdef CONFIG_SYS_USE_SPINOR
-#define CONFIG_SF_DEFAULT_CS   (0|(IMX_GPIO_NR(4, 9)<<8))
-#endif
-
 /*
  * imx6 q/dl/solo pcie would be failed to work properly in kernel, if
  * the pcie module is iniialized/enumerated both in uboot and linux

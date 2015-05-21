@@ -63,7 +63,7 @@
 #define CONFIG_CMD_FAT
 #define CONFIG_DOS_PARTITION
 
-#define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
+//#define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
 
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_DHCP
@@ -290,51 +290,11 @@
 #define CONFIG_SYS_NOSMP
 #endif
 
-#if defined CONFIG_SYS_BOOT_SPINOR
-#define CONFIG_SYS_USE_SPINOR
-#define CONFIG_ENV_IS_IN_SPI_FLASH
-#elif defined CONFIG_SYS_BOOT_EIMNOR
-#define CONFIG_SYS_USE_EIMNOR
-#define CONFIG_ENV_IS_IN_FLASH
-#elif defined CONFIG_SYS_BOOT_NAND
+#if defined CONFIG_SYS_BOOT_NAND
 #define CONFIG_SYS_USE_NAND
 #define CONFIG_ENV_IS_IN_NAND
-#elif defined CONFIG_SYS_BOOT_SATA
-#define CONFIG_ENV_IS_IN_SATA
-#define CONFIG_CMD_SATA
 #else
 #define CONFIG_ENV_IS_IN_MMC
-#endif
-
-#ifdef CONFIG_CMD_SATA
-#define CONFIG_DWC_AHSATA
-#define CONFIG_SYS_SATA_MAX_DEVICE	1
-#define CONFIG_DWC_AHSATA_PORT_ID	0
-#define CONFIG_DWC_AHSATA_BASE_ADDR	SATA_ARB_BASE_ADDR
-#define CONFIG_LBA48
-#define CONFIG_LIBATA
-#endif
-
-#ifdef CONFIG_SYS_USE_SPINOR
-#define CONFIG_CMD_SF
-#define CONFIG_SPI_FLASH
-#define CONFIG_SPI_FLASH_STMICRO
-#define CONFIG_MXC_SPI
-#define CONFIG_SF_DEFAULT_BUS  0
-#define CONFIG_SF_DEFAULT_SPEED 20000000
-#define CONFIG_SF_DEFAULT_MODE (SPI_MODE_0)
-#endif
-
-#ifdef CONFIG_SYS_USE_EIMNOR
-#undef CONFIG_SYS_NO_FLASH
-#define CONFIG_SYS_FLASH_BASE           WEIM_ARB_BASE_ADDR
-#define CONFIG_SYS_FLASH_SECT_SIZE     (128 * 1024)
-#define CONFIG_SYS_MAX_FLASH_BANKS 1    /* max number of memory banks */
-#define CONFIG_SYS_MAX_FLASH_SECT 256   /* max number of sectors on one chip */
-#define CONFIG_SYS_FLASH_CFI            /* Flash memory is CFI compliant */
-#define CONFIG_FLASH_CFI_DRIVER         /* Use drivers/cfi_flash.c */
-#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE /* Use buffered writes*/
-#define CONFIG_SYS_FLASH_EMPTY_INFO
 #endif
 
 #ifdef CONFIG_SYS_USE_NAND
@@ -356,27 +316,11 @@
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_ENV_OFFSET		(8 * 64 * 1024)
-#elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
-#define CONFIG_ENV_OFFSET              (768 * 1024)
-#define CONFIG_ENV_SECT_SIZE           (64 * 1024)
-#define CONFIG_ENV_SPI_BUS             CONFIG_SF_DEFAULT_BUS
-#define CONFIG_ENV_SPI_CS              CONFIG_SF_DEFAULT_CS
-#define CONFIG_ENV_SPI_MODE            CONFIG_SF_DEFAULT_MODE
-#define CONFIG_ENV_SPI_MAX_HZ          CONFIG_SF_DEFAULT_SPEED
-#elif defined(CONFIG_ENV_IS_IN_FLASH)
-#undef CONFIG_ENV_SIZE
-#define CONFIG_ENV_SIZE                        CONFIG_SYS_FLASH_SECT_SIZE
-#define CONFIG_ENV_SECT_SIZE           CONFIG_SYS_FLASH_SECT_SIZE
-#define CONFIG_ENV_OFFSET              (4 * CONFIG_SYS_FLASH_SECT_SIZE)
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #undef CONFIG_ENV_SIZE
 #define CONFIG_ENV_OFFSET              (8 << 20)
 #define CONFIG_ENV_SECT_SIZE           (128 << 10)
 #define CONFIG_ENV_SIZE                        CONFIG_ENV_SECT_SIZE
-#elif defined(CONFIG_ENV_IS_IN_SATA)
-#define CONFIG_ENV_OFFSET		(768 * 1024)
-#define CONFIG_SATA_ENV_DEV		0
-#define CONFIG_SYS_DCACHE_OFF /* remove when sata driver support cache */
 #endif
 
 #define CONFIG_OF_LIBFDT
