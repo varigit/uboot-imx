@@ -347,10 +347,12 @@
 #endif
 //#define CONFIG_I2C_MULTI_BUS
 
+#if 8
 /* Framebuffer */
 #define CONFIG_VIDEO
-/* #define CONFIG_VIDEO_IPUV3 */
+#define CONFIG_VIDEO_IPUV3 
 #define CONFIG_CFB_CONSOLE
+
 #define CONFIG_VGA_AS_SINGLE_DEVICE
 #define CONFIG_SYS_CONSOLE_IS_IN_ENV
 #define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
@@ -366,6 +368,8 @@
 #define CONFIG_IPUV3_CLK 264000000
 #endif
 #define CONFIG_IMX_HDMI
+#endif
+
 
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "mx6_var_som_android_common.h"
