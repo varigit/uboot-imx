@@ -369,6 +369,9 @@ void ldo_mode_set(int ldo_bypass)
 	int is_400M;
 	unsigned char vddarm;
 
+	if (is_som_solo()) return;
+
+
 	ldo_bypass = 1;			/* ldo disabled on any Variscite SOM  */
 
 	/* switch to ldo_bypass mode , boot on 800Mhz */
@@ -863,7 +866,7 @@ void setup_local_i2c(void){
 
 int board_init(void)
 {
-	int ret;
+	int ret = 0;
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
@@ -871,7 +874,7 @@ int board_init(void)
 #ifdef CONFIG_SYS_I2C_MXC
 #if  !defined(CONFIG_SPL_BUILD)
 	setup_local_i2c();
-//	if (!is_som_solo())
+	if (!is_som_solo())
 		ret = setup_pmic_voltages();
 	if (ret)
 		return -1;
