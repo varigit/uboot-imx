@@ -104,7 +104,8 @@ int oldbus;
 char flag;
 
 	oldbus = i2c_get_bus_num();
-	i2c_set_bus_num(0);
+	i2c_set_bus_num(CONFIG_PMIC_I2C_BUS);
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_PMIC_I2C_SLAVE);
 
 	if (i2c_probe(0x8))
 		flag = true;
@@ -359,6 +360,8 @@ static int setup_pmic_voltages(void)
 			return -1;
 		}
 	}
+
+	printf("pmic voltages set!\n");
 	return 0;
 }
 
@@ -370,7 +373,6 @@ void ldo_mode_set(int ldo_bypass)
 	unsigned char vddarm;
 
 	if (is_som_solo()) return;
-
 
 	ldo_bypass = 1;			/* ldo disabled on any Variscite SOM  */
 
@@ -600,7 +602,7 @@ int mx6_rgmii_rework(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0b, 0x8104);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0c, 0xf0f0);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x0b, 0x104);
-#endif;
+#endif
 
 	return 0;
 }
@@ -874,6 +876,7 @@ int board_init(void)
 #ifdef CONFIG_SYS_I2C_MXC
 #if  !defined(CONFIG_SPL_BUILD)
 	setup_local_i2c();
+
 	if (!is_som_solo())
 		ret = setup_pmic_voltages();
 	if (ret)
