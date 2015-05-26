@@ -347,7 +347,7 @@
 #endif
 //#define CONFIG_I2C_MULTI_BUS
 
-#if 8
+#if 0
 /* Framebuffer */
 #define CONFIG_VIDEO
 #define CONFIG_VIDEO_IPUV3 
