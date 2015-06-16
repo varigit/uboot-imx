@@ -1287,7 +1287,10 @@ int checkboard(void)
 			else
 				setenv("mmcroot" , "/dev/mmcblk1p2 rootwait rw");
 		} else {
-			setenv("fdt_file", "imx6q-var-som.dtb");
+			if (is_solo_custom_board())
+				setenv("fdt_file", "imx6q-var-som-vsc.dtb");
+			else
+				setenv("fdt_file", "imx6q-var-som.dtb");
 		}
 	} else if (is_mx6d()){
 		if (is_cpu_pop_package()){
