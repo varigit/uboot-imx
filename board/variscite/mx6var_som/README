@@ -1,21 +1,37 @@
-U-Boot for Variscite VAR-SOM-MX6
--------------------------------------
+U-Boot for Variscite VAR-SOM-MX6 DART-MX6 SOM-SOLO SOM-DUAL
+--------------------------------------------------------------
 
 This file contains information for the port of U-Boot to the VAR-SOM-MX6.
 This u-boot versions supports
 	MX6Q, MX6D, MX6DL, MX6SOLO with the same binary.
 Also support 0.5GB, 1GB, 2GB RAM configurations.
 Added support for SOM version 2.x: Ram configuration from EEprom.
+Added Support for DART-MX6
 
 
 For more details about Variscite, please refer to:
 http://www.variscite.com/
 
 
-Flashing SPL U-boot into the SD card
---------------------------------
+Set the tols path
+export PATH=/opt/poky/1.6.2/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi:$PATH
 
-- After the 'make' command completes, the generated 'u-boot.imx' binary must be
+Build for SDCARD
+--------------------
+make ARCH=arm CROSS_COMPILE=arm-poky-linux-gnueabi- mrproper
+make ARCH=arm CROSS_COMPILE=arm-poky-linux-gnueabi- mx6var_som_sd_config
+make -j4 ARCH=arm CROSS_COMPILE=arm-poky-linux-gnueabi- 
+
+Build for NAND
+--------------------
+make ARCH=arm CROSS_COMPILE=arm-poky-linux-gnueabi- mrproper
+make ARCH=arm CROSS_COMPILE=arm-poky-linux-gnueabi- mx6var_som_nand_config
+make ARCH=arm CROSS_COMPILE=arm-poky-linux-gnueabi- 
+
+Flashing SPL U-boot into the SD card
+------------------------------------------------
+
+- After the 'make' command completes, the generated 'u-boot.img' and SPL binaries must be
 flashed into the SD card;
 
 $ sudo dd if=SPL of=/dev/mmcblk0 bs=1K seek=1; sync
@@ -37,8 +53,11 @@ Boot from Linux sd-card
 - After Boot complete 
 flashed into the NAND;
 
-$ flash_eraseall /dev/mtd0
-$ kobs-ng init -x /opt/images/SPL  --search_exponent=1 -v
-$ flash_erase /dev/mtd0 0x40000 8
-$ nandwrite -p /dev/mtd0 -s 0x40000 u-boot.img
+$ flash_erase /dev/mtd0 0 0
+$ kobs-ng init -x SPL  --search_exponent=1 -v
+$ flash_erase /dev/mtd1 0 0
+$ nandwrite -p /dev/mtd1 u-boot.img 
+$ sync
+
+
 
