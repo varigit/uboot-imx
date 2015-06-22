@@ -85,6 +85,9 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED   |		\
 	PAD_CTL_DSE_40ohm   | PAD_CTL_HYS)
 
+#define PER_VCC_EN_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
+	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED   |		\
+	PAD_CTL_DSE_40ohm   | PAD_CTL_HYS)
 #define SPI_PAD_CTRL (PAD_CTL_HYS |				\
 	PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm     | PAD_CTL_SRE_FAST)
@@ -338,6 +341,7 @@ static int setup_pmic_voltages(void)
 		*VGEN5 for VDDHIGH_IN and increase to 3V to align with datasheet
 		*VGEN3 for camera 2.8V power supply
 		*/
+		int retval=0;
 
 		if (!is_cpu_pop_package()){
 			/* Set Gigbit Ethernet voltage (SOM v1.1/1.0)*/
@@ -413,143 +417,52 @@ static int setup_pmic_voltages(void)
 		} else {
 
 			printf("Set POP Voltage\n");
-/*
-	SW1ABVOLT 	0x20 SW1AB Output voltage set point in normal operation
-	SW1ABSTBY 	0x21 SW1AB Output voltage set point on Standby
-	SW1ABOFF 	0x22 SW1AB Output voltage set point on Sleep
 
-	SW1CVOLT 	0x2E SW1C Output voltage set point in normal operation
-	SW1CSTBY 	0x2F SW1C Output voltage set point in Standby
-	SW1COFF 	0x30 SW1C Output voltage set point in Sleep
-*/
-			/* set SW1ABVOLT staby volatage 1.375 V*/
-			if (i2c_read(0x8, 0x20, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
-				return -1;
-			}
-			value &= ~0x3f;
-			value |= 0x2b;
-			if (i2c_write(0x8, 0x20, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
+			value=0x24;
+			retval+=i2c_write(0x8, 0x20, 1, &value, 1);
+			value=0x18;
+			retval+=i2c_write(0x8, 0x21, 1, &value, 1);
+			retval+=i2c_write(0x8, 0x22, 1, &value, 1);
 
-			/* set SW1ABSTBY staby volatage 1.375 V*/
-			if (i2c_read(0x8, 0x21, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
-				return -1;
-			}
-			value &= ~0x3f;
-			value |= 0x2b;
-			if (i2c_write(0x8, 0x21, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
+			value=0x24;
+			retval+=i2c_write(0x8, 0x2E, 1, &value, 1);
+			value=0x18;
+			retval+=i2c_write(0x8, 0x2F, 1, &value, 1);
+			retval+=i2c_write(0x8, 0x30, 1, &value, 1);
+			
+			value=0x72;
+			retval+=i2c_write(0x8, 0x35, 1, &value, 1);
+			value=0x70;
+			retval+=i2c_write(0x8, 0x36, 1, &value, 1);
+			retval+=i2c_write(0x8, 0x37, 1, &value, 1);
+			
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x23, 1, &value, 1);
+			value=0x00;
+			retval+=i2c_write(0x8, 0x24, 1, &value, 1);
 
-			/* set SW1ABOFF staby volatage 1.375 V*/
-			if (i2c_read(0x8, 0x22, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x31, 1, &value, 1);
+			value=0x40;
+			retval+=i2c_write(0x8, 0x32, 1, &value, 1);
+			
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x38, 1, &value, 1);
+			
+			value=0x0F;
+			retval+=i2c_write(0x8, 0x71, 1, &value, 1);
+			if(retval)
+			{
+				printf("PMIC write voltages error!\n");
 				return -1;
 			}
-			value &= ~0x3f;
-			value |= 0x2b;
-			if (i2c_write(0x8, 0x22, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
-			/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
-			if (i2c_read(0x8, 0x24, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
-				return -1;
-			}
-			value &= ~0xc0;
-			value |= 0x40;
-			if (i2c_write(0x8, 0x24, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
-
-			/* set SW1CVOLT staby volatage 1.375*/
-			if (i2c_read(0x8, 0x2e, 1, &value, 1)) {
-				printf("Read SW1CSTBY error!\n");
-				return -1;
-			}
-			value &= ~0x3f;
-			value |= 0x2b;
-			if (i2c_write(0x8, 0x2e, 1, &value, 1)) {
-				printf("Set SW1CSTBY error!\n");
-				return -1;
-			}
-
-			/* set SW1CSTBY staby volatage 1.375*/
-			if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
-				printf("Read SW1CSTBY error!\n");
-				return -1;
-			}
-			value &= ~0x3f;
-			value |= 0x2b;
-			if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
-				printf("Set SW1CSTBY error!\n");
-				return -1;
-			}
-
-			/* set SW1COFF staby volatage 1.375*/
-			if (i2c_read(0x8, 0x30, 1, &value, 1)) {
-				printf("Read SW1CSTBY error!\n");
-				return -1;
-			}
-			value &= ~0x3f;
-			value |= 0x2b;
-			if (i2c_write(0x8, 0x30, 1, &value, 1)) {
-				printf("Set SW1CSTBY error!\n");
-				return -1;
-			}
-
-
-			/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
-			if (i2c_read(0x8, 0x32, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
-				return -1;
-			}
-			value &= ~0xc0;
-			value |= 0x40;
-			if (i2c_write(0x8, 0x32, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
-
-
-
-			/* Setup VCC (SW2) to 3.3 */
-			value = 0x72;
-			if (i2c_write(0x8, 0x35, 1, &value, 3)) {
-				printf("Set SW2 VCC error!\n");
-				return -1;
-			}
-
-			if (i2c_write(0x8, 0x36, 1, &value, 3)) {
-				printf("Set SW2 VCC standby error!\n");
-				return -1;
-			}
-
-			/*Set VGEN6 from to 3.3V*/
-			if (i2c_read(0x8, 0x71, 1, &value, 1)) {
-				printf("Read VGEN5 error!\n");
-				return -1;
-			}
-			value &= ~0xf;
-			value |= 0xf;
-			if (i2c_write(0x8, 0x71, 1, &value, 1)) {
-				printf("Set VGEN5 error!\n");
-				return -1;
-			}
-
 		}
 	}
 
 
 	return 0;
 }
+
 
 #ifdef CONFIG_LDO_BYPASS_CHECK
 void ldo_mode_set(int ldo_bypass)
@@ -571,13 +484,13 @@ void ldo_mode_set(int ldo_bypass)
 			return;
 		}
 		/* increase VDDARM/VDDSOC 1.42 */
-		if (i2c_read(0x8, 0x2e, 1, &value, 1)) {
+		if (i2c_read(0x8, 0x2E, 1, &value, 1)) {
 			printf("Read SW1C error!\n");
 			return;
 		}
 		value &= ~0x3f;
 		value |= 0x24;
-		if (i2c_write(0x8, 0x2e, 1, &value, 1)) {
+		if (i2c_write(0x8, 0x2E, 1, &value, 1)) {
 			printf("Set SW1C error!\n");
 			return;
 		}
@@ -593,6 +506,12 @@ static void setup_iomux_uart(void)
 {
 	MX6QDL_SET_PAD(PAD_CSI0_DAT10__UART1_TXD , MUX_PAD_CTRL(UART_PAD_CTRL));
 	MX6QDL_SET_PAD(PAD_CSI0_DAT11__UART1_RXD , MUX_PAD_CTRL(UART_PAD_CTRL));
+}
+static void setup_iomux_per_vcc_en(void)
+{
+	MX6QDL_SET_PAD(PAD_EIM_D31__GPIO_3_31, MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
+	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
+	gpio_set_value(IMX_GPIO_NR(3, 31), 1);
 }
 
 #ifdef CONFIG_FSL_ESDHC
@@ -1102,7 +1021,7 @@ u32 get_board_rev(void)
 
 int board_early_init_f(void)
 {
-
+	setup_iomux_per_vcc_en();
 	setup_iomux_uart();
 
 #if  !defined(CONFIG_SPL_BUILD)
