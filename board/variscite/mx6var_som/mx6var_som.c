@@ -478,7 +478,7 @@ void ldo_mode_set(int ldo_bypass)
 			return;
 		}
 		value &= ~0x3f;
-		value |= 0x24;
+		value |= 0x29;
 		if (i2c_write(0x8, 0x20, 1, &value, 1)) {
 			printf("Set SW1AB error!\n");
 			return;
@@ -489,7 +489,7 @@ void ldo_mode_set(int ldo_bypass)
 			return;
 		}
 		value &= ~0x3f;
-		value |= 0x24;
+		value |= 0x29;
 		if (i2c_write(0x8, 0x2E, 1, &value, 1)) {
 			printf("Set SW1C error!\n");
 			return;
