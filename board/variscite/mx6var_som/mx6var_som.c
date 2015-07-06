@@ -418,13 +418,13 @@ static int setup_pmic_voltages(void)
 
 			printf("Set POP Voltage\n");
 
-			value=0x24;
+			value=0x29;
 			retval+=i2c_write(0x8, 0x20, 1, &value, 1);
 			value=0x18;
 			retval+=i2c_write(0x8, 0x21, 1, &value, 1);
 			retval+=i2c_write(0x8, 0x22, 1, &value, 1);
 
-			value=0x24;
+			value=0x29;
 			retval+=i2c_write(0x8, 0x2E, 1, &value, 1);
 			value=0x18;
 			retval+=i2c_write(0x8, 0x2F, 1, &value, 1);
