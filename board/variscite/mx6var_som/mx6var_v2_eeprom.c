@@ -68,7 +68,7 @@ void load_custom_data(u32 *custom_addresses_values)
 	{
 		if(custom_addresses_values[i]==0)
 			break;
-		ram_addresses[j]=custom_addresses_values[i];
+		ram_values[j]=custom_addresses_values[i];
 		j++;
 	}
 }
