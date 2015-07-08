@@ -201,6 +201,15 @@ iomux_v3_cfg_t const usdhc2_padsdl[] = {							/* SDCARD */
 	MX6_PAD_SD2_DAT3__SD2_DATA3	| MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
+iomux_v3_cfg_t const usdhc3_padsdl[] = {							/* SDCARD */
+	MX6_PAD_SD3_CLK__SD3_CLK	| MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_CMD__SD3_CMD	| MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT0__SD3_DATA0	| MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT1__SD3_DATA1	| MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT2__SD3_DATA2	| MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT3__SD3_DATA3	| MUX_PAD_CTRL(USDHC_PAD_CTRL),
+};
+
 iomux_v3_cfg_t const pcie_padsdl[] = {
 	MX6_PAD_EIM_D21__GPIO3_IO21		| MUX_PAD_CTRL(NO_PAD_CTRL),		/* PCIE_DIS */
 	MX6_PAD_EIM_D22__GPIO3_IO22		| MUX_PAD_CTRL(NO_PAD_CTRL),		/* PCIE_WAKEUP */
@@ -230,7 +239,10 @@ void setup_enet_pads_finaldl(void){
 void setup_uart1_padsdl(void){
 	imx_iomux_v3_setup_multiple_pads(uart1_padsdl, ARRAY_SIZE(uart1_padsdl));
 }
-void setup_usdhc2_padsdl (void){
+void setup_usdhc3_padsdl(void){
+	imx_iomux_v3_setup_multiple_pads(usdhc3_padsdl, ARRAY_SIZE(usdhc3_padsdl));
+}
+void setup_usdhc2_padsdl(void){
 	imx_iomux_v3_setup_multiple_pads(usdhc2_padsdl, ARRAY_SIZE(usdhc2_padsdl));
 }
 void setup_usdhc1_padsdl (void){

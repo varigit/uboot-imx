@@ -83,6 +83,25 @@ u32 get_cpu_rev(void)
 	return (type << 12) | (reg + 0x10);
 }
 
+
+u32 is_cpu_pop_package(void)
+{
+	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	struct mxc_ccm_reg *ccm_regs = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	u32 reg = readl(&ccm_regs->digprog_sololite);
+	u32 type = ((reg >> 16) & 0xff);
+
+	reg = readl(&ccm_regs->digprog);
+	type = ((reg >> 16) & 0xff);
+	if (type != MXC_CPU_MX6DL) 
+		if (soc_sbmr & 0x200000)
+			return 1;
+		else
+			return 0;		
+	return 0;
+}
+
+
 #ifdef CONFIG_REVISION_TAG
 u32 __weak get_board_rev(void)
 {
