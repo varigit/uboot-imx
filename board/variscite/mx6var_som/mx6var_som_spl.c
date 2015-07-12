@@ -818,7 +818,7 @@ static int  spl_dram_init_v2(void)
 		
 	handle_eeprom_data(&var_eeprom_config_struct_v2);
 	
-	sdram_size = var_eeprom_config_struct_v2.ddr_size*1024;
+	sdram_size = var_eeprom_config_struct_v2.ddr_size*128;
 	g_b_dram_set_by_var_eeprom_config = true;
 
 	return SPL_DRAM_INIT_STATUS_OK;
