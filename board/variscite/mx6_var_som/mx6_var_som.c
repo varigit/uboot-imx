@@ -263,7 +263,7 @@ static int setup_pmic_mode(int chip)
 
 static int setup_pmic_voltages(void)
 {
-	unsigned char value, rev_id = 0 ;
+	unsigned char value, retval, rev_id = 0 ;
 
 	i2c_set_bus_num(CONFIG_PMIC_I2C_BUS);
 
@@ -288,80 +288,195 @@ static int setup_pmic_voltages(void)
 			return -1;
 		}
 
-		/* Set Gigbit Ethernet voltage (SOM v1.1/1.0)*/
-		value = 0x60;
-		if (i2c_write(0x8, 0x4a, 1, &value, 1)) {
-			printf("Set Gigabit Ethernet voltage error!\n");
-			return -1;
-		}
+		if (!is_cpu_pop_package()){
+			printf("Set pmic voltages\n");
+			/* Set Gigbit Ethernet voltage (SOM v1.1/1.0)*/
+			value = 0x60;
+			if (i2c_write(0x8, 0x4a, 1, &value, 1)) {
+				printf("Set Gigabit Ethernet voltage error!\n");
+				return -1;
+			}
 
-		/*set VGEN3 to 2.5V*/
-		value = 0x77;
-		if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
-			printf("Set VGEN3 error!\n");
-			return -1;
-		}
+			/*set VGEN3 to 2.5V*/
+			value = 0x77;
+			if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
+				printf("Set VGEN3 error!\n");
+				return -1;
+			}
 
-		/*increase VGEN5 from 2.8 to 3V*/
-		if (i2c_read(0x8, 0x70, 1, &value, 1)) {
-			printf("Read VGEN5 error!\n");
-			return -1;
-		}
-		value &= ~0xf;
-		value |= 0xc;
-		if (i2c_write(0x8, 0x70, 1, &value, 1)) {
-			printf("Set VGEN5 error!\n");
-			return -1;
-		}
-		/* set SW1AB staby volatage 0.975V*/
-		if (i2c_read(0x8, 0x21, 1, &value, 1)) {
-			printf("Read SW1ABSTBY error!\n");
-			return -1;
-		}
-		value &= ~0x3f;
-		value |= 0x1b;
-		if (i2c_write(0x8, 0x21, 1, &value, 1)) {
-			printf("Set SW1ABSTBY error!\n");
-			return -1;
-		}
-		/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
-		if (i2c_read(0x8, 0x24, 1, &value, 1)) {
-			printf("Read SW1ABSTBY error!\n");
-			return -1;
-		}
-		value &= ~0xc0;
-		value |= 0x40;
-		if (i2c_write(0x8, 0x24, 1, &value, 1)) {
-			printf("Set SW1ABSTBY error!\n");
-			return -1;
-		}
+			/*increase VGEN5 from 2.8 to 3V*/
+			if (i2c_read(0x8, 0x70, 1, &value, 1)) {
+				printf("Read VGEN5 error!\n");
+				return -1;
+			}
+			value &= ~0xf;
+			value |= 0xc;
+			if (i2c_write(0x8, 0x70, 1, &value, 1)) {
+				printf("Set VGEN5 error!\n");
+				return -1;
+			}
+			/* set SW1AB staby volatage 0.975V*/
+			if (i2c_read(0x8, 0x21, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x1b;
+			if (i2c_write(0x8, 0x21, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+			/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x24, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x24, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
 
-		/* set SW1C staby volatage 0.975V*/
-		if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
-			printf("Read SW1CSTBY error!\n");
-			return -1;
-		}
-		value &= ~0x3f;
-		value |= 0x1b;
-		if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
-			printf("Set SW1CSTBY error!\n");
-			return -1;
-		}
+			/* set SW1C staby volatage 0.975V*/
+			if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
+				printf("Read SW1CSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x1b;
+			if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
+				printf("Set SW1CSTBY error!\n");
+				return -1;
+			}
+	
+			/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x32, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x32, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+		} else {
+			printf("Set POP PMIC Voltages\n");
+#if 0
+			/* Set Gigbit Ethernet voltage (SOM v1.1/1.0)*/
+			value = 0x60;
+			if (i2c_write(0x8, 0x4a, 1, &value, 1)) {
+				printf("Set Gigabit Ethernet voltage error!\n");
+				return -1;
+			}
 
-		/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
-		if (i2c_read(0x8, 0x32, 1, &value, 1)) {
-			printf("Read SW1ABSTBY error!\n");
-			return -1;
-		}
-		value &= ~0xc0;
-		value |= 0x40;
-		if (i2c_write(0x8, 0x32, 1, &value, 1)) {
-			printf("Set SW1ABSTBY error!\n");
-			return -1;
+			/*set VGEN3 to 2.5V*/
+			value = 0x77;
+			if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
+				printf("Set VGEN3 error!\n");
+				return -1;
+			}
+
+			/*increase VGEN5 from 2.8 to 3V*/
+			if (i2c_read(0x8, 0x70, 1, &value, 1)) {
+				printf("Read VGEN5 error!\n");
+				return -1;
+			}
+			value &= ~0xf;
+			value |= 0xc;
+			if (i2c_write(0x8, 0x70, 1, &value, 1)) {
+				printf("Set VGEN5 error!\n");
+				return -1;
+			}
+			/* set SW1AB staby volatage 0.975V*/
+			if (i2c_read(0x8, 0x21, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x1b;
+			if (i2c_write(0x8, 0x21, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+			/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x24, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x24, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+
+			/* set SW1C staby volatage 0.975V*/
+			if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
+				printf("Read SW1CSTBY error!\n");
+				return -1;
+			}
+			value &= ~0x3f;
+			value |= 0x1b;
+			if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
+				printf("Set SW1CSTBY error!\n");
+				return -1;
+			}
+	
+			/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
+			if (i2c_read(0x8, 0x32, 1, &value, 1)) {
+				printf("Read SW1ABSTBY error!\n");
+				return -1;
+			}
+			value &= ~0xc0;
+			value |= 0x40;
+			if (i2c_write(0x8, 0x32, 1, &value, 1)) {
+				printf("Set SW1ABSTBY error!\n");
+				return -1;
+			}
+#endif
+			value=0x29;
+			retval+=i2c_write(0x8, 0x20, 1, &value, 1);
+			value=0x18;
+			retval+=i2c_write(0x8, 0x21, 1, &value, 1);
+			retval+=i2c_write(0x8, 0x22, 1, &value, 1);
+
+			value=0x29;
+			retval+=i2c_write(0x8, 0x2E, 1, &value, 1);
+			value=0x18;
+			retval+=i2c_write(0x8, 0x2F, 1, &value, 1);
+			retval+=i2c_write(0x8, 0x30, 1, &value, 1);
+			
+			value=0x72;
+			retval+=i2c_write(0x8, 0x35, 1, &value, 1);
+			value=0x70;
+			retval+=i2c_write(0x8, 0x36, 1, &value, 1);
+			retval+=i2c_write(0x8, 0x37, 1, &value, 1);
+			
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x23, 1, &value, 1);
+			value=0x00;
+			retval+=i2c_write(0x8, 0x24, 1, &value, 1);
+
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x31, 1, &value, 1);
+			value=0x40;
+			retval+=i2c_write(0x8, 0x32, 1, &value, 1);
+			
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x38, 1, &value, 1);
+			
+			value=0x0F;
+			retval+=i2c_write(0x8, 0x71, 1, &value, 1);
+			if(retval)
+			{
+				printf("PMIC write voltages error!\n");
+				return -1;
+			}
 		}
 	}
 
-	printf("pmic voltages set!\n");
 	return 0;
 }
 
@@ -387,10 +502,13 @@ void ldo_mode_set(int ldo_bypass)
 			return;
 		}
 		value &= ~0x3f;
+		value |= 0x29;
+#if 0
 	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
 		value |= 0x20;
 	else
 		value |= 0x27;
+#endif
 
 		if (i2c_write(0x8, 0x20, 1, &value, 1)) {
 			printf("Set SW1AB error!\n");
@@ -402,7 +520,7 @@ void ldo_mode_set(int ldo_bypass)
 			return;
 		}
 		value &= ~0x3f;
-		value |= 0x28;
+		value |= 0x29;
 		if (i2c_write(0x8, 0x2e, 1, &value, 1)) {
 			printf("Set SW1C error!\n");
 			return;
@@ -428,6 +546,7 @@ void ldo_mode_set(int ldo_bypass)
 			else
 				vddarm = 0x23;
 
+#if 0
 		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
 			printf("Read SW1AB error!\n");
 			return;
@@ -451,6 +570,7 @@ void ldo_mode_set(int ldo_bypass)
 			return;
 		}
 
+#endif
 		finish_anatop_bypass();
 		printf("switch to ldo_bypass mode!\n");
 	}
@@ -494,15 +614,52 @@ int board_mmc_getcd(struct mmc *mmc)
 	return 1;
 }
 
-int board_mmc_init(bd_t *bis)
+int board_mmc_init_dart(bd_t *bis)
 {
 	s32 status = 0;
 
 	/*
 	 * According to the board_mmc_init() the following map is done:
 	 * (U-boot device node)    (Physical Port)
-	 * mmc0                    SD0
-	 * mmc1                    eMMC
+	 * mmc0                    eMMC
+	 * mmc1                    SD0
+	 */
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+		setup_usdhc3_padsq();
+	else
+		setup_usdhc3_padsdl();
+
+	/* eMMC */
+	usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
+	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+	usdhc_cfg[0].max_bus_width = 4;
+	status |= fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
+
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+		setup_usdhc2_padsq();
+	else
+		setup_usdhc2_padsdl();
+
+	/* SDCARD */
+	usdhc_cfg[1].esdhc_base = USDHC2_BASE_ADDR;
+	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+	usdhc_cfg[1].max_bus_width = 4;
+	status |= fsl_esdhc_initialize(bis, &usdhc_cfg[1]);
+
+	return status;
+}
+
+int board_mmc_init(bd_t *bis)
+{
+	s32 status = 0;
+
+	if (is_cpu_pop_package())
+		return(board_mmc_init_dart(bis));
+	/*
+	 * According to the board_mmc_init() the following map is done:
+	 * (U-boot device node)    (Physical Port)
+	 * mmc0                    eMMC
+	 * mmc1                    SD0
 	 */
 	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
 		setup_usdhc1_padsq();
@@ -547,7 +704,7 @@ void board_late_mmc_env_init(void)
 	char mmcblk[32];
 	u32 dev_no = mmc_get_env_devno();
 
-	printf("MMC Board late init\n");
+	printf("MMC Board late init Dev#%d\n", dev_no);
 
 	if (!check_mmc_autodetect())
 		return;
@@ -952,9 +1109,9 @@ void board_fastboot_setup(void)
 	case MMC3_BOOT:
 	    printf("BOOT mmc3\n");
 	    if (!getenv("fastboot_dev"))
-			setenv("fastboot_dev", "mmc1");
+			setenv("fastboot_dev", "mmc0");
 	    if (!getenv("bootcmd"))
-			setenv("bootcmd", "booti mmc1");
+			setenv("bootcmd", "booti mmc0");
 	    break;
 	case MMC4_BOOT:
 	    printf("BOOT mmc4\n");
