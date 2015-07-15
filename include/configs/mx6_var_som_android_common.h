@@ -36,7 +36,7 @@
 /*  For system.img growing up more than 256MB, more buffer needs
 *   to receive the system.img*/
 #define CONFIG_FASTBOOT_TRANSFER_BUF	0x2c000000
-#define CONFIG_FASTBOOT_TRANSFER_BUF_SIZE 0x19000000 /* 400M byte */
+#define CONFIG_FASTBOOT_TRANSFER_BUF_SIZE 0x1E000000 /* 500M byte */
 
 
 #define CONFIG_CMD_BOOTI
