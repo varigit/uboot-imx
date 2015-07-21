@@ -223,6 +223,13 @@ iomux_v3_cfg_t const di0_padsdl[] = {
 	MX6_PAD_DI0_PIN3__IPU1_DI0_PIN03,		/* DISP0_VSYNC */
 };
 
+iomux_v3_cfg_t const codec_padsdl[] = {
+	MX6_PAD_GPIO_19__GPIO4_IO05,
+};
+
+void setup_codec_padsdl(void){
+	imx_iomux_v3_setup_multiple_pads(codec_padsdl, ARRAY_SIZE(codec_padsdl));
+}
 void setup_pcie_padsdl(void){
 	imx_iomux_v3_setup_multiple_pads(pcie_padsdl, ARRAY_SIZE(pcie_padsdl));
 }

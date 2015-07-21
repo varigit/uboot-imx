@@ -61,3 +61,30 @@ U_BOOT_CMD(
 	"Perform RESET of the CPU",
 	""
 );
+
+int do_codec_reset(cmd_tbl_t *cmd_tbl, int flag, int argc, char* argv[])
+{
+    extern void codec_reset(int rst);
+
+    if (argc != 2 ) {
+usage:
+        cmd_usage(cmd_tbl);
+        return 1;
+    }
+
+    if (!strcmp(argv[1], "on"))
+        codec_reset(0);
+    else if (!strcmp(argv[1], "reset"))
+        codec_reset(1);
+    else
+        goto usage;
+
+    return 0;
+}
+
+U_BOOT_CMD(codec_reset, 2, 0, do_codec_reset,
+    "Audio codec reset command",
+    "codec_reset <on|reset>\n"
+    ""
+);
+

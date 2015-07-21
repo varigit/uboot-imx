@@ -959,6 +959,25 @@ int overwrite_console(void)
 	return 1;
 }
 
+void codec_reset(int rst)
+{
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+		setup_codec_padsq();
+	else
+		setup_codec_padsdl();
+
+	gpio_direction_output(IMX_GPIO_NR(4, 5), 1);   /* Variscite codec reset */
+
+	if (rst) {
+		printf("CODEC RESET\n");
+		gpio_set_value(IMX_GPIO_NR(4, 5), 0);
+	}
+	else {
+		printf("CODEC NORMAL\n");
+		gpio_set_value(IMX_GPIO_NR(4, 5), 1);
+	}
+}
+
 int board_eth_init(bd_t *bis)
 {
 	uint32_t base = IMX_FEC_BASE;
@@ -1033,6 +1052,10 @@ int board_init(void)
 #ifdef CONFIG_SYS_I2C_MXC
 #if  !defined(CONFIG_SPL_BUILD)
 	setup_local_i2c();
+
+	//Reset CODEC to allow i2c communication
+	codec_reset(1);
+	udelay(1000 * 100);
 
 	if (!is_som_solo())
 		ret = setup_pmic_voltages();

@@ -7,6 +7,7 @@ void setup_usdhc3_padsq (void);
 void setup_usdhc2_padsq (void);
 void setup_usdhc1_padsq (void);
 void setup_di0_padsq(void);
+void setup_codec_padsq(void);
 
 void setup_pcie_padsdl(void);
 void setup_enet_pads_resetdl(void);
@@ -19,3 +20,5 @@ void setup_usdhc1_padsdl(void);
 void setup_di0_padsdl(void);
 void setup_i2c_padq(void);
 void setup_i2c_paddl(void);
+void setup_codec_padsdl(void);
+
