@@ -142,6 +142,12 @@ unsigned int *sdram_global;
 			break;
 	}
 
+	if (is_cpu_pop_package()){
+		sdram_size = 1024;
+		gd->ram_size = ((ulong)sdram_size * 1024 * 1024);
+		return 0;
+	}
+
 	sdram_global =  (u32 *)0x917000;
 	if (*sdram_global  > sdram_size) sdram_size = 3588;	//Android limitation 3.5GB.;
 
@@ -1028,6 +1034,10 @@ int board_early_init_f(void)
 	setup_sata();
 #endif
 
+	//Reset CODEC to allow i2c communication
+	codec_reset(1);
+	udelay(1000 * 2);
+
 	return 0;
 }
 
@@ -1053,12 +1063,9 @@ int board_init(void)
 #if  !defined(CONFIG_SPL_BUILD)
 	setup_local_i2c();
 
-	//Reset CODEC to allow i2c communication
-	codec_reset(1);
-	udelay(1000 * 100);
-
 	if (!is_som_solo())
 		ret = setup_pmic_voltages();
+
 	if (ret)
 		return -1;
 #endif /* !defined(CONFIG_SPL_BUILD) */
@@ -1085,17 +1092,6 @@ int board_late_init(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-		setup_i2c_padq();
-	else
-		setup_i2c_paddl();
-
-	if (!is_som_solo())
-		ret = setup_pmic_voltages();
-
-	if (ret)
-		return -1;
-
 	board_late_mmc_env_init();
 
 	return 0;
@@ -1103,7 +1099,34 @@ int board_late_init(void)
 
 int checkboard(void)
 {
-	puts("Board: VAR-SOM-MX6\n");
+	printf("Board: Variscite VAR_SOM_MX6 ");
+
+	if (is_mx6q()){
+		if (is_cpu_pop_package()){
+			printf ("Quad-POP\n");
+		} else {
+			printf ("Quad\n");
+		}
+		
+	} else if (is_mx6d()){
+		if (is_cpu_pop_package()){
+			printf ("Dual-POP\n");
+		} else {
+			printf ("Dual\n");
+		}
+	} else if (is_mx6dl()) {
+		if (is_som_solo())
+			printf ("SOM-Dual\n");
+		else
+		   printf ("Dual Lite\n");
+	} else if (is_mx6solo()){
+		if (is_som_solo()){
+			printf ("SOM-Solo\n");
+		} else {
+			printf ("Solo\n");
+		}
+	} else printf ("????\n");
+
 	return 0;
 }
 
