@@ -369,110 +369,45 @@ static int setup_pmic_voltages(void)
 			}
 		} else {
 			printf("Set POP PMIC Voltages\n");
-#if 0
-			/* Set Gigbit Ethernet voltage (SOM v1.1/1.0)*/
-			value = 0x60;
-			if (i2c_write(0x8, 0x4a, 1, &value, 1)) {
-				printf("Set Gigabit Ethernet voltage error!\n");
-				return -1;
-			}
 
-			/*set VGEN3 to 2.5V*/
-			value = 0x77;
-			if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
-				printf("Set VGEN3 error!\n");
-				return -1;
-			}
-
-			/*increase VGEN5 from 2.8 to 3V*/
-			if (i2c_read(0x8, 0x70, 1, &value, 1)) {
-				printf("Read VGEN5 error!\n");
-				return -1;
-			}
-			value &= ~0xf;
-			value |= 0xc;
-			if (i2c_write(0x8, 0x70, 1, &value, 1)) {
-				printf("Set VGEN5 error!\n");
-				return -1;
-			}
-			/* set SW1AB staby volatage 0.975V*/
-			if (i2c_read(0x8, 0x21, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
-				return -1;
-			}
-			value &= ~0x3f;
-			value |= 0x1b;
-			if (i2c_write(0x8, 0x21, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
-			/* set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
-			if (i2c_read(0x8, 0x24, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
-				return -1;
-			}
-			value &= ~0xc0;
-			value |= 0x40;
-			if (i2c_write(0x8, 0x24, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
-
-			/* set SW1C staby volatage 0.975V*/
-			if (i2c_read(0x8, 0x2f, 1, &value, 1)) {
-				printf("Read SW1CSTBY error!\n");
-				return -1;
-			}
-			value &= ~0x3f;
-			value |= 0x1b;
-			if (i2c_write(0x8, 0x2f, 1, &value, 1)) {
-				printf("Set SW1CSTBY error!\n");
-				return -1;
-			}
-	
-			/* set SW1C/VDDSOC step ramp up time to from 16us to 4us/25mV */
-			if (i2c_read(0x8, 0x32, 1, &value, 1)) {
-				printf("Read SW1ABSTBY error!\n");
-				return -1;
-			}
-			value &= ~0xc0;
-			value |= 0x40;
-			if (i2c_write(0x8, 0x32, 1, &value, 1)) {
-				printf("Set SW1ABSTBY error!\n");
-				return -1;
-			}
-#endif
+			/* VDD core */
 			value=0x29;
 			retval+=i2c_write(0x8, 0x20, 1, &value, 1);
 			value=0x18;
+			/* VDD core Output voltage set point on Standby */
 			retval+=i2c_write(0x8, 0x21, 1, &value, 1);
+			/* VDD core SW1AB Output voltage set point on Sleep */
 			retval+=i2c_write(0x8, 0x22, 1, &value, 1);
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x23, 1, &value, 1);
+			value=0x00;
+			retval+=i2c_write(0x8, 0x24, 1, &value, 1);
 
+			/* VDD soc */
 			value=0x29;
+			/* VDD soc Output voltage set point on Standby */
 			retval+=i2c_write(0x8, 0x2E, 1, &value, 1);
 			value=0x18;
 			retval+=i2c_write(0x8, 0x2F, 1, &value, 1);
+			/* VDD soc SW1AB Output voltage set point on Sleep */
 			retval+=i2c_write(0x8, 0x30, 1, &value, 1);
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x31, 1, &value, 1);
+			value=0x40;
+			retval+=i2c_write(0x8, 0x32, 1, &value, 1);
 			
+			/* 3.3V Output voltage set point on normal operation */
 			value=0x72;
 			retval+=i2c_write(0x8, 0x35, 1, &value, 1);
 			value=0x70;
 			retval+=i2c_write(0x8, 0x36, 1, &value, 1);
 			retval+=i2c_write(0x8, 0x37, 1, &value, 1);
 			
-			value=0x0D;
-			retval+=i2c_write(0x8, 0x23, 1, &value, 1);
-			value=0x00;
-			retval+=i2c_write(0x8, 0x24, 1, &value, 1);
-
-			value=0x0D;
-			retval+=i2c_write(0x8, 0x31, 1, &value, 1);
-			value=0x40;
-			retval+=i2c_write(0x8, 0x32, 1, &value, 1);
 			
 			value=0x0D;
 			retval+=i2c_write(0x8, 0x38, 1, &value, 1);
 			
+			/* VGEN6 */
 			value=0x0F;
 			retval+=i2c_write(0x8, 0x71, 1, &value, 1);
 			if(retval)
@@ -541,6 +476,7 @@ void ldo_mode_set(int ldo_bypass)
 		 * VDDARM:1.075V@400M; VDDSOC:1.175V@400M
 		 */
 		is_400M = set_anatop_bypass(2);
+#if 0
 		if (is_400M)
 			if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
 				vddarm = 0x1b;
@@ -552,7 +488,6 @@ void ldo_mode_set(int ldo_bypass)
 			else
 				vddarm = 0x23;
 
-#if 0
 		if (i2c_read(0x8, 0x20, 1, &value, 1)) {
 			printf("Read SW1AB error!\n");
 			return;
