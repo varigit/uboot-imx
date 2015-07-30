@@ -370,51 +370,50 @@ static int setup_pmic_voltages(void)
 		} else {
 			printf("Set POP PMIC Voltages\n");
 
+			value=0x24;
 			/* VDD core */
-			value=0x29;
 			retval+=i2c_write(0x8, 0x20, 1, &value, 1);
 			value=0x18;
 			/* VDD core Output voltage set point on Standby */
 			retval+=i2c_write(0x8, 0x21, 1, &value, 1);
 			/* VDD core SW1AB Output voltage set point on Sleep */
 			retval+=i2c_write(0x8, 0x22, 1, &value, 1);
-			value=0x0D;
-			retval+=i2c_write(0x8, 0x23, 1, &value, 1);
-			value=0x00;
-			retval+=i2c_write(0x8, 0x24, 1, &value, 1);
 
-			/* VDD soc */
-			value=0x29;
+			value=0x24;
 			/* VDD soc Output voltage set point on Standby */
 			retval+=i2c_write(0x8, 0x2E, 1, &value, 1);
 			value=0x18;
 			retval+=i2c_write(0x8, 0x2F, 1, &value, 1);
-			/* VDD soc SW1AB Output voltage set point on Sleep */
 			retval+=i2c_write(0x8, 0x30, 1, &value, 1);
-			value=0x0D;
-			retval+=i2c_write(0x8, 0x31, 1, &value, 1);
-			value=0x40;
-			retval+=i2c_write(0x8, 0x32, 1, &value, 1);
 			
-			/* 3.3V Output voltage set point on normal operation */
 			value=0x72;
 			retval+=i2c_write(0x8, 0x35, 1, &value, 1);
 			value=0x70;
 			retval+=i2c_write(0x8, 0x36, 1, &value, 1);
 			retval+=i2c_write(0x8, 0x37, 1, &value, 1);
 			
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x23, 1, &value, 1);
+			value=0x00;
+			retval+=i2c_write(0x8, 0x24, 1, &value, 1);
+
+			value=0x0D;
+			retval+=i2c_write(0x8, 0x31, 1, &value, 1);
+			value=0x40;
+			retval+=i2c_write(0x8, 0x32, 1, &value, 1);
 			
 			value=0x0D;
 			retval+=i2c_write(0x8, 0x38, 1, &value, 1);
 			
-			/* VGEN6 */
+                       /* VGEN6 */
 			value=0x0F;
 			retval+=i2c_write(0x8, 0x71, 1, &value, 1);
 			if(retval)
 			{
 				printf("PMIC write voltages error!\n");
-				return -1;
-			}
+                               return -1;
+                       }
+
 		}
 	}
 
