@@ -97,25 +97,7 @@ static void ram_size(void)
 {
 unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 unsigned int volatile * port2;
-volatile struct mmdc_p_regs *mmdc_p0;
-ulong sdram_cs;
 
-	sdram_cs = mmdc_p0->mdasp;
-
-	switch(sdram_cs) {
-		case 0x00000017:
-			sdram_size = 512;
-			break;
-		case 0x00000027:
-			sdram_size = 1024;
-			break;
-		case 0x00000047:
-			sdram_size = 2048;
-			break;
-		case 0x00000087:
-			sdram_size = 4096;
-			break;
-	}
 	if (is_cpu_pop_package()){
 		sdram_size = 1024;
 		return;
@@ -193,6 +175,7 @@ static void reset_ddr_solo(void){
 		conack = (mmdc_p0->mdscr & 0x4000);
 	} while (conack == 0);
 }
+
 /*
  * Bugfix: Fix Freescale wrong processor documentation.
  */
@@ -366,6 +349,7 @@ static void spl_dram_init_mx6solo_512mb(void)
 	mmdc_p0->mdpdc 			= (u32)0x00025565;
 	mmdc_p0->mapsr 			= (u32)0x00011006;
 	mmdc_p0->mdscr 			= (u32)0x00000000;
+	sdram_size = 512;
 }
 
 static void spl_dram_init_mx6solo_1gb(void)
@@ -418,6 +402,7 @@ static void spl_dram_init_mx6solo_1gb(void)
 
 	mmdc_p0->mdpdc 			= (u32)0x00025565;
 	mmdc_p0->mdscr 			= (u32)0x00000000;
+	sdram_size = 1024;
 }
 
 //Copy from DCD in flash_header.S
@@ -495,6 +480,7 @@ static void spl_dram_init_mx6dl_1g(void)
 	mmdc_p1->mapsr 			= (u32)0x00011006;
 
 	mmdc_p0->mdscr 			= (u32)0x00000000;
+	sdram_size = 1024;
 }
 
 /* i.MX6Q */
@@ -580,6 +566,7 @@ static void spl_dram_init_mx6q_1g(void)
 	mmdc_p0->mdpdc 			= (u32)0x00025576;
 	mmdc_p0->mapsr 			= (u32)0x00011006;
 	mmdc_p0->mdscr 			= (u32)0x00000000;
+	sdram_size = 1024;
 
 }
 
@@ -663,6 +650,7 @@ static void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mdpdc 			= (u32)0x00025576;
 	mmdc_p0->mapsr 			= (u32)0x00011006;
 	mmdc_p0->mdscr 			= (u32)0x00000000;
+	sdram_size = 2048;
 }
 
 static char is_som_solo(void){
