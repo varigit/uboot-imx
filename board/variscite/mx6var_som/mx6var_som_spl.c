@@ -582,7 +582,25 @@ static void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mpzqhwctrl 	= (u32)0xa1390003;
 	while (mmdc_p0->mpzqhwctrl & 0x00010000)
 		;
+#ifdef CONFIG_DDR_2GBO
+	/* write leveling */
+	mmdc_p0->mpwldectrl0 	= (u32)0x001C001C;
+	mmdc_p0->mpwldectrl1 	= (u32)0x0026001E;
+	mmdc_p1->mpwldectrl0 	= (u32)0x00240030;
+	mmdc_p1->mpwldectrl1 	= (u32)0x00150028;
+	/* DQS gating, read delay, write delay calibration values
+	 based on calibration compare of 0x00ffff00  */
+	mmdc_p0->mpdgctrl0 		= (u32)0x43240338;
+	mmdc_p0->mpdgctrl1 		= (u32)0x03240318;
+	mmdc_p1->mpdgctrl0 		= (u32)0x43380344;
+	mmdc_p1->mpdgctrl1 		= (u32)0x03300268;
+	
+	mmdc_p0->mprddlctl 		= (u32)0x3C323436;
+	mmdc_p1->mprddlctl 		= (u32)0x38383444;
 
+	mmdc_p0->mpwrdlctl 		= (u32)0x363A3C36;
+	mmdc_p1->mpwrdlctl 		= (u32)0x46344840;
+#else
 	/* write leveling */
 	mmdc_p0->mpwldectrl0 	= (u32)0x001F0019;
 	mmdc_p0->mpwldectrl1 	= (u32)0x0024001F;
@@ -600,7 +618,7 @@ static void spl_dram_init_mx6q_2g(void)
 
 	mmdc_p0->mpwrdlctl 		= (u32)0x38383E3A;
 	mmdc_p1->mpwrdlctl 		= (u32)0x46344840;
-
+#endif
 	mmdc_p0->mprddqby0dl 	= (u32)0x33333333;
 	mmdc_p0->mprddqby1dl 	= (u32)0x33333333;
 	mmdc_p0->mprddqby2dl 	= (u32)0x33333333;
@@ -701,10 +719,14 @@ static void legacy_spl_dram_init(void)
 			sdram_size = 1024;
 		} else {
 			spl_mx6qd_dram_setup_iomux();
+#ifdef CONFIG_DDR_2GBO
+			spl_dram_init_mx6q_2g();
+#else
 			if (check_1_2G_only())
 				spl_dram_init_mx6q_2g();
 			else
 				spl_dram_init_mx6q_1g();
+#endif
 			ram_size();
 		}
 		break;
