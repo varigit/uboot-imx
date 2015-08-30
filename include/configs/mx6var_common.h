@@ -164,6 +164,10 @@
 	"var_auto_fdt_file=Y\0" \
 	"bootargs=console=" CONFIG_CONSOLE_DEV ",115200 ubi.mtd=3 video=mxcfb1:off "  \
 		"root=ubi0:rootfs rootfstype=ubifs \0"		     \
+	"bootargs_ubifs=setenv bootargs console=" CONFIG_CONSOLE_DEV ",115200 ubi.mtd=3 video=mxcfb1:off "  \
+		"root=ubi0:rootfs rootfstype=ubifs \0"		     \
+	"bootargs_emmc=setenv bootargs console=" CONFIG_CONSOLE_DEV ",115200 video=mxcfb1:off "  \
+		"root=/dev/mmcblk1p1 rootwait rw \0"		     \
 	"bootcmd=nand read ${loadaddr} 0x400000 0x600000;"\
 		"nand read ${fdt_addr} 0x3e0000 0x20000;"\
 		"bootm ${loadaddr} - ${fdt_addr}\0"\
