@@ -64,6 +64,11 @@
 #include "var_pin_mux_func.h"
 
 DECLARE_GLOBAL_DATA_PTR;
+#define LOW_POWER_MODE_ENABLE 1
+
+#define PER_VCC_EN_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
+	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED   |		\
+	PAD_CTL_DSE_40ohm   | PAD_CTL_HYS)
 
 #define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
@@ -367,6 +372,41 @@ static int setup_pmic_voltages(void)
 				printf("Set SW1ABSTBY error!\n");
 				return -1;
 			}
+			
+#if LOW_POWER_MODE_ENABLE
+			//set low power mode voltages to disable
+			//SW3ASTBY = 1.2750V
+			value = 0x23;
+			if (i2c_write(0x8, 0x3d, 1, &value, 1)) {
+				printf("Set SW3ASTBY error!\n");
+				return -1;
+			}
+			//SW3AOFF=1.2750V
+			value = 0x23;
+			if (i2c_write(0x8, 0x3e, 1, &value, 1)) {
+				printf("Set SW3AOFF error!\n");
+				return -1;
+			}
+			//SW2VOLT=3.2000V
+			value = 0x70;
+			if (i2c_write(0x8, 0x35, 1, &value, 1)) {
+				printf("Set SW2VOLT error!\n");
+				return -1;
+			}
+			//SW4MODE=OFF in standby
+			value = 0x1;
+			if (i2c_write(0x8, 0x4d, 1, &value, 1)) {
+				printf("Set SW4MODE error!\n");
+				return -1;
+			}
+			
+			//VGEN3CTL = OFF in standby
+			value = 0x37;
+			if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
+				printf("Set VGEN3CTL error!\n");
+				return -1;
+			}
+#endif			
 		} else {
 			printf("Set POP PMIC Voltages\n");
 
@@ -547,6 +587,18 @@ int mmc_get_env_devno(void)
 int mmc_map_to_kernel_blk(int dev_no)
 {
 	return dev_no + 1;
+}
+
+iomux_v3_cfg_t const vcc_en_pads[] = {
+	(MX6_PAD_EIM_D31__GPIO3_IO31 | MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL)),
+};
+
+static void setup_iomux_per_vcc_en(void)
+{
+	imx_iomux_v3_setup_multiple_pads(vcc_en_pads,
+		ARRAY_SIZE(vcc_en_pads));
+		
+	gpio_direction_output(IMX_GPIO_NR(3, 18), 1);
 }
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -955,6 +1007,7 @@ int board_eth_init(bd_t *bis)
 
 int board_early_init_f(void)
 {
+	setup_iomux_per_vcc_en();
 	setup_iomux_uart();
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
@@ -1112,7 +1165,7 @@ void board_fastboot_setup(void)
 		printf("unsupported boot devices\n");
 		break;
 	}
-
+ 
 }
 
 #ifdef CONFIG_ANDROID_RECOVERY
