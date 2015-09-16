@@ -598,7 +598,9 @@ static void setup_iomux_per_vcc_en(void)
 	imx_iomux_v3_setup_multiple_pads(vcc_en_pads,
 		ARRAY_SIZE(vcc_en_pads));
 		
-	gpio_direction_output(IMX_GPIO_NR(3, 18), 1);
+	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
+	gpio_set_value(IMX_GPIO_NR(3, 31), 1);
+
 }
 
 int board_mmc_getcd(struct mmc *mmc)
