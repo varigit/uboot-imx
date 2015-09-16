@@ -59,6 +59,7 @@
 #error "This code was eliminated. ONLY SPL boot mode supported"
 #endif
 DECLARE_GLOBAL_DATA_PTR;
+#define LOW_POWER_MODE_ENABLE 1
 
 #define MX6QDL_SET_PAD(p, q) \
         if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) \
@@ -88,6 +89,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define PER_VCC_EN_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED   |		\
 	PAD_CTL_DSE_40ohm   | PAD_CTL_HYS)
+
 #define SPI_PAD_CTRL (PAD_CTL_HYS |				\
 	PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm     | PAD_CTL_SRE_FAST)
@@ -414,6 +416,40 @@ static int setup_pmic_voltages(void)
 				printf("Set SW1ABSTBY error!\n");
 				return -1;
 			}
+#if LOW_POWER_MODE_ENABLE
+			//set low power mode voltages to disable
+			//SW3ASTBY = 1.2750V
+			value = 0x23;
+			if (i2c_write(0x8, 0x3d, 1, &value, 1)) {
+				printf("Set SW3ASTBY error!\n");
+				return -1;
+			}
+			//SW3AOFF=1.2750V
+			value = 0x23;
+			if (i2c_write(0x8, 0x3e, 1, &value, 1)) {
+				printf("Set SW3AOFF error!\n");
+				return -1;
+			}
+			//SW2VOLT=3.2000V
+			value = 0x70;
+			if (i2c_write(0x8, 0x35, 1, &value, 1)) {
+				printf("Set SW2VOLT error!\n");
+				return -1;
+			}
+			//SW4MODE=OFF in standby
+			value = 0x1;
+			if (i2c_write(0x8, 0x4d, 1, &value, 1)) {
+				printf("Set SW4MODE error!\n");
+				return -1;
+			}
+			
+			//VGEN3CTL = OFF in standby
+			value = 0x37;
+			if (i2c_write(0x8, 0x6e, 1, &value, 1)) {
+				printf("Set VGEN3CTL error!\n");
+				return -1;
+			}
+#endif			
 		} else {
 
 			printf("Set POP Voltage\n");
@@ -507,7 +543,7 @@ static void setup_iomux_uart(void)
 	MX6QDL_SET_PAD(PAD_CSI0_DAT10__UART1_TXD , MUX_PAD_CTRL(UART_PAD_CTRL));
 	MX6QDL_SET_PAD(PAD_CSI0_DAT11__UART1_RXD , MUX_PAD_CTRL(UART_PAD_CTRL));
 }
-static void setup_iomux_per_vcc_en(void)
+void var_setup_iomux_per_vcc_en(void)
 {
 	MX6QDL_SET_PAD(PAD_EIM_D31__GPIO_3_31, MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
 	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
@@ -1021,7 +1057,7 @@ u32 get_board_rev(void)
 
 int board_early_init_f(void)
 {
-	setup_iomux_per_vcc_en();
+	var_setup_iomux_per_vcc_en();
 	setup_iomux_uart();
 
 #if  !defined(CONFIG_SPL_BUILD)

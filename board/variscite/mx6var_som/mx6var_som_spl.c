@@ -842,6 +842,7 @@ static int spl_status;
 void board_dram_init(void)
 {
 	/* Initialize DDR based on eeprom if exist */
+	var_setup_iomux_per_vcc_en();
 	eeprom_revision=1;	
 	spl_status = spl_dram_init();
 	if (spl_status != SPL_DRAM_INIT_STATUS_OK)
