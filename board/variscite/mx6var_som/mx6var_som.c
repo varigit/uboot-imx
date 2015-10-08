@@ -549,7 +549,17 @@ void var_setup_iomux_per_vcc_en(void)
 	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
 	gpio_set_value(IMX_GPIO_NR(3, 31), 1);
 }
+static void var_setup_iomux_som_solo_usb_en(void)
+{
+	MX6QDL_SET_PAD(PAD_KEY_ROW4__GPIO_4_15, MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
+	gpio_direction_output(IMX_GPIO_NR(4, 15), 1);
+	gpio_set_value(IMX_GPIO_NR(4, 15), 1);
+//
+	MX6QDL_SET_PAD(PAD_EIM_D22__GPIO_3_22, MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
+	gpio_direction_output(IMX_GPIO_NR(3, 22), 1);
+	gpio_set_value(IMX_GPIO_NR(3, 22), 1);
 
+}
 #ifdef CONFIG_FSL_ESDHC
 struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC2_BASE_ADDR},
@@ -1293,6 +1303,8 @@ int board_late_init(void)
 	checkboard();
 	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 1);
 	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);		// Turn off backlight.
+	if (is_som_solo())
+		var_setup_iomux_som_solo_usb_en();
 
 	return 0;
 }
