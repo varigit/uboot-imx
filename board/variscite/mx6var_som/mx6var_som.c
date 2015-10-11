@@ -109,6 +109,11 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_DSE_40ohm | PAD_CTL_HYS |			\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
+#define USB_PAD_CTRL	(PAD_CTL_PKE | PAD_CTL_PUE |		\
+	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |		\
+	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
+
+
 #if CONFIG_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
@@ -165,6 +170,10 @@ I2C_PADS(i2c_pad_info3,
 		(is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) ? \
 						&mx6q_##name : &mx6s_##name
 
+#endif
+
+#ifdef CONFIG_USB_EHCI_MX6
+static void setup_usb(void);
 #endif
 
 void p_udelay(int time)
@@ -549,6 +558,7 @@ void var_setup_iomux_per_vcc_en(void)
 	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
 	gpio_set_value(IMX_GPIO_NR(3, 31), 1);
 }
+#if 0
 static void var_setup_iomux_som_solo_usb_en(void)
 {
 	MX6QDL_SET_PAD(PAD_KEY_ROW4__GPIO_4_15, MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
@@ -560,6 +570,7 @@ static void var_setup_iomux_som_solo_usb_en(void)
 	gpio_set_value(IMX_GPIO_NR(3, 22), 1);
 
 }
+#endif
 #ifdef CONFIG_FSL_ESDHC
 struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC2_BASE_ADDR},
@@ -1091,6 +1102,10 @@ int board_early_init_f(void)
 	setup_gpmi_nand();
 #endif
 
+#ifdef CONFIG_USB_EHCI_MX6
+	setup_usb();
+#endif
+
 	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 1);
 	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 0);		// Turn off backlight.
 #endif /* #if  !defined(CONFIG_SPL_BUILD) */
@@ -1101,6 +1116,71 @@ int board_early_init_f(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_USB_EHCI_MX6
+#define VSC_USB_H1_PWR_EN	IMX_GPIO_NR(4, 15)
+#define VSC_USB_OTG_PWR_EN	IMX_GPIO_NR(3, 22)
+
+static char is_solo_custom_board(void){
+int oldbus;
+char flag;
+
+	oldbus = i2c_get_bus_num();
+	i2c_set_bus_num(0);
+	if (i2c_probe(0x51) == 0)
+		flag = true;
+	else
+		flag = false;
+	i2c_set_bus_num(oldbus);
+
+	return flag;
+}
+
+static void setup_usb(void)
+{
+	struct iomuxc_base_regs *const iomuxc_regs
+		= (struct iomuxc_base_regs *) IOMUXC_BASE_ADDR;
+ 
+	/* config OTG ID iomux */
+	MX6QDL_SET_PAD(PAD_GPIO_1__USB_OTG_ID, MUX_PAD_CTRL(USB_PAD_CTRL));
+	clrsetbits_le32(&iomuxc_regs->gpr[1],
+			IOMUXC_GPR1_OTG_ID_MASK,
+			IOMUXC_GPR1_OTG_ID_GPIO1);
+
+	if (is_solo_custom_board()) {
+		MX6QDL_SET_PAD(PAD_KEY_ROW4__GPIO_4_15, MUX_PAD_CTRL(NO_PAD_CTRL));
+		MX6QDL_SET_PAD(PAD_EIM_D22__GPIO_3_22, MUX_PAD_CTRL(NO_PAD_CTRL));
+		gpio_direction_output(VSC_USB_H1_PWR_EN, 0);
+		gpio_direction_output(VSC_USB_OTG_PWR_EN, 0);
+	}
+}
+
+int board_ehci_hcd_init(int port)
+{
+	printf("%s(%d)\n", __func__, port);
+	if (is_solo_custom_board()) {
+		/* no hub to reset */
+	} else {
+		/* hub present but pulled up */
+	}
+	return 0;
+}
+
+int board_ehci_power(int port, int on)
+{
+	printf("%s(%d, %d)\n", __func__, port, on);
+	if (is_solo_custom_board()) {
+		if (port) {
+			gpio_set_value(VSC_USB_H1_PWR_EN, on);
+		} else {
+			gpio_set_value(VSC_USB_OTG_PWR_EN, on);
+		}
+	} else {
+		/* no power enable needed */
+	}
+	return 0;
+}
+#endif
 
 int board_init(void)
 {
@@ -1132,21 +1212,6 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
-
-static char is_solo_custom_board(void){
-int oldbus;
-char flag;
-
-	oldbus = i2c_get_bus_num();
-	i2c_set_bus_num(0);
-	if (i2c_probe(0x51) == 0)
-		flag = true;
-	else
-		flag = false;
-	i2c_set_bus_num(oldbus);
-
-	return flag;
-}
 
 
 static void setup_variscite_touchscreen_type(void)
@@ -1303,8 +1368,8 @@ int board_late_init(void)
 	checkboard();
 	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 1);
 	gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);		// Turn off backlight.
-	if (is_som_solo())
-		var_setup_iomux_som_solo_usb_en();
+//	if (is_som_solo())
+//		var_setup_iomux_som_solo_usb_en();
 
 	return 0;
 }
