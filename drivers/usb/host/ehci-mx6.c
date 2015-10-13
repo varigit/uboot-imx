@@ -222,6 +222,9 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	usb_oc_config(index);
 	usb_internal_phy_clock_gate(index, 1);
 	type = usb_phy_enable(index, ehci) ? USB_INIT_DEVICE : USB_INIT_HOST;
+#ifdef MX6_FORCE_OTG_HOST
+	type = USB_INIT_HOST;
+#endif
 
 	*hccr = (struct ehci_hccr *)((uint32_t)&ehci->caplength);
 	*hcor = (struct ehci_hcor *)((uint32_t)*hccr +
