@@ -40,6 +40,14 @@
 #define CONFIG_SYS_PROMPT		"VAR_SOM_MX6(sd) U-Boot > "
 #endif
 
+#define CONFIG_CMD_PCI
+#ifdef CONFIG_CMD_PCI
+#define CONFIG_PCI
+/*#define CONFIG_PCI_PNP
+#define CONFIG_PCI_SCAN_SHOW */
+#define CONFIG_PCIE_IMX
+#endif
+
 
 #if defined(CONFIG_MX6DL)
 #define CONFIG_DEFAULT_FDT_FILE		"imx6dl-var-som.dtb"
