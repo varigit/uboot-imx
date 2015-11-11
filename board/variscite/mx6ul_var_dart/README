@@ -1,0 +1,33 @@
+How to use U-boot on Variscite MX6UL DART
+-----------------------------------------------
+
+- Build U-boot for MX6UL DART:
+
+$ make mrproper
+
+$ make mx6ul_var_dart_mmc_defconfig
+or
+$ make mx6ul_var_dart_nand_defconfig
+
+$ make
+
+This will generate the SPL image called SPL and the u-boot.img.
+
+- Flash the SPL image into the micro SD card:
+
+sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+
+- Flash the u-boot.img image into the micro SD card:
+
+sudo dd if=u-boot.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Jumper settings:
+
+SD Boot: 0 0 
+eMMC Boot: 0 1
+
+- Connect the USB cable between the EVK and the PC for the console.
+(The USB console connector is the one close the push buttons)
+
+- Insert the micro SD card in the board, power it up and U-boot messages should
+come up.
