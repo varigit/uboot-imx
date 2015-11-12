@@ -13,7 +13,7 @@
 
 #include <asm/arch/imx-regs.h>
 #include <linux/sizes.h>
-#include "mx6_common.h"
+#include "mx6_var_common.h"
 #include <asm/imx-common/gpio.h>
 
 #undef CONFIG_LDO_BYPASS_CHECK
@@ -41,6 +41,7 @@
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_LATE_INIT
+#define CONFIG_MXC_GPIO
 
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART1_BASE
@@ -117,8 +118,9 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
-		"fi;\0" \
+		"fi;\0"
 #else
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
@@ -179,7 +181,7 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
-		"fi;\0" \
+		"fi;\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev};" \
@@ -225,9 +227,9 @@
 #define CONFIG_ENV_SIZE			SZ_8K
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_ENV_OFFSET		(8 * SZ_64K)
-#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
+#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
-#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
+#define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
 
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
@@ -237,7 +239,7 @@
 #define CONFIG_CMD_CACHE
 #endif
 
-#define CONFIG_FSL_QSPI
+/* #define CONFIG_FSL_QSPI */
 #ifdef CONFIG_FSL_QSPI
 #define CONFIG_CMD_SF
 #define CONFIG_SPI_FLASH
