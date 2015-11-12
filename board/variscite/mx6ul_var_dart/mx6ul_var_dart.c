@@ -365,7 +365,9 @@ int board_mmc_init(bd_t *bis)
 {
 	int i;
 	int err;
+#ifdef CONFIG_SPL_BUILD
 	int devno;
+#endif
 
 	/*
 	 * According to the board_mmc_init() the following map is done:
@@ -600,6 +602,10 @@ int board_init(void)
 
 #ifdef CONFIG_USB_EHCI_MX6
 	setup_usb();
+#endif
+
+#ifdef CONFIG_SYS_USE_NAND
+	setup_gpmi_nand();
 #endif
 
 	return 0;

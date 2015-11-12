@@ -21,6 +21,7 @@
 /* SPL options */
 #define CONFIG_SPL_LIBCOMMON_SUPPORT
 #define CONFIG_SPL_MMC_SUPPORT
+#define CONFIG_SPL_DMA_SUPPORT
 #include "imx6_spl.h"
 
 #ifdef CONFIG_SYS_BOOT_NAND
@@ -60,6 +61,12 @@
 #define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
 #endif
 
+#ifdef CONFIG_SYS_BOOT_NAND
+#define CONFIG_MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),-(rootfs) "
+#else
+#define CONFIG_MFG_NAND_PARTITION ""
+#endif
+
 /* I2C configs */
 #define CONFIG_CMD_I2C
 #ifdef CONFIG_CMD_I2C
@@ -90,10 +97,10 @@
 	"fdt_addr=0x83000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"bootargs=console=ttymxc0,115200 ubi.mtd=2 "  \
+	"bootargs=console=ttymxc0,115200 ubi.mtd=4 "  \
 		"root=ubi0:rootfs rootfstype=ubifs \0"\
-	"bootcmd=nand read ${loadaddr} 0x200000 0x600000;"\
-		"nand read ${fdt_addr} 0x7e0000 0x20000;"\
+	"bootcmd=nand read ${loadaddr} 0x600000 0x600000;"\
+		"nand read ${fdt_addr} 0xde0000 0x20000;"\
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs " \
@@ -225,11 +232,33 @@
 #define CONFIG_SYS_NO_FLASH
 
 #define CONFIG_ENV_SIZE			SZ_8K
+
+#ifdef CONFIG_SYS_BOOT_QSPI
+#define CONFIG_SYS_USE_QSPI
+#define CONFIG_ENV_IS_IN_SPI_FLASH
+#elif defined CONFIG_SYS_BOOT_NAND
+#define CONFIG_SYS_USE_NAND
+#define CONFIG_ENV_IS_IN_NAND
+#else
+#define CONFIG_SYS_USE_QSPI
 #define CONFIG_ENV_IS_IN_MMC
-#define CONFIG_ENV_OFFSET		(8 * SZ_64K)
+#endif
+
+
 #define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
-#define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
+#define CONFIG_MMCROOT				"/dev/mmcblk0p2"  /* USDHC1 */
+
+#if defined(CONFIG_ENV_IS_IN_MMC)
+#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_OFFSET			(8 * SZ_64K)
+#elif defined(CONFIG_ENV_IS_IN_NAND)
+#undef CONFIG_ENV_SIZE
+#define CONFIG_ENV_OFFSET			0x00400000
+#define CONFIG_ENV_SECT_SIZE		0x00200000
+#define CONFIG_ENV_SIZE				CONFIG_ENV_SECT_SIZE
+#endif
+
 
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
@@ -251,6 +280,25 @@
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 #define FSL_QSPI_FLASH_NUM		1
 #define FSL_QSPI_FLASH_SIZE		SZ_32M
+#endif
+
+#ifdef CONFIG_SYS_USE_NAND
+#define CONFIG_CMD_NAND
+#define CONFIG_CMD_NAND_TRIMFFS
+
+/* NAND stuff */
+#define CONFIG_NAND_MXS
+#define CONFIG_SPL_NAND_SUPPORT
+#define CONFIG_SYS_MAX_NAND_DEVICE	1
+#define CONFIG_SYS_NAND_BASE		0x40000000
+#define CONFIG_SYS_NAND_5_ADDR_CYCLE
+#define CONFIG_SYS_NAND_ONFI_DETECTION
+#define CONFIG_SYS_NAND_U_BOOT_OFFS		0x200000
+
+/* DMA stuff, needed for GPMI/MXS NAND support */
+#define CONFIG_APBH_DMA
+#define CONFIG_APBH_DMA_BURST
+#define CONFIG_APBH_DMA_BURST8
 #endif
 
 /* USB Configs */
