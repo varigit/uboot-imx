@@ -31,8 +31,7 @@ int force_idle_bus(void *priv)
 	if ((sda & scl) == 1)
 		goto exit;		/* Bus is idle already */
 
-	printf("%s: sda=%d scl=%d sda.gp=0x%x scl.gp=0x%x\n", __func__,
-		sda, scl, p->sda.gp, p->scl.gp);
+//	printf("%s: sda=%d scl=%d sda.gp=0x%x scl.gp=0x%x\n", __func__,	sda, scl, p->sda.gp, p->scl.gp);
 	/* Send high and low on the SCL line */
 	for (i = 0; i < 9; i++) {
 		gpio_direction_output(p->scl.gp, 0);

@@ -30,6 +30,13 @@
 #include <usb.h>
 #include <usb/ehci-fsl.h>
 
+#include "mx6var_v2_eeprom.h"
+#include "mx6var_eeprom.h"
+
+int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2,unsigned char address);
+static bool g_b_dram_set_by_var_eeprom_config;
+int eeprom_revision=0;
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
@@ -162,19 +169,34 @@ static void iox74lv_init(void)
 
 #ifdef CONFIG_SYS_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
-/* I2C1 for PMIC and EEPROM */
+/* I2C1  38 54 55*/
 static struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
 		/* conflict with usb_otg2_pwr */
-		.i2c_mode = MX6_PAD_GPIO1_IO02__I2C1_SCL | PC,
-		.gpio_mode = MX6_PAD_GPIO1_IO02__GPIO1_IO02 | PC,
-		.gp = IMX_GPIO_NR(1, 2),
+		.i2c_mode  = MX6_PAD_UART4_TX_DATA__I2C1_SCL | PC,
+		.gpio_mode = MX6_PAD_UART4_TX_DATA__GPIO1_IO28 | PC,
+		.gp = IMX_GPIO_NR(1, 28),
 	},
 	.sda = {
 		/* conflict with usb_otg2_oc */
-		.i2c_mode = MX6_PAD_GPIO1_IO03__I2C1_SDA | PC,
-		.gpio_mode = MX6_PAD_GPIO1_IO03__GPIO1_IO03 | PC,
-		.gp = IMX_GPIO_NR(1, 3),
+		.i2c_mode  = MX6_PAD_UART4_RX_DATA__I2C1_SDA | PC,
+		.gpio_mode = MX6_PAD_UART4_RX_DATA__GPIO1_IO29 | PC,
+		.gp = IMX_GPIO_NR(1, 29),
+	},
+};
+
+/* I2C2  1A 50 51 */
+static struct i2c_pads_info i2c_pad_info2 = {
+	.scl = {
+		.i2c_mode  = MX6_PAD_UART5_TX_DATA__I2C2_SCL | PC,
+		.gpio_mode = MX6_PAD_UART5_TX_DATA__GPIO1_IO30 | PC,
+		.gp = IMX_GPIO_NR(1, 30),
+	},
+	.sda = {
+		/* conflict with usb_otg2_oc */
+		.i2c_mode  = MX6_PAD_UART5_RX_DATA__I2C2_SDA | PC,
+		.gpio_mode = MX6_PAD_UART5_RX_DATA__GPIO1_IO31 | PC,
+		.gp = IMX_GPIO_NR(1, 31),
 	},
 };
 
@@ -188,8 +210,8 @@ int power_init_board(void)
 #endif
 #endif
 
+static long sdram_size = 0;
 int dram_init(void){
-ulong sdram_size;
 unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 unsigned int volatile * port2;
 
@@ -594,6 +616,7 @@ int board_init(void)
 
 #ifdef CONFIG_SYS_I2C_MXC
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 #endif
 
 #ifdef	CONFIG_FEC_MXC
@@ -727,14 +750,79 @@ static void ccgr_init(void)
 	writel(0xFFFFFFFF, &ccm->CCGR7);
 }
 
+void p_udelay(int time)
+{
+	int i, j;
+
+	for (i = 0; i < time; i++) {
+		for (j = 0; j < 200; j++) {
+			asm("nop");
+			asm("nop");
+		}
+	}
+}
+
 static void spl_dram_init(void)
 {
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
 	mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_ddr);
 }
+/* 
+ * Second phase ddr init. Use eeprom values.
+ */
+static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
+
+static int  spl_dram_init_v2(void)
+{
+	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
+	u32 cpurev, imxtype;
+	int ret;
+
+	cpurev = get_cpu_rev();
+	imxtype = (cpurev & 0xFF000) >> 12;
+
+	get_imx_type(imxtype);
+
+	/* Add here: Read EEPROM and parse Variscite struct */
+	memset(&var_eeprom_config_struct_v2, 0x00, sizeof(var_eeprom_config_struct_v2));
+	
+	ret = var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2,0x50);
+	
+	if (ret)
+		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
+
+	if(var_eeprom_config_struct_v2.variscite_magic!=0x32524156) //Test for VAR2 in the header.
+		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
+		
+	handle_eeprom_data(&var_eeprom_config_struct_v2);
+	
+	sdram_size = var_eeprom_config_struct_v2.ddr_size*128;
+	g_b_dram_set_by_var_eeprom_config = true;
+
+	return SPL_DRAM_INIT_STATUS_OK;
+}
+
+void board_dram_init(void)
+{
+ int spl_status;
+
+	/* Initialize DDR based on eeprom if exist */
+	spl_status=spl_dram_init_v2();
+	if(spl_status != SPL_DRAM_INIT_STATUS_OK)
+		{
+			spl_dram_init();
+			eeprom_revision=0;
+		}
+		else
+			eeprom_revision=2;	
+
+//	spl_mx6qd_dram_setup_iomux_check_reset();
+}
 
 void board_init_f(ulong dummy)
 {
+	u32 imxtype, cpurev;
+
 	/* setup AIPS and disable watchdog */
 	arch_cpu_init();
 
@@ -749,11 +837,46 @@ void board_init_f(ulong dummy)
 	/* UART clocks enabled and gd valid - init serial console */
 	preloader_console_init();
 
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
+
 	/* DDR initialization */
-	spl_dram_init();
+//	spl_dram_init();
+	board_dram_init();
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
+
+	cpurev = get_cpu_rev();
+	imxtype = (cpurev & 0xFF000) >> 12;
+	printf("i.MX%s SOC ", get_imx_type(imxtype));
+	if(eeprom_revision==2){
+		var_eeprom_config_struct_v2.part_number[sizeof(var_eeprom_config_struct_v2.part_number)-1] = (u8)0x00;
+		var_eeprom_config_struct_v2.Assembly[sizeof(var_eeprom_config_struct_v2.Assembly)-1] = (u8)0x00;
+		var_eeprom_config_struct_v2.date[sizeof(var_eeprom_config_struct_v2.date)-1] = (u8)0x00;
+
+		printf("Part number: %s\n", (char *)var_eeprom_config_struct_v2.part_number);
+		printf("Assembly: %s\n", (char *)var_eeprom_config_struct_v2.Assembly);
+		printf("Date of production: %s\n", (char *)var_eeprom_config_struct_v2.date);
+	} else {
+		printf("DDR LEGACY configuration\n");
+	}
+	dram_init();
+	printf("Ram size: %ld\n", sdram_size);
+//	sdram_global =  (u32 *)0x917000;
+//	*sdram_global = sdram_size;
+	printf("Boot Device: ");
+	switch (spl_boot_device()) {
+	case BOOT_DEVICE_MMC1:
+		printf("MMC\n");
+		break;
+	case BOOT_DEVICE_NAND:
+		printf("NAND\n");
+		break;
+	default:
+		printf("UNKNOWN\n");
+		break;
+	}
 
 	/* load/boot image from boot device */
 	board_init_r(NULL, 0);
