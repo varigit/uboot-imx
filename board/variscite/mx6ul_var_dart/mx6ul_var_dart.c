@@ -701,10 +701,10 @@ static struct mx6ul_iomux_ddr_regs mx6_ddr_ioregs = {
 };
 
 static struct mx6_mmdc_calibration mx6_mmcd_calib = {
-	.p0_mpwldectrl0 = 0x00070007,
-	.p0_mpdgctrl0 = 0x41490145,
-	.p0_mprddlctl = 0x40404546,
-	.p0_mpwrdlctl = 0x4040524D,
+	.p0_mpwldectrl0 = 0x00000000,
+	.p0_mpdgctrl0   = 0x414C0158,
+	.p0_mprddlctl   = 0x40403A3A,
+	.p0_mpwrdlctl   = 0x40405A56,
 };
 
 struct mx6_ddr_sysinfo ddr_sysinfo = {
