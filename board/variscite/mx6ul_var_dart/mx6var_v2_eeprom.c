@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015 Variscite Ltd. All Rights Reserved.
  * Maintainer: Ron Donio <ron.d@variscite.com>
- * Configuration settings for the Variscite VAR_SOM_MX6 board.
+ * Configuration settings for the Variscite VAR_SOM_MX6 and DART6UL board.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -37,8 +37,8 @@ static const u32 rom_values[] =
 		#include "values.inc"
 	};
 
-static u32 ram_addresses[MAXIMUM_RAM_ADDRESSES];
-static u32 ram_values[MAXIMUM_RAM_VALUES];
+static u32 ram_addresses[MAXIMUM_RAM_ADDRESSES] __attribute__ ((section ("sram")));
+static u32 ram_values[MAXIMUM_RAM_VALUES] __attribute__ ((section ("sram")));
 				
 void load_custom_data(u32 *custom_addresses_values)
 {
@@ -103,10 +103,12 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 	volatile u32 *data;
 	u32 address;
 	u32 value;
+#if 0
 	printf("Executing command %03d: %03d,  %03d\n",
 													command_num,
 													eeprom_commands[command_num].address_index,
 													eeprom_commands[command_num].value_index);
+#endif
 	
 	switch(eeprom_commands[command_num].address_index)
 	{

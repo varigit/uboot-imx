@@ -4,7 +4,17 @@
  * Copyright (C) 2015 Variscite Ltd. All Rights Reserved.
  * Maintainer: Ron Donio <ron.d@variscite.com>
  * Configuration settings for the Variscite  i.MX6UL DART board.
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
@@ -34,8 +44,8 @@
 #include "mx6var_eeprom.h"
 
 int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2,unsigned char address);
-static bool g_b_dram_set_by_var_eeprom_config;
-int eeprom_revision=0;
+int eeprom_revision __attribute__ ((section ("sram")));
+static long sdram_size __attribute__ ((section ("sram")));
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -210,7 +220,6 @@ int power_init_board(void)
 #endif
 #endif
 
-static long sdram_size = 0;
 int dram_init(void){
 unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 unsigned int volatile * port2;
@@ -775,13 +784,7 @@ static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
 static int  spl_dram_init_v2(void)
 {
 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
-	u32 cpurev, imxtype;
 	int ret;
-
-	cpurev = get_cpu_rev();
-	imxtype = (cpurev & 0xFF000) >> 12;
-
-	get_imx_type(imxtype);
 
 	/* Add here: Read EEPROM and parse Variscite struct */
 	memset(&var_eeprom_config_struct_v2, 0x00, sizeof(var_eeprom_config_struct_v2));
@@ -797,7 +800,6 @@ static int  spl_dram_init_v2(void)
 	handle_eeprom_data(&var_eeprom_config_struct_v2);
 	
 	sdram_size = var_eeprom_config_struct_v2.ddr_size*128;
-	g_b_dram_set_by_var_eeprom_config = true;
 
 	return SPL_DRAM_INIT_STATUS_OK;
 }
@@ -818,6 +820,8 @@ void board_dram_init(void)
 
 //	spl_mx6qd_dram_setup_iomux_check_reset();
 }
+
+
 
 void board_init_f(ulong dummy)
 {
@@ -841,7 +845,6 @@ void board_init_f(ulong dummy)
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 
 	/* DDR initialization */
-//	spl_dram_init();
 	board_dram_init();
 
 	/* Clear the BSS. */
@@ -849,7 +852,7 @@ void board_init_f(ulong dummy)
 
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
-	printf("i.MX%s SOC ", get_imx_type(imxtype));
+	printf("i.MX%s SOC \n", get_imx_type(imxtype));
 	if(eeprom_revision==2){
 		var_eeprom_config_struct_v2.part_number[sizeof(var_eeprom_config_struct_v2.part_number)-1] = (u8)0x00;
 		var_eeprom_config_struct_v2.Assembly[sizeof(var_eeprom_config_struct_v2.Assembly)-1] = (u8)0x00;
@@ -863,8 +866,6 @@ void board_init_f(ulong dummy)
 	}
 	dram_init();
 	printf("Ram size: %ld\n", sdram_size);
-//	sdram_global =  (u32 *)0x917000;
-//	*sdram_global = sdram_size;
 	printf("Boot Device: ");
 	switch (spl_boot_device()) {
 	case BOOT_DEVICE_MMC1:

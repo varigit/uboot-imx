@@ -1,6 +1,10 @@
 /*
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
  *
+ * Copyright (C) 2015 Variscite Ltd. All Rights Reserved.
+ * Maintainer: Ron Donio <ron.d@variscite.com>
+ * Configuration settings for the Variscite  i.MX6UL DART board.
+ * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
  * version 2, as published by the Free Software Foundation.
