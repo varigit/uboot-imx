@@ -193,8 +193,8 @@ static inline uint get_mmc_boot_device(void)
 {
 	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
 	uint bt_mem_ctl = (soc_sbmr & 0x000000FF) >> 4 ;
-	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
-	uint bt_mem_mmc = (soc_sbmr & 0x00001000) >> 12;
+/*	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
+ 	uint bt_mem_mmc = (soc_sbmr & 0x00001000) >> 12; */
 
 	return bt_mem_ctl;
 }
@@ -969,8 +969,6 @@ int overwrite_console(void)
 }
 void enet_board_reset(int rst)
 {
-	unsigned int reg;
-	iomux_v3_cfg_t enet_reset;
 
 	MX6QDL_SET_PAD(PAD_ENET_CRS_DV__GPIO_1_25, MUX_PAD_CTRL(ENET_PAD_CTRL));
 
@@ -1182,6 +1180,7 @@ int board_ehci_power(int port, int on)
 }
 #endif
 
+int imx_pcie_reset(void);
 /* PCI Probe function. */
 void pci_init_board(void)
 {
@@ -1191,7 +1190,7 @@ void pci_init_board(void)
 
 int board_init(void)
 {
-	int ret;
+	int ret = 0;
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
@@ -1367,7 +1366,6 @@ int checkboard(void)
 
 int board_late_init(void)
 {
-	int ret;
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif

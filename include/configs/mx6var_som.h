@@ -33,7 +33,7 @@
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET       /* For OTG port */
 #define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS	0
-/*#define MX6_FORCE_OTG_HOST	1	/* Enable if you want to force the OTG to be HOST always */
+/*#define MX6_FORCE_OTG_HOST	1 */	/* Enable if you want to force the OTG to be HOST always */
 
 #ifdef CONFIG_SYS_BOOT_NAND
 #define CONFIG_SYS_PROMPT		"VAR_SOM_MX6(nand) U-Boot > "

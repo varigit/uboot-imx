@@ -361,7 +361,6 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 {
 	var_eeprom_config_struct_t var_eeprom_cfg;
 	int offset;
-	int fail = 0;
 
 	if (argc != 4)
 	{
