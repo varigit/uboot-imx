@@ -843,6 +843,9 @@ void board_dram_init(void)
 {
 	/* Initialize DDR based on eeprom if exist */
 	var_setup_iomux_per_vcc_en();
+	/* Reset CODEC to allow i2c communication */
+	codec_reset(1);
+	udelay(1000 * 50);
 	eeprom_revision=1;	
 	spl_status = spl_dram_init();
 	if (spl_status != SPL_DRAM_INIT_STATUS_OK)
@@ -860,6 +863,16 @@ void board_dram_init(void)
 	spl_mx6qd_dram_setup_iomux_check_reset();
 }
 
+static void disable_wdog(void)
+{
+	struct wdog_regs *wdog1 = (struct wdog_regs *)WDOG1_BASE_ADDR;
+	struct wdog_regs *wdog2 = (struct wdog_regs *)WDOG2_BASE_ADDR;
+
+	writew(0x73, &wdog1->wcr);
+	writew(0x73, &wdog2->wcr);
+}
+#
+
 /* 
  * board init callback.
  */
@@ -870,6 +883,7 @@ void board_init_f(ulong dummy)
 	asm volatile("mov sp, %0\n" : : "r"(CONFIG_SPL_STACK));
 
 	arch_cpu_init();
+	disable_wdog();
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
