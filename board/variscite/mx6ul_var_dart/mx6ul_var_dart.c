@@ -757,6 +757,8 @@ static void ccgr_init(void)
 	writel(0xFFFFFFFF, &ccm->CCGR5);
 	writel(0xFFFFFFFF, &ccm->CCGR6);
 	writel(0xFFFFFFFF, &ccm->CCGR7);
+/* Enable Audio Clock for SOM codec */
+	writel(0x01120100, (long *)CCM_CCOSR);
 }
 
 void p_udelay(int time)
