@@ -707,7 +707,6 @@ int board_late_init(void)
 
 	switch (get_boot_device()) {
 	case VBOOT_DEVICE_SD:
-		printf("SD!!!\n");
 		switch (var_eeprom_config_struct_v2.som_info &0x3){
 			case 0x00:
 			case 0x02:
@@ -719,14 +718,12 @@ int board_late_init(void)
 		}
 		break;
 	case VBOOT_DEVICE_MMC:
-		printf("eMMC!!!\n");
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
 				setenv("fdt_file", "imx6ul-var-dart-emmc_wifi.dtb");
 		else
 				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
 		break;
 	case VBOOT_DEVICE_NAND:
-		printf("NAND!!!\n");
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
 				setenv("fdt_file", "imx6ul-var-dart-nand_wifi.dtb");
 		else

@@ -23,7 +23,7 @@
 
 #include <asm/arch/imx-regs.h>
 #include <linux/sizes.h>
-#include "mx6_var_common.h"
+#include "mx6ul_var_common.h"
 #include <asm/imx-common/gpio.h>
 
 #undef CONFIG_LDO_BYPASS_CHECK
@@ -39,7 +39,7 @@
 #define CONFIG_SYS_PROMPT		"MX6UL_VAR_DART(nand)==> "
 #else
 #undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT		"MX6UL_VAR_DART(sd)==> "
+#define CONFIG_SYS_PROMPT		"MX6UL_VAR_DART(mmc)==> "
 #endif
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
@@ -257,18 +257,18 @@
 #endif
 
 
-#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
+#define CONFIG_SYS_MMC_ENV_DEV		0   	/* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
 #define CONFIG_MMCROOT				"/dev/mmcblk0p2"  /* USDHC1 */
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_ENV_IS_IN_MMC
-#define CONFIG_ENV_OFFSET			(8 * SZ_64K)
+#define CONFIG_ENV_OFFSET		(8 * SZ_64K)
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #undef CONFIG_ENV_SIZE
-#define CONFIG_ENV_OFFSET			0x00400000
+#define CONFIG_ENV_OFFSET		0x00400000
 #define CONFIG_ENV_SECT_SIZE		0x00200000
-#define CONFIG_ENV_SIZE				CONFIG_ENV_SECT_SIZE
+#define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
 #endif
 
 

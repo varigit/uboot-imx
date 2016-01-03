@@ -36,6 +36,12 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CONFIG_ENV_OFFSET 0
 #endif
 
+#if defined(CONFIG_TARGET_MX6UL_VAR_DART)
+#undef CONFIG_SYS_MMC_ENV_DEV
+int mmc_get_env_devno(void);
+#define CONFIG_SYS_MMC_ENV_DEV mmc_get_env_devno()
+#endif
+
 __weak int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr)
 {
 	s64 offset;
@@ -167,8 +173,15 @@ int saveenv(void)
 		goto fini;
 	}
 
-	printf("Writing to %sMMC(%d)... ", copy ? "redundant " : "",
-	       CONFIG_SYS_MMC_ENV_DEV);
+#if defined(CONFIG_TARGET_MX6UL_VAR_DART)
+	if (0 == mmc_get_env_devno())
+		printf("Writing to MMC(0)=SD... ");
+	else
+		printf("Writing to MMC(1)=eMMC... ");
+#else
+	printf("Writing to %sMMC(%d)... ", copy ? "redundant " : "", CONFIG_SYS_MMC_ENV_DEV);
+#endif
+
 	if (write_env(mmc, CONFIG_ENV_SIZE, offset, (u_char *)env_new)) {
 		puts("failed\n");
 		ret = 1;
