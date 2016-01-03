@@ -190,7 +190,7 @@ static u32 get_value_by_index(unsigned char index)
 	return rom_values[index];
 }	
 	
-int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2,unsigned char address)
+int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2)
 {
 	int eeprom_found;
 	int ret = 0;
@@ -199,10 +199,10 @@ int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eepro
 	oldbus = i2c_get_bus_num();
 	i2c_set_bus_num(1);
 
-	eeprom_found = i2c_probe(address);
+	eeprom_found = i2c_probe(VARISCITE_MX6_EEPROM_CHIP);
 	if (0 == eeprom_found)
 	{
-		if (i2c_read(address,0,1,(void*)var_eeprom_config_struct_v2,sizeof(struct var_eeprom_config_struct_v2_type)))
+		if (i2c_read(VARISCITE_MX6_EEPROM_CHIP, 0, 1, (void*)var_eeprom_config_struct_v2,sizeof(struct var_eeprom_config_struct_v2_type)))
 		{
 			printf("Read device ID error!\n");
 			return -1;
@@ -216,6 +216,144 @@ int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eepro
 }
 
 	
+int var_eeprom_write(uchar *ptr, u32 size, u32 offset)
+{
+	int ret = 0;
+	u32 size_written;
+	u32 size_to_write;
+	u32 P0_select_page_EEPROM;
+	u32 chip;
+	u32 addr;
+	int oldbus;
+
+	oldbus = i2c_get_bus_num();
+	i2c_set_bus_num(1);
+
+	/* Write to EEPROM device */
+	size_written = 0;
+	size_to_write = size;
+	while ((0 == ret) && (size_written < size_to_write))
+	{
+		P0_select_page_EEPROM = (offset > 0xFF);
+		chip = VARISCITE_MX6_EEPROM_CHIP + P0_select_page_EEPROM;
+		addr = (offset & 0xFF);
+		ret = i2c_write(chip, addr, 1, ptr, VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE);
+
+		/* Wait for EEPROM write operation to complete (No ACK) */
+		udelay(11000);
+
+		size_written += VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE;
+		offset += VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE;
+		ptr += VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE;
+	}
+
+	i2c_set_bus_num(oldbus);
+	return ret;
+}
+
+/******************************************************************************
+ * var_eeprom_params command intepreter.
+ */
+static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	var_eeprom_config_struct_v2_type var_eeprom_cfg;
+	int offset, i;
+	u8 som_info;
+
+	if (argc !=5)
+	{
+		return -1;
+	}
+
+	memset(&var_eeprom_cfg, 0x00, sizeof(var_eeprom_cfg));
+
+	memcpy(&var_eeprom_cfg.part_number[0], argv[1], sizeof(var_eeprom_cfg.part_number));
+	memcpy(&var_eeprom_cfg.Assembly[0], argv[2], sizeof(var_eeprom_cfg.Assembly));
+	memcpy(&var_eeprom_cfg.date[0], argv[3], sizeof(var_eeprom_cfg.date));
+
+	memcpy(&som_info, argv[4], sizeof(som_info));
+	var_eeprom_cfg.som_info = som_info - '0';
+
+	var_eeprom_cfg.part_number[sizeof(var_eeprom_cfg.part_number)-1] = (u8)0x00;
+	var_eeprom_cfg.Assembly[sizeof(var_eeprom_cfg.Assembly)-1] = (u8)0x00;
+	var_eeprom_cfg.date[sizeof(var_eeprom_cfg.date)-1] = (u8)0x00;
+
+	printf("Part number: %s\n", (char *)var_eeprom_cfg.part_number);
+	printf("Assembly: %s\n", (char *)var_eeprom_cfg.Assembly);
+	printf("Date of production: %s\n", (char *)var_eeprom_cfg.date);
+
+	
+	printf("SOM Configuration:\n");
+	for (i=0; i<8; i++){
+		if (i == var_eeprom_cfg.som_info) printf("*");
+
+		printf("%d: ",i);
+		switch (i & 0x3) {
+			case 0x00:
+				printf("SDCARD-Only ");
+				break;
+			case 0x01:
+				printf("NAND ");
+				break;
+			case 0x02:
+				printf("eMMC ");
+				break;
+			case 0x03:
+				printf("Ilegal!!! ");
+				break;
+			}
+		if (i & 0x04)
+			printf("WIFI\n");
+		else
+			printf("\n");
+	}
+
+	offset = (uchar *)&var_eeprom_cfg.part_number[0] - (uchar *)&var_eeprom_cfg;
+	if (var_eeprom_write((uchar *)&var_eeprom_cfg.part_number[0],
+				sizeof(var_eeprom_cfg.part_number),
+				VARISCITE_MX6_EEPROM_STRUCT_OFFSET + offset) )
+	{
+		printf("Error writing Part Number to EEPROM!\n");
+		return -1;
+	} 
+
+	offset = (uchar *)&var_eeprom_cfg.Assembly[0] - (uchar *)&var_eeprom_cfg;
+	if (var_eeprom_write((uchar *)&var_eeprom_cfg.Assembly[0],
+				sizeof(var_eeprom_cfg.Assembly),
+				VARISCITE_MX6_EEPROM_STRUCT_OFFSET + offset) )
+	{
+		printf("Error writing Assembly to EEPROM!\n");
+		return -1;
+	} 
+
+	offset = (uchar *)&var_eeprom_cfg.date[0] - (uchar *)&var_eeprom_cfg;
+	if (var_eeprom_write((uchar *)&var_eeprom_cfg.date[0],
+				sizeof(var_eeprom_cfg.date),
+				VARISCITE_MX6_EEPROM_STRUCT_OFFSET + offset) )
+	{
+		printf("Error writing date to EEPROM!\n");
+		return -1;
+	}
+
+	offset = (uchar *)&var_eeprom_cfg.som_info - (uchar *)&var_eeprom_cfg;
+	if (var_eeprom_write((uchar *)&var_eeprom_cfg.som_info,
+				sizeof(var_eeprom_cfg.som_info),
+				VARISCITE_MX6_EEPROM_STRUCT_OFFSET + offset) )
+	{
+		printf("Error writing Som Info to EEPROM!\n");
+		return -1;
+	}
+
+	printf("EEPROM updated successfully\n");
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	vareeprom,	5,	1,	do_var_eeprom_params,
+	"",
+	""
+);
 	
 	
 	

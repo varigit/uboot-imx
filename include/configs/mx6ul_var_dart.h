@@ -105,6 +105,7 @@
 	"initrd_high=0xffffffff\0" \
 	"fdt_file=imx6ul-var-dart-nand_wifi.dtb\0" \
 	"fdt_addr=0x83000000\0" \
+	"var_auto_fdt_file=Y\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"bootargs=console=ttymxc0,115200 ubi.mtd=4 "  \
@@ -143,6 +144,7 @@
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
 	"fdt_high=0xffffffff\0" \
+	"var_auto_fdt_file=Y\0" \
 	"initrd_high=0xffffffff\0" \
 	"fdt_file=imx6ul-var-dart-sd_emmc.dtb\0" \
 	"fdt_addr=0x83000000\0" \

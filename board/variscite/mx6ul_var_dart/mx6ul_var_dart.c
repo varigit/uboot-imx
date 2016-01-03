@@ -41,9 +41,8 @@
 #include <usb/ehci-fsl.h>
 
 #include "mx6var_v2_eeprom.h"
-#include "mx6var_eeprom.h"
 
-int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2,unsigned char address);
+int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2);
 int eeprom_revision __attribute__ ((section ("sram")));
 static long sdram_size __attribute__ ((section ("sram")));
 
@@ -137,6 +136,14 @@ static enum qn_level seq[3][2] = {
 static enum qn_func qn_output[8] = {
 	qn_reset, qn_reset, qn_reset, qn_enable, qn_disable, qn_reset,
 	qn_disable, qn_enable
+};
+
+/* determine boot device from SRC_SBMR1 (BOOT_CFG[4:1]) or SRC_GPR9 register */
+enum {
+	VBOOT_DEVICE_SD,
+	VBOOT_DEVICE_MMC,
+	VBOOT_DEVICE_NAND,
+	VBOOT_DEVICE_NONE
 };
 
 static void iox74lv_init(void)
@@ -362,14 +369,13 @@ static struct fsl_esdhc_cfg usdhc_cfg_emmc[2] = {
 #endif
 };
 
-
 int mmc_get_env_devno(void)
 {
 	u32 soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
 	int dev_no;
 	u32 bootsel;
 
-	bootsel = (soc_sbmr & 0x000000FF) >> 6;
+       bootsel = (soc_sbmr & 0x000000FF) >> 6;
 
 	/* If not boot from sd/mmc, use default value */
 	if (bootsel != 1)
@@ -380,6 +386,33 @@ int mmc_get_env_devno(void)
 
 	return dev_no;
 }
+
+static u32 get_boot_device(void)
+{
+	struct src *psrc = (struct src *)SRC_BASE_ADDR;
+	unsigned int gpr10_boot = readl(&psrc->gpr10) & (1 << 28);
+	unsigned reg = gpr10_boot ? readl(&psrc->gpr9) : readl(&psrc->sbmr1);
+
+	/* BOOT_CFG1[7:4] - see IMX6DQRM Table 8-8 */
+	switch ((reg & 0x000000FF) >> 4) {
+	 /* EIM: See 8.5.1, Table 8-9 */
+	/* SD/eSD: 8.5.3, Table 8-15  */
+	case 0x4:
+	case 0x5:
+	/* MMC/eMMC: 8.5.3 */
+	case 0x6:
+	case 0x7:
+		if (1== mmc_get_env_devno())
+			return VBOOT_DEVICE_MMC;
+		else
+			return VBOOT_DEVICE_SD;
+	/* NAND Flash: 8.5.2 */
+	case 0x8 ... 0xf:
+		return VBOOT_DEVICE_NAND;
+	}
+	return VBOOT_DEVICE_NONE;
+}
+
 
 int mmc_map_to_kernel_blk(int dev_no)
 {
@@ -652,8 +685,12 @@ static const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
+
 int board_late_init(void)
 {
+	char *s;
+
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif
@@ -662,6 +699,45 @@ int board_late_init(void)
 	setenv("board_name", "MX6UL_VAR_DART");
 
 	setenv("board_rev", "01");
+
+	s = getenv ("var_auto_fdt_file");
+	if (s[0] != 'Y') return 0;
+
+	var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
+
+	switch (get_boot_device()) {
+	case VBOOT_DEVICE_SD:
+		printf("SD!!!\n");
+		switch (var_eeprom_config_struct_v2.som_info &0x3){
+			case 0x00:
+			case 0x02:
+				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
+			break;
+			case 0x01:
+				setenv("fdt_file", "imx6ul-var-dart-sd_nand.dtb");
+			break;
+		}
+		break;
+	case VBOOT_DEVICE_MMC:
+		printf("eMMC!!!\n");
+		if (var_eeprom_config_struct_v2.som_info & 0x4)
+				setenv("fdt_file", "imx6ul-var-dart-emmc_wifi.dtb");
+		else
+				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
+		break;
+	case VBOOT_DEVICE_NAND:
+		printf("NAND!!!\n");
+		if (var_eeprom_config_struct_v2.som_info & 0x4)
+				setenv("fdt_file", "imx6ul-var-dart-nand_wifi.dtb");
+		else
+				setenv("fdt_file", "imx6ul-var-dart-sd_nand.dtb");
+		break;
+	default:
+		printf("UNKNOWN\n");
+		break;
+	}
+
+
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
@@ -773,6 +849,23 @@ void p_udelay(int time)
 	}
 }
 
+int var_get_boot_device(void)
+{
+
+	switch (spl_boot_device()) {
+		case BOOT_DEVICE_MMC1:
+			if (1== mmc_get_env_devno())
+				return BOOT_DEVICE_MMC2;
+			else
+				return BOOT_DEVICE_MMC1;
+	case BOOT_DEVICE_NAND:
+		return 	BOOT_DEVICE_NAND;
+	default:
+		return BOOT_DEVICE_NONE;
+	}
+
+}
+
 static void spl_dram_init(void)
 {
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
@@ -791,7 +884,7 @@ static int  spl_dram_init_v2(void)
 	/* Add here: Read EEPROM and parse Variscite struct */
 	memset(&var_eeprom_config_struct_v2, 0x00, sizeof(var_eeprom_config_struct_v2));
 	
-	ret = var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2,0x50);
+	ret = var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
 	
 	if (ret)
 		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
@@ -845,6 +938,8 @@ void board_init_f(ulong dummy)
 
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
+	i2c_set_bus_num(1);
+
 
 	/* DDR initialization */
 	board_dram_init();
@@ -856,6 +951,8 @@ void board_init_f(ulong dummy)
 	imxtype = (cpurev & 0xFF000) >> 12;
 	printf("i.MX%s SOC \n", get_imx_type(imxtype));
 	if(eeprom_revision==2){
+		var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
+
 		var_eeprom_config_struct_v2.part_number[sizeof(var_eeprom_config_struct_v2.part_number)-1] = (u8)0x00;
 		var_eeprom_config_struct_v2.Assembly[sizeof(var_eeprom_config_struct_v2.Assembly)-1] = (u8)0x00;
 		var_eeprom_config_struct_v2.date[sizeof(var_eeprom_config_struct_v2.date)-1] = (u8)0x00;
@@ -863,14 +960,36 @@ void board_init_f(ulong dummy)
 		printf("Part number: %s\n", (char *)var_eeprom_config_struct_v2.part_number);
 		printf("Assembly: %s\n", (char *)var_eeprom_config_struct_v2.Assembly);
 		printf("Date of production: %s\n", (char *)var_eeprom_config_struct_v2.date);
+		printf("DART-6UL configuration: ");
+		switch (var_eeprom_config_struct_v2.som_info &0x3){
+			case 0x00:
+			printf("SDCARD Only ");
+			break;
+			case 0x01:
+			printf("NAND ");
+			break;
+			case 0x02:
+			printf("eMMC ");
+			break;
+			case 0x03:
+			printf("Ilegal !!! ");
+			break;
+		}
+		if (var_eeprom_config_struct_v2.som_info &0x04)
+			printf("WIFI\n");
+		else
+			printf("\n");
 	} else {
 		printf("DDR LEGACY configuration\n");
 	}
 	dram_init();
 	printf("Ram size: %ld\n", sdram_size);
 	printf("Boot Device: ");
-	switch (spl_boot_device()) {
+	switch (var_get_boot_device()) {
 	case BOOT_DEVICE_MMC1:
+		printf("SD\n");
+		break;
+	case BOOT_DEVICE_MMC2:
 		printf("MMC\n");
 		break;
 	case BOOT_DEVICE_NAND:

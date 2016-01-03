@@ -32,6 +32,21 @@
 
 #define MAXIMUM_COMMANDS_NUMBER	150
  
+#define VARISCITE_MAGIC 0x49524157 // == HEX("VARI")
+
+#define VARISCITE_MX6_EEPROM_CHIP 0x50
+
+#define VARISCITE_MX6_EEPROM_STRUCT_OFFSET 0x00000000
+
+#define VARISCITE_MX6_EEPROM_WRITE_MAX_SIZE 0x4
+
+#define EEPROM_SIZE_BYTES 512
+
+#define SPL_DRAM_INIT_STATUS_GEN_ERROR				-1
+#define	SPL_DRAM_INIT_STATUS_OK					0
+#define	SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM			1
+#define	SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED	2
+
 extern void p_udelay(int time);
 
 typedef struct __attribute__((packed)) eeprom_command_type
@@ -48,7 +63,8 @@ typedef struct __attribute__((packed)) var_eeprom_config_struct_v2_type
 	u8 date[12];
 	u32 custom_addresses_values[32];
 	struct eeprom_command_type eeprom_commands[MAXIMUM_COMMANDS_NUMBER];
-	u8 reserved[34];
+	u8 reserved[33];
+	u8 som_info;	// 0x1=Nand Flash 0x02=eMMC Flash 0x04 WIFI included
 	u8 ddr_size;
 	u8 crc;
 } var_eeprom_config_struct_v2_type;
