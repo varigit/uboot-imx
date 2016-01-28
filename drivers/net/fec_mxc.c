@@ -1030,7 +1030,7 @@ static int fec_probe(bd_t *bd, int dev_id, uint32_t base_addr,
 	eth_register(edev);
 
 	if (fec_get_hwaddr(edev, dev_id, ethaddr) == 0) {
-		debug("got MAC%d address from fuse: %pM\n", dev_id, ethaddr);
+		printf("got MAC%d address from fuse: %pM\n", dev_id, ethaddr);
 		memcpy(edev->enetaddr, ethaddr, 6);
 		if (!getenv("ethaddr"))
 			eth_setenv_enetaddr("ethaddr", ethaddr);
