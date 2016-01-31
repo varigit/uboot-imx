@@ -172,7 +172,7 @@
 		"nand read ${fdt_addr} 0x3e0000 0x20000;"\
 		"bootm ${loadaddr} - ${fdt_addr}\0"\
 	"netargs=setenv bootargs console=${console},${baudrate} ${smp} video=mxcfb1:off " \
-		"root=/dev/nfs " \
+		"root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
@@ -237,7 +237,7 @@
 			"bootm; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} ${smp} video=mxcfb1:off " \
-		"root=/dev/nfs " \
+		"root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
