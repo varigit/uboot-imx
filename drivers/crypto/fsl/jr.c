@@ -357,7 +357,7 @@ int run_descriptor_jr(uint32_t *desc)
 		}
 	}
 
-	if (!op.status) {
+	if (op.status) {
 		debug("Error %x\n", op.status);
 		ret = op.status;
 	}
