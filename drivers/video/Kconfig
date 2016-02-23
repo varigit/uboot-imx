@@ -777,6 +777,19 @@ config VIDEO_SEPS525
 	  Enable support for the Syncoam PM-OLED display driver (RGB 160x128).
 	  Currently driver is supporting only SPI interface.
 
+config MXC_EPDC
+	bool "i.MX EPDC support"
+	depends on (MX7 || MX6)
+	help
+	  This enable the E-ink EPD panel controller support for i.MX processors
+
+config WAVEFORM_BUF_SIZE
+	hex "The buffer size allocated for i.MX EPDC waveform file"
+	default 0x400000
+	depends on MXC_EPDC
+	help
+	  Set the buffer size for loading waveform file.
+
 source "drivers/video/zynqmp/Kconfig"
 source "drivers/video/nexell/Kconfig"
 
