@@ -160,7 +160,8 @@
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"loadimagesize=6300000\0" \
+	"loadimage=mw.b ${loadaddr} 0 ${loadimagesize};fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image};crc32 ${loadaddr} ${loadimagesize}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
