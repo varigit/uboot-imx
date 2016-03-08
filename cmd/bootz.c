@@ -68,6 +68,14 @@ static int bootz_start(struct cmd_tbl *cmdtp, int flag, int argc,
 			      zi_end - zi_start))
 		return 1;
 
+#ifdef CONFIG_IMX_HAB
+	extern int authenticate_image(
+			uint32_t ddr_start, uint32_t raw_image_size);
+	if (authenticate_image(images->ep, zi_end - zi_start) != 0) {
+		printf("Authenticate zImage Fail, Please check\n");
+		return 1;
+	}
+#endif
 	return 0;
 }
 
