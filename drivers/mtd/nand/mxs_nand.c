@@ -202,6 +202,11 @@ static int mxs_nand_get_ecc_strength(struct mtd_info *mtd)
 	uint32_t page_oob_size = mtd->oobsize;
 	int meta = MXS_NAND_METADATA_SIZE;
 
+#ifdef CONFIG_TARGET_MX6VAR_SOM
+	chip->ecc_strength_ds = 8;
+	chip->ecc_step_ds = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
+#endif
+
 	if (chip->ecc_strength_ds > MXS_NAND_MAX_ECC_STRENGTH) {
 		printf("cannot support the NAND, ecc too weak\n");
 		return -EINVAL;

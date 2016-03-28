@@ -1,0 +1,10 @@
+MX6VAR_SOM BOARD
+M:	Eran Matityahu <eran.m@variscite.com>
+S:	Maintained
+F:	board/variscite/mx6var_som/
+F:	include/configs/mx6var_som_android.h
+F:	include/configs/mx6var_som.h
+F:	include/configs/mx6var_spl.h
+F:	configs/mx6var_som_2gbram_defconfig
+F:	configs/mx6var_som_nand_defconfig
+F:	configs/mx6var_som_sd_defconfig

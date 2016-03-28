@@ -576,6 +576,11 @@ config TARGET_MX6UL_14X14_LPDDR2_ARM2
         bool "Support mx6ul_14x14_lpddr2_arm2"
         select CPU_V7
 
+config TARGET_MX6VAR_SOM
+    bool "Support mx6var_som"
+	select CPU_V7
+	select SUPPORT_SPL
+
 config TARGET_GW_VENTANA
 	bool "Support gw_ventana"
 	select CPU_V7
@@ -934,6 +939,7 @@ source "board/tqc/tqma6/Kconfig"
 source "board/trizepsiv/Kconfig"
 source "board/ttcontrol/vision2/Kconfig"
 source "board/udoo/Kconfig"
+source "board/variscite/mx6var_som/Kconfig"
 source "board/vpac270/Kconfig"
 source "board/wandboard/Kconfig"
 source "board/warp/Kconfig"
