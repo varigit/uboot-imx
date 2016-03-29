@@ -24,7 +24,7 @@
 #include "mx6var_spl.h"
 #endif
 
-/* Address of reserved 4Bytes in OCRAM for sending RAM size from spl to u-boot */
+/* Address of reserved 4Bytes in OCRAM for sending RAM size from SPL to U-Boot */
 #define RAM_SIZE_ADDR	((CONFIG_SPL_TEXT_BASE) + (CONFIG_SPL_MAX_SIZE))
 
 #define CONFIG_MX6
@@ -33,10 +33,10 @@
 #define CONFIG_MX6DL
 #endif
 
-/* uncomment for PLUGIN mode support */
+/* Uncomment for PLUGIN mode support */
 /* #define CONFIG_USE_PLUGIN */
 
-/* uncomment for SECURE mode support */
+/* Uncomment for SECURE mode support */
 /* #define CONFIG_SECURE_BOOT */
 
 #ifdef CONFIG_SECURE_BOOT
@@ -471,8 +471,11 @@
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_DUALSPEED
 
-#define CONFIG_USB_ETHER
-#define CONFIG_USB_ETH_CDC
+/* Uncomment for USB Ethernet Gadget support */
+/*
+ * #define CONFIG_USB_ETHER
+ * #define CONFIG_USB_ETH_CDC
+ */
 #define CONFIG_NETCONSOLE
 
 #define CONFIG_USB_GADGET

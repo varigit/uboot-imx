@@ -7,7 +7,6 @@
  *	Aneesh V <aneesh@ti.com>
  *
  * Copyright (C) 2016 Variscite Ltd. All Rights Reserved.
- * Maintainer: Eran Matityahu <eran.m@variscite.com>
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
