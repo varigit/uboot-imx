@@ -1,17 +1,14 @@
 /*
  * Copyright (C) 2016 Variscite Ltd. All Rights Reserved.
- * Maintainer: Eran Matityahu <eran.m@variscite.com>
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
+
 #include <common.h>
 #include <command.h>
 #include <i2c.h>
 #include "mx6var_eeprom.h"
 #ifdef CONFIG_SPL_BUILD
-/*#include <asm/io.h>
-#include <asm/arch/sys_proto.h>
-#include <spl.h>*/
 #include <asm/arch/mx6-ddr.h>
 
 bool var_eeprom_is_valid(struct var_eeprom_cfg *p_var_eeprom_cfg)
@@ -201,11 +198,11 @@ int var_eeprom_read_struct(struct var_eeprom_cfg *p_var_eeprom_cfg)
 	eeprom_found = i2c_probe(VAR_MX6_EEPROM_CHIP);
 #ifdef EEPROM_DEBUG
 	printf("eeprom_found(0x%x)=%d\n", VAR_MX6_EEPROM_CHIP, eeprom_found);
-#endif	
+#endif
 	if (0 == eeprom_found) {
 #ifdef EEPROM_DEBUG
 		printf("EEPROM device detected, address=0x%02x\n", VAR_MX6_EEPROM_CHIP);
-#endif		
+#endif
 		if (i2c_read(VAR_MX6_EEPROM_CHIP, VAR_MX6_EEPROM_STRUCT_OFFSET, \
 					1, (uchar *)p_var_eeprom_cfg, sizeof(struct var_eeprom_cfg))) {
 #ifdef EEPROM_DEBUG
@@ -294,7 +291,7 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 				VAR_MX6_EEPROM_STRUCT_OFFSET + offset) ) {
 		printf("Error writing to EEPROM!\n");
 		return -1;
-	} 
+	}
 
 	offset = (uchar *)&var_eeprom_cfg.header.Assembly[0] - (uchar *)&var_eeprom_cfg;
 	if (var_eeprom_write((uchar *)&var_eeprom_cfg.header.Assembly[0], \
@@ -302,7 +299,7 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 				VAR_MX6_EEPROM_STRUCT_OFFSET + offset) ) {
 		printf("Error writing to EEPROM!\n");
 		return -1;
-	} 
+	}
 
 	offset = (uchar *)&var_eeprom_cfg.header.date[0] - (uchar *)&var_eeprom_cfg;
 	if (var_eeprom_write((uchar *)&var_eeprom_cfg.header.date[0], \

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2016 Variscite Ltd. All Rights Reserved.
- * Maintainer: Eran Matityahu <eran.m@variscite.com>
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
+
 #ifndef _MX6VAR_V2_EEPROM_H_
 #define _MX6VAR_V2_EEPROM_H_
 

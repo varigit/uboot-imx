@@ -30,7 +30,7 @@
 #define CONFIG_SYS_THUMB_BUILD
 #define CONFIG_SPL_LDSCRIPT		"board/variscite/mx6var_som/u-boot-spl.lds"
 #define CONFIG_SPL_TEXT_BASE		0x00908000
-#define CONFIG_SPL_MAX_SIZE		0xFFFC	/* ==0x10000-0x4, reserve 4Bytes for sending RAM size from spl to u-boot */
+#define CONFIG_SPL_MAX_SIZE		0xFFFC	/* ==0x10000-0x4, reserve 4Bytes for sending RAM size from SPL to U-Boot */
 #define CONFIG_SPL_STACK		0x0091FFB8
 #define CONFIG_SPL_LIBCOMMON_SUPPORT
 #define CONFIG_SPL_LIBGENERIC_SUPPORT

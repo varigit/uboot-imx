@@ -1,5 +1,5 @@
 /*
- * This is automatically generated part. 
+ * This is an automatically generated part.
  */
 unsigned char MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands[]={
 	0x01, 0x9B,	0x02, 0x9B,	0x03, 0x9B,	0x04, 0x9B,
@@ -48,8 +48,8 @@ u32 MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_RamValues[]={
 };
 /* End of automatically generated part */
 
-/* 
- * This is automatically generated part.
+/*
+ * This is an automatically generated part.
  * Address file was: addresses.inc
  * Address file MD5 was: 980A738D4534913CD453034EBE23D4EA
  * Values file was: values.inc
@@ -95,7 +95,7 @@ unsigned char mt128x64mx32_Step3_commands[]={
 };
 
 u32 mt128x64mx32_Step3_RamValues[]={
-	/* ADDRESSES */	
+	/* ADDRESSES */
 	0x020C4018, 0x020C4014, 0x020E0010, 0x020E0018,
 	0x020E001C, 0x00000000,
 	/* VALUES */

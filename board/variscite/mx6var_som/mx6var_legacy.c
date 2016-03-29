@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2016 Variscite Ltd. All Rights Reserved.
- * Maintainer: Eran Matityahu <eran.m@variscite.com>
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
+
 #ifdef CONFIG_SPL_BUILD
 #include <asm/imx-common/iomux-v3.h>
 #include <asm/io.h>
@@ -141,6 +141,7 @@ void spl_dram_init_mx6solo_512mb(void)
 	mmdc_p0->mapsr          = (u32)0x00011006;
 	mmdc_p0->mdscr          = (u32)0x00000000;
 }
+
 void spl_mx6qd_dram_setup_iomux(void)
 {
 	volatile struct mx6dq_iomux_ddr_regs *mx6q_ddr_iomux;
@@ -189,7 +190,7 @@ void spl_mx6qd_dram_setup_iomux(void)
 	mx6q_ddr_iomux->dram_dqm5	= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_dqm6	= (u32)0x00000030;
 	mx6q_ddr_iomux->dram_dqm7	= (u32)0x00000030;
-}   
+}
 
 void spl_dram_init_mx6dl_1g(void)
 {
@@ -265,8 +266,6 @@ void spl_dram_init_mx6dl_1g(void)
 
 	mmdc_p0->mdscr 		= (u32)0x00000000;
 }
-
-/* i.MX6Q */
 
 void spl_dram_init_mx6q_1g(void)
 {
@@ -349,7 +348,6 @@ void spl_dram_init_mx6q_1g(void)
 #if 0
 void print_dram_data(void)
 {
-	/*printf("%s START\n", __func__);*/
 	volatile struct mmdc_p_regs *mmdc_p0;
 	volatile struct mmdc_p_regs *mmdc_p1;
 
@@ -362,7 +360,7 @@ void print_dram_data(void)
 	printf("mmdc_p0->mpzqhwctrl 	0x%08x 0xa1390003\n", mmdc_p0->mpzqhwctrl);
 	while (mmdc_p0->mpzqhwctrl & 0x00010000)
 		;
-	/* write leveling */	
+	/* write leveling */
 	printf("mmdc_p0->mpwldectrl0 	0x%08x 0x001C0019\n", mmdc_p0->mpwldectrl0);
 	printf("mmdc_p0->mpwldectrl1 	0x%08x 0x00260026\n", mmdc_p0->mpwldectrl1);
 	printf("mmdc_p1->mpwldectrl0 	0x%08x 0x001D002C\n", mmdc_p1->mpwldectrl0);
@@ -407,11 +405,11 @@ void print_dram_data(void)
 
 	printf("mmdc_p0->mdor 		0x%08x 0x005a1023\n", mmdc_p0->mdor);
 
-	/* 2G                       
+	/* 2G
 	   printf("mmdc_p0->mdasp 		0x%08x 0x00000047\n", mmdc_p0->mdasp);
 	   printf("mmdc_p0->mdctl 		0x%08x 0x841a0000\n", mmdc_p0->mdctl);*/
 
-	/* 1G */                                  
+	/* 1G */
 	printf("mmdc_p0->mdasp 		0x%08x 0x00000027\n", mmdc_p0->mdasp);
 	printf("mmdc_p0->mdctl 		0x%08x 0x841A0000\n", mmdc_p0->mdctl);
 
@@ -429,8 +427,6 @@ void print_dram_data(void)
 	printf("mmdc_p0->mdpdc 		0x%08x 0x00025576\n", mmdc_p0->mdpdc);
 	printf("mmdc_p0->mapsr 		0x%08x 0x00011006\n", mmdc_p0->mapsr);
 	printf("mmdc_p0->mdscr 		0x%08x 0x00000000\n", mmdc_p0->mdscr);
-
-	/*printf("%s END\n", __func__);*/
 }
 #endif
 
@@ -510,7 +506,7 @@ void spl_dram_init_mx6q_2g(void)
 
 	mmdc_p0->mdor 		= (u32)0x008F1023; /* 0x005a1023; */
 
-	/* 2G */ 
+	/* 2G */
 	mmdc_p0->mdasp 		= (u32)0x00000047;
 	mmdc_p0->mdctl 		= (u32)0x841a0000;
 
@@ -536,15 +532,15 @@ void spl_dram_init_mx6q_2g(void)
 
 
 void spl_mx6dlsl_dram_setup_iomux(void)
-{   
+{
 	volatile struct mx6sdl_iomux_ddr_regs *mx6dl_ddr_iomux;
 	volatile struct mx6sdl_iomux_grp_regs *mx6dl_grp_iomux;
 
 	mx6dl_ddr_iomux = (struct mx6sdl_iomux_ddr_regs *) MX6SDL_IOM_DDR_BASE;
 	mx6dl_grp_iomux = (struct mx6sdl_iomux_grp_regs *) MX6SDL_IOM_GRP_BASE;
 
-	mx6dl_grp_iomux->grp_ddr_type   = (u32)0x000c0000; 
-	mx6dl_grp_iomux->grp_ddrpke     = (u32)0x00000000; 
+	mx6dl_grp_iomux->grp_ddr_type   = (u32)0x000c0000;
+	mx6dl_grp_iomux->grp_ddrpke     = (u32)0x00000000;
 	mx6dl_ddr_iomux->dram_sdclk_0   = (u32)0x00000030;
 	mx6dl_ddr_iomux->dram_sdclk_1   = (u32)0x00000030;
 	mx6dl_ddr_iomux->dram_cas       = (u32)0x00000030;
@@ -583,7 +579,7 @@ void spl_mx6dlsl_dram_setup_iomux(void)
 	mx6dl_ddr_iomux->dram_dqm5      = (u32)0x00000030;
 	mx6dl_ddr_iomux->dram_dqm6      = (u32)0x00000030;
 	mx6dl_ddr_iomux->dram_dqm7      = (u32)0x00000030;
-} 
+}
 
 void spl_dram_init_mx6solo_1gb(void)
 {

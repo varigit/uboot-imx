@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2016 Variscite Ltd. All Rights Reserved.
- * Maintainer: Eran Matityahu <eran.m@variscite.com>
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
+
 #ifdef CONFIG_SPL_BUILD
 #include <common.h>
 #include <i2c.h>
@@ -22,13 +22,13 @@ static int handle_one_command(struct eeprom_command *eeprom_commands,int command
 
 
 bool var_eeprom_v2_is_valid(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
-{   
+{
 	return (VARISCITE_MAGIC_V2 == p_var_eeprom_v2_cfg->variscite_magic);
-}   
+}
 
 
 void var_eeprom_v2_strings_print(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
-{   
+{
 	p_var_eeprom_v2_cfg->part_number[sizeof(p_var_eeprom_v2_cfg->part_number)-1] = (u8)0x00;
 	p_var_eeprom_v2_cfg->Assembly[sizeof(p_var_eeprom_v2_cfg->Assembly)-1] = (u8)0x00;
 	p_var_eeprom_v2_cfg->date[sizeof(p_var_eeprom_v2_cfg->date)-1] = (u8)0x00;
@@ -36,7 +36,7 @@ void var_eeprom_v2_strings_print(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
 	printf("Part number: %s\n", (char *)p_var_eeprom_v2_cfg->part_number);
 	printf("Assembly: %s\n", (char *)p_var_eeprom_v2_cfg->Assembly);
 	printf("Date of production: %s\n", (char *)p_var_eeprom_v2_cfg->date);
-}   
+}
 
 
 void load_custom_data(u32 *custom_addresses_values, u32 *ram_addresses, u32 *ram_values)
@@ -178,8 +178,9 @@ static int handle_one_command(struct eeprom_command *eeprom_commands, int comman
 
 static u32 get_address_by_index(unsigned char index, u32 *ram_addresses)
 {
-	/* DDR Register struct
-	 * The eeprom contains structure of 
+	/*
+	 * DDR Register struct
+	 * The eeprom contains structure of
 	 * 1 byte index in this table, 1 byte index to common values in the next table to write to this address.
 	 * If there is some new addresses got from the calibration program they should be added in the end of the array.
 	 * The maximum array size is 256 addresses.
@@ -198,7 +199,7 @@ static u32 get_address_by_index(unsigned char index, u32 *ram_addresses)
 
 static u32 get_value_by_index(unsigned char index, u32 *ram_values)
 {
-	const u32 rom_values[] = 
+	const u32 rom_values[] =
 	{
 		#include "values.inc"
 	};
@@ -207,7 +208,7 @@ static u32 get_value_by_index(unsigned char index, u32 *ram_values)
 		return ram_values[index-MAXIMUM_ROM_VALUE_INDEX];
 
 	return rom_values[index];
-}	
+}
 
 
 int var_eeprom_v2_read_struct(struct var_eeprom_v2_cfg *var_eeprom_v2_cfg, \
@@ -219,7 +220,7 @@ int var_eeprom_v2_read_struct(struct var_eeprom_v2_cfg *var_eeprom_v2_cfg, \
 					sizeof(struct var_eeprom_v2_cfg))) {
 			printf("Read device ID error!\n");
 			return -1;
-		} 
+		}
 	} else {
 		printf("Error! Couldn't find EEPROM device\n");
 	}
