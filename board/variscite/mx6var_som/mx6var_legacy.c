@@ -345,91 +345,6 @@ void spl_dram_init_mx6q_1g(void)
 	mmdc_p0->mdscr 		= (u32)0x00000000;
 }
 
-#if 0
-void print_dram_data(void)
-{
-	volatile struct mmdc_p_regs *mmdc_p0;
-	volatile struct mmdc_p_regs *mmdc_p1;
-
-	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
-	mmdc_p1 = (struct mmdc_p_regs *) MMDC_P1_BASE_ADDR;
-
-	/* Calibrations */
-	/* ZQ */
-	printf("Name			Read	Wrote\n");
-	printf("mmdc_p0->mpzqhwctrl 	0x%08x 0xa1390003\n", mmdc_p0->mpzqhwctrl);
-	while (mmdc_p0->mpzqhwctrl & 0x00010000)
-		;
-	/* write leveling */
-	printf("mmdc_p0->mpwldectrl0 	0x%08x 0x001C0019\n", mmdc_p0->mpwldectrl0);
-	printf("mmdc_p0->mpwldectrl1 	0x%08x 0x00260026\n", mmdc_p0->mpwldectrl1);
-	printf("mmdc_p1->mpwldectrl0 	0x%08x 0x001D002C\n", mmdc_p1->mpwldectrl0);
-	printf("mmdc_p1->mpwldectrl1 	0x%08x 0x0019002E\n", mmdc_p1->mpwldectrl1);
-	/* DQS gating, read delay, write delay calibration values
-	   based on calibration compare of 0x00ffff00  */
-	printf("mmdc_p0->mpdgctrl0 	0x%08x 0x45300544\n", mmdc_p0->mpdgctrl0);
-	printf("mmdc_p0->mpdgctrl1 	0x%08x 0x052C0520\n", mmdc_p0->mpdgctrl1);
-	printf("mmdc_p1->mpdgctrl0 	0x%08x 0x4528053C\n", mmdc_p1->mpdgctrl0);
-	printf("mmdc_p1->mpdgctrl1 	0x%08x 0x052C0470\n", mmdc_p1->mpdgctrl1);
-
-	printf("mmdc_p0->mprddlctl 	0x%08x 0x3E363A40\n", mmdc_p0->mprddlctl);
-	printf("mmdc_p1->mprddlctl 	0x%08x 0x403C3246\n", mmdc_p1->mprddlctl);
-
-	printf("mmdc_p0->mpwrdlctl 	0x%08x 0x3A38443C\n", mmdc_p0->mpwrdlctl);
-	printf("mmdc_p1->mpwrdlctl 	0x%08x 0x48364A3E\n", mmdc_p1->mpwrdlctl);
-
-	printf("mmdc_p0->mprddqby0dl 	0x%08x 0x33333333\n", mmdc_p0->mprddqby0dl);
-	printf("mmdc_p0->mprddqby1dl 	0x%08x 0x33333333\n", mmdc_p0->mprddqby1dl);
-	printf("mmdc_p0->mprddqby2dl 	0x%08x 0x33333333\n", mmdc_p0->mprddqby2dl);
-	printf("mmdc_p0->mprddqby3dl 	0x%08x 0x33333333\n", mmdc_p0->mprddqby3dl);
-	printf("mmdc_p1->mprddqby0dl 	0x%08x 0x33333333\n", mmdc_p1->mprddqby0dl);
-	printf("mmdc_p1->mprddqby1dl 	0x%08x 0x33333333\n", mmdc_p1->mprddqby1dl);
-	printf("mmdc_p1->mprddqby2dl 	0x%08x 0x33333333\n", mmdc_p1->mprddqby2dl);
-	printf("mmdc_p1->mprddqby3dl 	0x%08x 0x33333333\n", mmdc_p1->mprddqby3dl);
-
-	printf("mmdc_p0->mpmur0 	0x%08x 0x00000800\n", mmdc_p0->mpmur0);
-	printf("mmdc_p1->mpmur0 	0x%08x 0x00000800\n", mmdc_p1->mpmur0);
-	/* MMDC init:
-	   in DDR3, 64-bit mode, only MMDC0 is initiated: */
-	printf("mmdc_p0->mdpdc 		0x%08x 0x00020036\n", mmdc_p0->mdpdc);
-	printf("mmdc_p0->mdotc 		0x%08x 0x09444040\n", mmdc_p0->mdotc);
-
-	printf("mmdc_p0->mdcfg0 	0x%08x 0x555A7974\n", mmdc_p0->mdcfg0);
-	printf("mmdc_p0->mdcfg1 	0x%08x 0xDB538F64\n", mmdc_p0->mdcfg1);
-	printf("mmdc_p0->mdcfg2 	0x%08x 0x01FF00DB\n", mmdc_p0->mdcfg2);
-
-	printf("mmdc_p0->mdmisc 	0x%08x 0x00001740\n", mmdc_p0->mdmisc);
-	printf("mmdc_p0->mdscr 		0x%08x 0x00000000\n", mmdc_p0->mdscr);
-
-	printf("mmdc_p0->mdrwd 		0x%08x 0x000026d2\n", mmdc_p0->mdrwd);
-
-	printf("mmdc_p0->mdor 		0x%08x 0x005a1023\n", mmdc_p0->mdor);
-
-	/* 2G
-	   printf("mmdc_p0->mdasp 		0x%08x 0x00000047\n", mmdc_p0->mdasp);
-	   printf("mmdc_p0->mdctl 		0x%08x 0x841a0000\n", mmdc_p0->mdctl);*/
-
-	/* 1G */
-	printf("mmdc_p0->mdasp 		0x%08x 0x00000027\n", mmdc_p0->mdasp);
-	printf("mmdc_p0->mdctl 		0x%08x 0x841A0000\n", mmdc_p0->mdctl);
-
-	printf("mmdc_p0->mdscr 		0x%08x 0x04088032\n", mmdc_p0->mdscr);
-	printf("mmdc_p0->mdscr 		0x%08x 0x00008033\n", mmdc_p0->mdscr);
-	printf("mmdc_p0->mdscr 		0x%08x 0x00048031\n", mmdc_p0->mdscr);
-	printf("mmdc_p0->mdscr 		0x%08x 0x09408030\n", mmdc_p0->mdscr);
-	printf("mmdc_p0->mdscr 		0x%08x 0x04008040\n", mmdc_p0->mdscr);
-
-	printf("mmdc_p0->mdref 		0x%08x 0x00005800\n", mmdc_p0->mdref);
-
-	printf("mmdc_p0->mpodtctrl 	0x%08x 0x00011117\n", mmdc_p0->mpodtctrl);
-	printf("mmdc_p1->mpodtctrl 	0x%08x 0x00011117\n", mmdc_p1->mpodtctrl);
-
-	printf("mmdc_p0->mdpdc 		0x%08x 0x00025576\n", mmdc_p0->mdpdc);
-	printf("mmdc_p0->mapsr 		0x%08x 0x00011006\n", mmdc_p0->mapsr);
-	printf("mmdc_p0->mdscr 		0x%08x 0x00000000\n", mmdc_p0->mdscr);
-}
-#endif
-
 void spl_dram_init_mx6q_2g(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
@@ -529,7 +444,6 @@ void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mapsr 		= (u32)0x00011006;
 	mmdc_p0->mdscr 		= (u32)0x00000000;
 }
-
 
 void spl_mx6dlsl_dram_setup_iomux(void)
 {
