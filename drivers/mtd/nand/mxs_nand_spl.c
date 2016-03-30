@@ -77,23 +77,32 @@ static int mxs_flash_ident(struct mtd_info *mtd)
 	}
 	debug("0x%02x:0x%02x ", mfg_id, dev_id);
 
-	/* read ONFI */
-	chip->onfi_version = 0;
-	chip->cmdfunc(mtd, NAND_CMD_READID, 0x20, -1);
-	if (chip->read_byte(mtd) != 'O' || chip->read_byte(mtd) != 'N' ||
-	    chip->read_byte(mtd) != 'F' || chip->read_byte(mtd) != 'I') {
-		return -2;
-	}
+	if ((mfg_id == 0xec) && (dev_id == 0xd3)) {
+		/* Samsung 1GB non-ONFI NAND */
+		mtd->name = "K9K8G08U0D";
+		mtd->writesize = 2048;
+		mtd->erasesize = 128 * 1024;
+		mtd->oobsize = 64;
+		chip->chipsize = 1024 * 1024 * 1024;
+	} else {
+		/* read ONFI */
+		chip->onfi_version = 0;
+		chip->cmdfunc(mtd, NAND_CMD_READID, 0x20, -1);
+		if (chip->read_byte(mtd) != 'O' || chip->read_byte(mtd) != 'N' ||
+		    chip->read_byte(mtd) != 'F' || chip->read_byte(mtd) != 'I') {
+			return -2;
+		}
 
-	/* we have ONFI, probe it */
-	chip->cmdfunc(mtd, NAND_CMD_PARAM, 0, -1);
-	chip->read_buf(mtd, (uint8_t *)p, sizeof(*p));
-	mtd->name = p->model;
-	mtd->writesize = le32_to_cpu(p->byte_per_page);
-	mtd->erasesize = le32_to_cpu(p->pages_per_block) * mtd->writesize;
-	mtd->oobsize = le16_to_cpu(p->spare_bytes_per_page);
-	chip->chipsize = le32_to_cpu(p->blocks_per_lun);
-	chip->chipsize *= (uint64_t)mtd->erasesize * p->lun_count;
+		/* we have ONFI, probe it */
+		chip->cmdfunc(mtd, NAND_CMD_PARAM, 0, -1);
+		chip->read_buf(mtd, (uint8_t *)p, sizeof(*p));
+		mtd->name = p->model;
+		mtd->writesize = le32_to_cpu(p->byte_per_page);
+		mtd->erasesize = le32_to_cpu(p->pages_per_block) * mtd->writesize;
+		mtd->oobsize = le16_to_cpu(p->spare_bytes_per_page);
+		chip->chipsize = le32_to_cpu(p->blocks_per_lun);
+		chip->chipsize *= (uint64_t)mtd->erasesize * p->lun_count;
+	}
 	/* Calculate the address shift from the page size */
 	chip->page_shift = ffs(mtd->writesize) - 1;
 	chip->phys_erase_shift = ffs(mtd->erasesize) - 1;
