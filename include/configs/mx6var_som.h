@@ -4,7 +4,7 @@
  *
  * Author: Eran Matityahu <eran.m@variscite.com>
  *
- * Configuration settings for the Variscite VAR-SOM-MX6 board.
+ * Configuration settings for Variscite VAR-SOM-MX6 board family.
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
@@ -104,6 +104,7 @@
 
 /*#define CONFIG_SUPPORT_EMMC_BOOT*/ /* eMMC specific */
 
+/* Ethernet Configs */
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_MII
@@ -114,10 +115,8 @@
 #define CONFIG_FEC_XCV_TYPE		RGMII
 #define CONFIG_ETHPRIME			"FEC"
 #define CONFIG_FEC_MXC_PHYADDR		7
-
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_MICREL
-#define CONFIG_PHY_MICREL_KSZ9021
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE

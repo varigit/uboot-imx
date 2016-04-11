@@ -28,12 +28,12 @@ u32 get_actual_ram_size(u32 max_size)
 		temp2 = *port2;
 		temp1 = *port1;
 
-		*port2 = 0;			/* Write zero to start of second half of memory */
+		*port2 = 0;			/* Write 0 to start of 2nd half of memory */
 		*port1 = PATTERN;		/* Write pattern to start of memory */
 
 		if ((PATTERN == *port2) && (ram_size > 512)) {
 			*port1 = temp1;
-			ram_size /= 2;		/* Next step devide size by half */
+			ram_size /= 2;		/* Next step: devide size by 2 */
 		}
 		else
 		{
@@ -208,8 +208,10 @@ void spl_dram_init_mx6dl_1g(void)
 	mmdc_p0->mpwldectrl1 	= (u32)0x001f001f;
 	mmdc_p1->mpwldectrl0 	= (u32)0x001f001f;
 	mmdc_p1->mpwldectrl1 	= (u32)0x001f001f;
-	/* DQS gating, read delay, write delay calibration values
-	   based on calibration compare of 0x00ffff00 */
+	/*
+	 * DQS gating, read delay, write delay calibration values
+	 * based on calibration compare of 0x00ffff00
+	 */
 	mmdc_p0->mpdgctrl0 	= (u32)0x42440244;
 	mmdc_p0->mpdgctrl1 	= (u32)0x02300238;
 	mmdc_p1->mpdgctrl0 	= (u32)0x421C0228;
@@ -233,8 +235,7 @@ void spl_dram_init_mx6dl_1g(void)
 	/* Complete calibration by forced measurment */
 	mmdc_p0->mpmur0 	= (u32)0x00000800;
 	mmdc_p1->mpmur0 	= (u32)0x00000800;
-	/* MMDC init:
-	   in DDR3, 64-bit mode, only MMDC0 is initiated: */
+	/* MMDC init: in DDR3, 64-bit mode, only MMDC0 is initiated: */
 	mmdc_p0->mdpdc 		= (u32)0x0002002d;
 	mmdc_p0->mdotc 		= (u32)0x00333030;
 	mmdc_p0->mdcfg0 	= (u32)0x3F435313;
@@ -285,8 +286,10 @@ void spl_dram_init_mx6q_1g(void)
 	mmdc_p0->mpwldectrl1 	= (u32)0x00260026;
 	mmdc_p1->mpwldectrl0 	= (u32)0x001D002C;
 	mmdc_p1->mpwldectrl1 	= (u32)0x0019002E;
-	/* DQS gating, read delay, write delay calibration values
-	   based on calibration compare of 0x00ffff00  */
+	/*
+	 * DQS gating, read delay, write delay calibration values
+	 * based on calibration compare of 0x00ffff00
+	 */
 	mmdc_p0->mpdgctrl0 	= (u32)0x45300544;
 	mmdc_p0->mpdgctrl1 	= (u32)0x052C0520;
 	mmdc_p1->mpdgctrl0 	= (u32)0x4528053C;
@@ -309,8 +312,7 @@ void spl_dram_init_mx6q_1g(void)
 
 	mmdc_p0->mpmur0 	= (u32)0x00000800;
 	mmdc_p1->mpmur0 	= (u32)0x00000800;
-	/* MMDC init:
-	   in DDR3, 64-bit mode, only MMDC0 is initiated: */
+	/* MMDC init: in DDR3, 64-bit mode, only MMDC0 is initiated: */
 	mmdc_p0->mdpdc 		= (u32)0x00020036;
 	mmdc_p0->mdotc 		= (u32)0x09444040;
 
@@ -324,10 +326,6 @@ void spl_dram_init_mx6q_1g(void)
 	mmdc_p0->mdrwd 		= (u32)0x000026d2;
 
 	mmdc_p0->mdor 		= (u32)0x005a1023;
-
-	/* 2G
-	   mmdc_p0->mdasp 		= (u32)0x00000047;
-	   mmdc_p0->mdctl 		= (u32)0x841a0000;*/
 
 	/* 1G */
 	mmdc_p0->mdasp 		= (u32)0x00000027;
@@ -363,8 +361,10 @@ void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mpwldectrl1 	= (u32)0x0026001E;
 	mmdc_p1->mpwldectrl0 	= (u32)0x00240030;
 	mmdc_p1->mpwldectrl1 	= (u32)0x00150028;
-	/* DQS gating, read delay, write delay calibration values
-	   based on calibration compare of 0x00ffff00  */
+	/*
+	 * DQS gating, read delay, write delay calibration values
+	 * based on calibration compare of 0x00ffff00
+	 */
 	mmdc_p0->mpdgctrl0 	= (u32)0x43240338;
 	mmdc_p0->mpdgctrl1 	= (u32)0x03240318;
 	mmdc_p1->mpdgctrl0 	= (u32)0x43380344;
@@ -381,8 +381,10 @@ void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mpwldectrl1 	= (u32)0x0024001F;
 	mmdc_p1->mpwldectrl0 	= (u32)0x001F002B;
 	mmdc_p1->mpwldectrl1 	= (u32)0x00130029;
-	/* DQS gating, read delay, write delay calibration values
-	   based on calibration compare of 0x00ffff00  */
+	/*
+	 * DQS gating, read delay, write delay calibration values
+	 * based on calibration compare of 0x00ffff00
+	 */
 	mmdc_p0->mpdgctrl0	= (u32)0x43240334;
 	mmdc_p0->mpdgctrl1	= (u32)0x03200314;
 	mmdc_p1->mpdgctrl0	= (u32)0x432C0340;
@@ -405,13 +407,12 @@ void spl_dram_init_mx6q_2g(void)
 
 	mmdc_p0->mpmur0 	= (u32)0x00000800;
 	mmdc_p1->mpmur0 	= (u32)0x00000800;
-	/* MMDC init:
-	   in DDR3, 64-bit mode, only MMDC0 is initiated: */
+	/* MMDC init: in DDR3, 64-bit mode, only MMDC0 is initiated: */
 	mmdc_p0->mdpdc 		= (u32)0x00020036;
 	mmdc_p0->mdotc 		= (u32)0x09444040;
 
-	mmdc_p0->mdcfg0 	= (u32)0x8A8F7955; /* 0x555a7975; */
-	mmdc_p0->mdcfg1 	= (u32)0xFF328F64; /* 0xff538f64; */
+	mmdc_p0->mdcfg0 	= (u32)0x8A8F7955;
+	mmdc_p0->mdcfg1 	= (u32)0xFF328F64;
 	mmdc_p0->mdcfg2 	= (u32)0x01ff00db;
 
 	mmdc_p0->mdmisc 	= (u32)0x00081740;
@@ -419,15 +420,11 @@ void spl_dram_init_mx6q_2g(void)
 
 	mmdc_p0->mdrwd 		= (u32)0x000026d2;
 
-	mmdc_p0->mdor 		= (u32)0x008F1023; /* 0x005a1023; */
+	mmdc_p0->mdor 		= (u32)0x008F1023;
 
 	/* 2G */
 	mmdc_p0->mdasp 		= (u32)0x00000047;
 	mmdc_p0->mdctl 		= (u32)0x841a0000;
-
-	/* 1G
-	   mmdc_p0->mdasp 		= (u32)0x00000027;
-	   mmdc_p0->mdctl 		= (u32)0x831a0000;*/
 
 	mmdc_p0->mdscr 		= (u32)0x04088032;
 	mmdc_p0->mdscr 		= (u32)0x00008033;

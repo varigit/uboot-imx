@@ -180,9 +180,11 @@ static u32 get_address_by_index(unsigned char index, u32 *ram_addresses)
 {
 	/*
 	 * DDR Register struct
-	 * The eeprom contains structure of
-	 * 1 byte index in this table, 1 byte index to common values in the next table to write to this address.
-	 * If there is some new addresses got from the calibration program they should be added in the end of the array.
+	 * The eeprom contains a structure of:
+	 * 1 byte index in this addresses table, and
+	 * 1 byte index to common values in the next table - to write to this address.
+	 * If there are new addresses from the calibration program,
+	 * they should be added to the end of the array.
 	 * The maximum array size is 256 addresses.
 	 */
 	const u32 rom_addresses[]=
