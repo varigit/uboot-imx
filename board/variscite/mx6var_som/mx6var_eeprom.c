@@ -11,6 +11,12 @@
 #ifdef CONFIG_SPL_BUILD
 #include <asm/arch/mx6-ddr.h>
 
+#ifdef EEPROM_DEBUG
+#define eeprom_debug(M, ...) printf("EEPROM DEBUG: " M, ##__VA_ARGS__)
+#else
+#define eeprom_debug(M, ...)
+#endif
+
 bool var_eeprom_is_valid(struct var_eeprom_cfg *p_var_eeprom_cfg)
 {
 	return (VARISCITE_MAGIC == p_var_eeprom_cfg->header.variscite_magic);
@@ -196,18 +202,13 @@ int var_eeprom_read_struct(struct var_eeprom_cfg *p_var_eeprom_cfg)
 	int ret = 0;
 	i2c_set_bus_num(1);
 	eeprom_found = i2c_probe(VAR_MX6_EEPROM_CHIP);
-#ifdef EEPROM_DEBUG
-	printf("eeprom_found(0x%x)=%d\n", VAR_MX6_EEPROM_CHIP, eeprom_found);
-#endif
+	eeprom_debug("eeprom_found(0x%x)=%d\n", VAR_MX6_EEPROM_CHIP, eeprom_found);
 	if (0 == eeprom_found) {
-#ifdef EEPROM_DEBUG
-		printf("EEPROM device detected, address=0x%02x\n", VAR_MX6_EEPROM_CHIP);
-#endif
+		eeprom_debug("EEPROM device detected, address=0x%x\n", VAR_MX6_EEPROM_CHIP);
+
 		if (i2c_read(VAR_MX6_EEPROM_CHIP, VAR_MX6_EEPROM_STRUCT_OFFSET, \
 					1, (uchar *)p_var_eeprom_cfg, sizeof(struct var_eeprom_cfg))) {
-#ifdef EEPROM_DEBUG
-			printf("Read device ID error!\n");
-#endif
+			eeprom_debug("Read device ID error!\n");
 			return -1;
 		} else {
 			/* Success */
@@ -217,14 +218,12 @@ int var_eeprom_read_struct(struct var_eeprom_cfg *p_var_eeprom_cfg)
 #endif
 		}
 	} else {
-#ifdef EEPROM_DEBUG
-		printf("Error! Couldn't find EEPROM device\n");
-#endif
+		eeprom_debug("Error! Couldn't find EEPROM device\n");
 	}
 
 	return ret;
 }
-#endif
+#endif /* CONFIG_SPL_BUILD */
 
 void var_eeprom_strings_print(struct var_eeprom_cfg *p_var_eeprom_cfg)
 {

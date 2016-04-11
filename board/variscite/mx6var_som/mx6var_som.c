@@ -364,7 +364,6 @@ static void setup_iomux_enet(void)
 
 	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
 
-	/* Need delay 10ms according to KSZ9021 spec */
 	mdelay(10);
 	gpio_set_value(IMX_GPIO_NR(1, 25), 1);
 
@@ -430,12 +429,6 @@ void setup_local_i2c(void) {
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info2));
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info3));
 }
-
-iomux_v3_cfg_t const di0_pads[] = {
-	IOMUX_PADS(PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK),	/* DISP0_CLK */
-	IOMUX_PADS(PAD_DI0_PIN2__IPU1_DI0_PIN02),		/* DISP0_HSYNC */
-	IOMUX_PADS(PAD_DI0_PIN3__IPU1_DI0_PIN03),		/* DISP0_VSYNC */
-};
 
 static void var_setup_iomux_per_vcc_en(void)
 {
@@ -617,18 +610,27 @@ static void setup_gpmi_nand(void)
 
 int board_phy_config(struct phy_device *phydev)
 {
-	/* min rx data delay */
-	ksz9021_phy_extended_write(phydev,
-			MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
-	/* min tx data delay */
-	ksz9021_phy_extended_write(phydev,
-			MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x0);
-	/* max rx/tx clock delay, min rx/tx control */
-	ksz9021_phy_extended_write(phydev,
-			MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
-
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
+
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x9, 0x1c00);
+
+	/* control data pad skew */
+	ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_CTRL_SIG_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x0000);
+	/* rx data pad skew */
+	ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_RX_DATA_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x0000);
+	/* tx data pad skew */
+	ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_TX_DATA_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x0000);
+	/* gtx and rx clock pad skew */
+	ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_CLOCK_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x03FF);
 
 	return 0;
 }
@@ -794,13 +796,10 @@ static void setup_display(void)
 	int reg;
 
 	/* Setup backlight */
-	SETUP_IOMUX_PAD(PAD_DISP0_DAT9__GPIO4_IO30 | MUX_PAD_CTRL(ENET_PAD_CTRL));
+	SETUP_IOMUX_PAD(PAD_DISP0_DAT9__GPIO4_IO30 | MUX_PAD_CTRL(NO_PAD_CTRL));
 
 	/* Turn off backlight until display is ready */
 	gpio_direction_output(VAR_SOM_BACKLIGHT_EN , 0);
-
-	/* Setup HSYNC, VSYNC, DISP_CLK for debugging purposes */
-	SETUP_IOMUX_PADS(di0_pads);
 
 	enable_ipu_clock();
 	imx_setup_hdmi();
@@ -870,20 +869,20 @@ int board_eth_init(bd_t *bis)
 
 #ifdef CONFIG_FEC_MXC
 	bus = fec_get_miibus(base, -1);
-
 	if (!bus) {
 		printf("FEC MXC bus: %s:failed\n", __func__);
 		return 0;
 	}
-	/* "scan" phy 7 */
-	phydev = phy_find_by_mask(bus, (0x1 << 7), PHY_INTERFACE_MODE_RGMII);
+
+	/* scan phy 3,4,5,6,7 */
+	phydev = phy_find_by_mask(bus, (0x1f << 3), PHY_INTERFACE_MODE_RGMII);
 	if (!phydev) {
 		printf("FEC MXC phy find: %s:failed\n", __func__);
 		free(bus);
 		return 0;
 	}
-	printf("using phy at %d\n", phydev->addr);
 
+	printf("using phy at %d\n", phydev->addr);
 	ret  = fec_probe(bis, -1, base, bus, phydev);
 	if (ret) {
 		printf("FEC MXC probe: %s:failed\n", __func__);
@@ -892,8 +891,8 @@ int board_eth_init(bd_t *bis)
 	}
 #endif
 
-#ifdef CONFIG_USB_ETHER
-	/* OTG - Ethernet Gadget */
+#if defined(CONFIG_CI_UDC) && defined(CONFIG_USB_ETHER)
+	/* USB Ethernet Gadget */
 	usb_eth_initialize(bis);
 #endif
 
@@ -934,7 +933,7 @@ static void setup_usb(void)
 int board_usb_phy_mode(int port)
 {
 	char *s;
-	if (is_mx6_custom_board() && port==0) {
+	if (is_mx6_custom_board() && port == 0) {
 		s = getenv("usbmode");
 		if ((s != NULL) && (!strcmp(s, "host")))
 			return USB_INIT_HOST;
@@ -943,19 +942,6 @@ int board_usb_phy_mode(int port)
 	}
 	return usb_phy_mode(port);
 }
-
-/*
- * int board_ehci_hcd_init(int port)
- * {
- * 	if (is_dart_board() || is_solo_custom_board()) {
- * 		no hub to reset
- * 	} else if (is_mx6_custom_board()) {
- * 		hub present but pulled up
- * 	}
- *
- * 	return 0;
- * }
- */
 
 int board_ehci_power(int port, int on)
 {
@@ -1219,7 +1205,9 @@ int power_init_board(void)
 static void update_env(void)
 {
 	setenv("mmcroot" , "/dev/mmcblk0p2 rootwait rw");
-	if (is_cpu_type(MXC_CPU_MX6Q)) {
+	switch (get_cpu_type()) {
+	case MXC_CPU_MX6Q:
+	case MXC_CPU_MX6D:
 		if (is_dart_board()) {
 			setenv("fdt_file", "imx6q-var-dart.dtb");
 			if (MMC_BOOT == get_mmc_boot_device())
@@ -1232,34 +1220,21 @@ static void update_env(void)
 			else
 				setenv("fdt_file", "imx6q-var-som.dtb");
 		}
-	} else if (is_cpu_type(MXC_CPU_MX6D)) {
-		if (is_dart_board()) {
-			setenv("fdt_file", "imx6q-var-dart.dtb");
-			if (MMC_BOOT == get_mmc_boot_device())
-				setenv("mmcroot" , "/dev/mmcblk2p2 rootwait rw");
-			else
-				setenv("mmcroot" , "/dev/mmcblk1p2 rootwait rw");
-		} else {
-			setenv("fdt_file", "imx6q-var-som.dtb");
-		}
-	} else if (is_cpu_type(MXC_CPU_MX6DL)) {
-		if (is_som_solo()) {
+		break;
+	case MXC_CPU_MX6DL:
+	case MXC_CPU_MX6SOLO:
+		if (is_som_solo())
 			if (is_solo_custom_board())
 				setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
 			else
 				setenv("fdt_file", "imx6dl-var-som-solo.dtb");
-		} else {
+		else
 			setenv("fdt_file", "imx6dl-var-som.dtb");
-		}
-	} else if (is_cpu_type(MXC_CPU_MX6SOLO)) {
-		if (is_som_solo()) {
-			if (is_solo_custom_board())
-				setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
-			else
-				setenv("fdt_file", "imx6dl-var-som-solo.dtb");
-		} else {
-			setenv("fdt_file", "imx6dl-var-som.dtb");
-		}
+		break;
+	default:
+		printf("Error: Could not auto-match correct fdt due to CPU type.\n");
+		printf("CPU type num is 0x%x\n", get_cpu_type());
+		break;
 	}
 }
 
@@ -1280,29 +1255,33 @@ int checkboard(void)
 {
 	puts("Board: Variscite VAR-SOM-MX6 ");
 
-	if (is_cpu_type(MXC_CPU_MX6Q)) {
+	switch (get_cpu_type()) {
+	case MXC_CPU_MX6Q:
 		puts("Quad");
 		if (is_cpu_pop_package())
 			puts("-POP");
-
-	} else if (is_cpu_type(MXC_CPU_MX6D)) {
+		break;
+	case MXC_CPU_MX6D:
 		puts("Dual");
 		if (is_cpu_pop_package())
 			puts("-POP");
-
-	} else if (is_cpu_type(MXC_CPU_MX6DL)) {
+		break;
+	case MXC_CPU_MX6DL:
 		if (is_som_solo())
 			puts("SOM-Dual");
 		else
 			puts("Dual Lite");
-
-	} else if (is_cpu_type(MXC_CPU_MX6SOLO)) {
+		break;
+	case MXC_CPU_MX6SOLO:
 		if (is_som_solo())
 			puts("SOM-Solo");
 		else
 			puts("Solo");
-	} else
+		break;
+	default:
 		puts("????");
+		break;
+	}
 
 	puts("\n");
 	return 0;
@@ -1404,6 +1383,30 @@ void board_recovery_setup(void)
 
 #include "mx6var_legacy_dart_auto.c"
 
+static void ccgr_init(void)
+{
+	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+
+	writel(0x00C03F3F, &ccm->CCGR0);
+	writel(0x0030FC03, &ccm->CCGR1);
+	writel(0x0FFFC000, &ccm->CCGR2);
+	writel(0x3FF00000, &ccm->CCGR3);
+	writel(0x00FFF300, &ccm->CCGR4);
+	writel(0x0F0000C3, &ccm->CCGR5);
+	writel(0x000003FF, &ccm->CCGR6);
+}
+
+static void gpr_init(void)
+{
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+
+	/* enable AXI cache for VDOA/VPU/IPU */
+	writel(0xF00000CF, &iomux->gpr[4]);
+	/* set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
+	writel(0x007F007F, &iomux->gpr[6]);
+	writel(0x007F007F, &iomux->gpr[7]);
+}
+
 /*
  * Writes RAM size to RAM_SIZE_ADDR so U-Boot can read it
  */
@@ -1411,7 +1414,7 @@ static void var_set_ram_size(u32 ram_size)
 {
 	u32 *p_ram_size = (u32 *)RAM_SIZE_ADDR;
 	if (ram_size > 3840)
-		ram_size=3840;
+		ram_size = 3840;
 	*p_ram_size = ram_size;
 }
 
@@ -1465,21 +1468,18 @@ static void print_board_info(int eeprom_rev, void* var_eeprom, u32 ram_size)
 			is_cpu_pop_package() ? "POP" : "STD");
 
 	max_freq = get_cpu_speed_grade_hz();
-	if (!max_freq) {
+	if (!max_freq)
 		printf("CPU running at %dMHz\n", mxc_get_clock(MXC_ARM_CLK) / 1000000);
-	} else {
+	else
 		printf("%d MHz CPU (running at %d MHz)\n", max_freq / 1000000,
 				mxc_get_clock(MXC_ARM_CLK) / 1000000);
-	}
 
-	if(eeprom_rev==1) {
+	if (eeprom_rev == 1)
 		var_eeprom_strings_print((struct var_eeprom_cfg *) var_eeprom);
-	}
-	else if(eeprom_rev==2) {
+	else if (eeprom_rev == 2)
 		var_eeprom_v2_strings_print((struct var_eeprom_v2_cfg *) var_eeprom);
-	} else {
+	else
 		printf("DDR LEGACY configuration\n");
-	}
 
 	printf("RAM: ");
 	print_size(ram_size * 1024 * 1024, "\n");
@@ -1544,44 +1544,41 @@ static int spl_dram_init_by_eeprom(void)
 	return SPL_DRAM_INIT_STATUS_OK;
 }
 
-/*
- * Bugfix: Fix Freescale wrong processor documentation.
- */
-static void spl_mx6qd_dram_setup_iomux_check_reset(void)
+static int spl_dram_init_by_eeprom_v2(void)
 {
-	volatile struct mx6dq_iomux_ddr_regs *mx6q_ddr_iomux;
-	u32 cputype = get_cpu_type();
+	u32 ram_addresses[MAXIMUM_RAM_ADDRESSES];
+	u32 ram_values[MAXIMUM_RAM_VALUES];
+	struct var_eeprom_v2_cfg var_eeprom_v2_cfg = {0};
+	int ret, ram_size;
 
-	if ((cputype == MXC_CPU_MX6D) || (cputype == MXC_CPU_MX6Q)) {
-		mx6q_ddr_iomux = (struct mx6dq_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
+	ret = var_eeprom_v2_read_struct(&var_eeprom_v2_cfg, \
+			is_dart_board() ? VAR_DART_EEPROM_CHIP : VAR_MX6_EEPROM_CHIP);
 
-		if (mx6q_ddr_iomux->dram_reset == (u32)0x000C0030)
-			mx6q_ddr_iomux->dram_reset = (u32)0x00000030;
+	if (ret)
+		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
+
+	if (!var_eeprom_v2_is_valid(&var_eeprom_v2_cfg))
+		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
+
+	/*
+	 * The MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands
+	 * revision is incorrect.
+	 * If the data is equal to it, use mt128x64mx32_Step3_commands revision instead
+	 */
+	if (!memcmp(var_eeprom_v2_cfg.eeprom_commands, \
+				MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands, 254)) {
+
+		load_custom_data(mt128x64mx32_Step3_RamValues, ram_addresses, ram_values);
+		setup_ddr_parameters((struct eeprom_command *) mt128x64mx32_Step3_commands, \
+				ram_addresses, ram_values);
+	} else {
+		handle_eeprom_data(&var_eeprom_v2_cfg, ram_addresses, ram_values);
 	}
-}
 
-static void ccgr_init(void)
-{
-	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-
-	writel(0x00C03F3F, &ccm->CCGR0);
-	writel(0x0030FC03, &ccm->CCGR1);
-	writel(0x0FFFC000, &ccm->CCGR2);
-	writel(0x3FF00000, &ccm->CCGR3);
-	writel(0x00FFF300, &ccm->CCGR4);
-	writel(0x0F0000C3, &ccm->CCGR5);
-	writel(0x000003FF, &ccm->CCGR6);
-}
-
-static void gpr_init(void)
-{
-	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
-
-	/* enable AXI cache for VDOA/VPU/IPU */
-	writel(0xF00000CF, &iomux->gpr[4]);
-	/* set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
-	writel(0x007F007F, &iomux->gpr[6]);
-	writel(0x007F007F, &iomux->gpr[7]);
+	ram_size = var_eeprom_v2_cfg.ddr_size * 128;
+	var_set_ram_size(ram_size);
+	print_board_info(2, (void*) &var_eeprom_v2_cfg, ram_size);
+	return SPL_DRAM_INIT_STATUS_OK;
 }
 
 static void legacy_spl_dram_init(void)
@@ -1601,14 +1598,12 @@ static void legacy_spl_dram_init(void)
 		}
 		break;
 	case MXC_CPU_MX6Q:
+	case MXC_CPU_MX6D:
 		if (is_dart_board()) {
 			u32 ram_addresses[MAXIMUM_RAM_ADDRESSES];
 			u32 ram_values[MAXIMUM_RAM_VALUES];
-			load_custom_data(MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_RamValues, \
-					ram_addresses, ram_values);
-			setup_ddr_parameters( \
-					(struct eeprom_command *) \
-					MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands, \
+			load_custom_data(mt128x64mx32_Step3_RamValues, ram_addresses, ram_values);
+			setup_ddr_parameters((struct eeprom_command *) mt128x64mx32_Step3_commands, \
 					ram_addresses, ram_values);
 			ram_size = 1024;
 		} else {
@@ -1627,20 +1622,6 @@ static void legacy_spl_dram_init(void)
 #endif
 		}
 		break;
-	case MXC_CPU_MX6D:
-		if (is_dart_board()) {
-			u32 ram_addresses[MAXIMUM_RAM_ADDRESSES];
-			u32 ram_values[MAXIMUM_RAM_VALUES];
-			load_custom_data(mt128x64mx32_Step3_RamValues, ram_addresses, ram_values);
-			setup_ddr_parameters((struct eeprom_command *) mt128x64mx32_Step3_commands, \
-					ram_addresses, ram_values);
-
-			ram_size = 1024;
-		} else {
-			spl_dram_init_mx6q_1g();
-			ram_size = get_actual_ram_size(1024);
-		}
-		break;
 	case MXC_CPU_MX6DL:
 	default:
 		spl_mx6dlsl_dram_setup_iomux();
@@ -1656,40 +1637,20 @@ static void legacy_spl_dram_init(void)
 	print_board_info(0, NULL, ram_size);
 }
 
-static int spl_dram_init_by_eeprom_v2(void)
+/*
+ * Bugfix: Fix Freescale wrong processor documentation.
+ */
+static void spl_mx6qd_dram_setup_iomux_check_reset(void)
 {
-	u32 ram_addresses[MAXIMUM_RAM_ADDRESSES];
-	u32 ram_values[MAXIMUM_RAM_VALUES];
-	struct var_eeprom_v2_cfg var_eeprom_v2_cfg = {0};
-	int ret;
+	volatile struct mx6dq_iomux_ddr_regs *mx6q_ddr_iomux;
+	u32 cputype = get_cpu_type();
 
-	ret = var_eeprom_v2_read_struct(&var_eeprom_v2_cfg, \
-			is_dart_board() ? VAR_DART_EEPROM_CHIP : VAR_MX6_EEPROM_CHIP);
+	if ((cputype == MXC_CPU_MX6D) || (cputype == MXC_CPU_MX6Q)) {
+		mx6q_ddr_iomux = (struct mx6dq_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
 
-	if (ret)
-		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
-
-	if (!var_eeprom_v2_is_valid(&var_eeprom_v2_cfg))
-		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
-
-	/*
-	 * The MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands revision is not correct,
-	 * Check if the data is equal to MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands
-	 * If yes change to mt128x64mx32_Step3_commands revision
-	 */
-	if(!memcmp(var_eeprom_v2_cfg.eeprom_commands, \
-				MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands, 254)){
-
-		load_custom_data(mt128x64mx32_Step3_RamValues, ram_addresses, ram_values);
-		setup_ddr_parameters((struct eeprom_command *) mt128x64mx32_Step3_commands, \
-				ram_addresses, ram_values);
-	} else {
-		handle_eeprom_data(&var_eeprom_v2_cfg, ram_addresses, ram_values);
+		if (mx6q_ddr_iomux->dram_reset == (u32)0x000C0030)
+			mx6q_ddr_iomux->dram_reset = (u32)0x00000030;
 	}
-
-	var_set_ram_size(var_eeprom_v2_cfg.ddr_size*128);
-	print_board_info(2, (void*) &var_eeprom_v2_cfg, var_eeprom_v2_cfg.ddr_size*128);
-	return SPL_DRAM_INIT_STATUS_OK;
 }
 
 static void spl_dram_init(void)

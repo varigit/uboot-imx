@@ -3,7 +3,6 @@
  * Author: Tim Harvey <tharvey@gateworks.com>
  *
  * Copyright (C) 2016 Variscite Ltd. All Rights Reserved.
- * Maintainer: Eran Matityahu <eran.m@variscite.com>
  *
  * SPDX-License-Identifier:     GPL-2.0+
  */
@@ -66,9 +65,9 @@
 
 #if defined(CONFIG_MX6SX)
 #define CONFIG_SPL_BSS_START_ADDR	0x88200000
-#define CONFIG_SPL_BSS_MAX_SIZE		0x100000        /* 1 MB */
+#define CONFIG_SPL_BSS_MAX_SIZE		0x100000	/* 1 MB */
 #define CONFIG_SYS_SPL_MALLOC_START	0x88300000
-#define CONFIG_SYS_SPL_MALLOC_SIZE	0x3200000       /* 50 MB */
+#define CONFIG_SYS_SPL_MALLOC_SIZE	0x3200000	/* 50 MB */
 #define CONFIG_SYS_TEXT_BASE		0x87800000
 #else
 #define CONFIG_SPL_BSS_START_ADDR	0x18200000
