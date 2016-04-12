@@ -96,23 +96,23 @@ void enable_usboh3_clk(unsigned char enable)
 #if defined(CONFIG_FEC_MXC) && !defined(CONFIG_MX6SX)
 void enable_enet_clk(unsigned char enable)
 {
-#ifdef CONFIG_MX6UL
-	u32 mask = MXC_CCM_CCGR3_ENET_CLK_ENABLE_MASK;
-	/* Set AHB clk, since enet clock is sourced from AHB and IPG */
-	/* ROM has set AHB, just leave here empty */
-	/* Enable enet system clock */
-	if (enable)
-		setbits_le32(&imx_ccm->CCGR3, mask);
-	else
-		clrbits_le32(&imx_ccm->CCGR3, mask);
-#else
-	u32 mask = MXC_CCM_CCGR1_ENET_CLK_ENABLE_MASK;
+	u32 mask, *addr;
+
+	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+		mask = MXC_CCM_CCGR0_ENET_CLK_ENABLE_MASK;
+		addr = &imx_ccm->CCGR0;
+	} else if (is_cpu_type(MXC_CPU_MX6UL)) {
+		mask = MXC_CCM_CCGR3_ENET_MASK;
+		addr = &imx_ccm->CCGR3;
+	} else {
+		mask = MXC_CCM_CCGR1_ENET_MASK;
+		addr = &imx_ccm->CCGR1;
+	}
 
 	if (enable)
-		setbits_le32(&imx_ccm->CCGR1, mask);
+		setbits_le32(addr, mask);
 	else
-		clrbits_le32(&imx_ccm->CCGR1, mask);
-#endif
+		clrbits_le32(addr, mask);
 }
 #endif
 
@@ -1164,17 +1164,27 @@ void hab_caam_clock_enable(unsigned char enable)
 {
 	u32 reg;
 
-	/* CG4 ~ CG6, CAAM clocks */
-	reg = __raw_readl(&imx_ccm->CCGR0);
-	if (enable)
-		reg |= (MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
-			MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
-			MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
-	else
-		reg &= ~(MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
-			MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
-			MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
-	__raw_writel(reg, &imx_ccm->CCGR0);
+	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+		/* CG5, DCP clock */
+		reg = __raw_readl(&imx_ccm->CCGR0);
+		if (enable)
+			reg |= MXC_CCM_CCGR0_DCP_CLK_MASK;
+		else
+			reg &= ~MXC_CCM_CCGR0_DCP_CLK_MASK;
+		__raw_writel(reg, &imx_ccm->CCGR0);
+	} else {
+		/* CG4 ~ CG6, CAAM clocks */
+		reg = __raw_readl(&imx_ccm->CCGR0);
+		if (enable)
+			reg |= (MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
+				MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
+				MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
+		else
+			reg &= ~(MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
+				MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
+				MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
+		__raw_writel(reg, &imx_ccm->CCGR0);
+	}
 
 	/* EMI slow clk */
 	reg = __raw_readl(&imx_ccm->CCGR6);
