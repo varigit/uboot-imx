@@ -163,7 +163,11 @@
 
 #define UART1_BASE                  (ATZ1_BASE_ADDR + 0x20000)
 #if defined(CONFIG_MX6UL)
+#if defined(CONFIG_MX6ULL)
+#define ESAI1_BASE_ADDR             (ATZ1_BASE_ADDR + 0x24000)
+#else
 #define UART8_IPS_BASE_ADDR         (ATZ1_BASE_ADDR + 0x24000)
+#endif
 #define SAI1_BASE_ADDR              (ATZ1_BASE_ADDR + 0x28000)
 #define SAI2_BASE_ADDR              (ATZ1_BASE_ADDR + 0x2C000)
 #define SAI3_BASE_ADDR              (ATZ1_BASE_ADDR + 0x30000)
@@ -223,7 +227,7 @@
 #define CSI_BASE_ADDR               (AIPS1_OFF_BASE_ADDR + 0x64000)
 #define SIPIX_BASE_ADDR             (AIPS1_OFF_BASE_ADDR + 0x68000)
 #define SDMA_PORT_HOST_BASE_ADDR    (AIPS1_OFF_BASE_ADDR + 0x6C000)
-
+#define EPDC_BASE_ADDR              (AIPS1_OFF_BASE_ADDR + 0x74000)
 #elif defined(CONFIG_MX6SX)
 #define CANFD1_BASE_ADDR            (AIPS1_OFF_BASE_ADDR + 0x68000)
 #define SDMA_BASE_ADDR              (AIPS1_OFF_BASE_ADDR + 0x6C000)
@@ -243,8 +247,8 @@
 #define DCIC1_BASE_ADDR             (AIPS1_OFF_BASE_ADDR + 0x64000)
 #define DCIC2_BASE_ADDR             (AIPS1_OFF_BASE_ADDR + 0x68000)
 #define DMA_REQ_PORT_HOST_BASE_ADDR (AIPS1_OFF_BASE_ADDR + 0x6C000)
-#endif
 #define EPDC_BASE_ADDR              (AIPS1_OFF_BASE_ADDR + 0x74000)
+#endif
 
 #define AIPS2_ON_BASE_ADDR          (ATZ2_BASE_ADDR + 0x7C000)
 #define AIPS2_OFF_BASE_ADDR         (ATZ2_BASE_ADDR + 0x80000)
@@ -304,12 +308,12 @@
 #else
 #define IP2APB_PERFMON1_BASE_ADDR   (AIPS2_OFF_BASE_ADDR + 0x44000)
 #define IP2APB_PERFMON2_BASE_ADDR   (AIPS2_OFF_BASE_ADDR + 0x48000)
+#endif
 #ifdef CONFIG_MX6SX
 #define DEBUG_MONITOR_BASE_ADDR     (AIPS2_OFF_BASE_ADDR + 0x4C000)
 #else
 #define IP2APB_PERFMON3_BASE_ADDR   (AIPS2_OFF_BASE_ADDR + 0x4C000)
 #endif
-#endif /* CONFIG_MX6UL */
 
 #define IP2APB_TZASC1_BASE_ADDR     (AIPS2_OFF_BASE_ADDR + 0x50000)
 #if defined(CONFIG_MX6UL)
@@ -377,6 +381,14 @@
 #define PWM6_BASE_ADDR              (AIPS3_ARB_BASE_ADDR + 0xA8000)
 #define PWM7_BASE_ADDR              (AIPS3_ARB_BASE_ADDR + 0xAC000)
 #define PWM8_BASE_ADDR              (AIPS3_ARB_BASE_ADDR + 0xB0000)
+#elif defined(CONFIG_MX6ULL)
+#define AIPS3_CONFIG_BASE_ADDR      (AIPS3_ARB_BASE_ADDR + 0x7C000)
+#define DCP_BASE_ADDR               (AIPS3_ARB_BASE_ADDR + 0x80000)
+#define RNGB_BASE_ADDR              (AIPS3_ARB_BASE_ADDR + 0x84000)
+#define UART8_IPS_BASE_ADDR         (AIPS3_ARB_BASE_ADDR + 0x88000)
+#define EPDC_BASE_ADDR              (AIPS3_ARB_BASE_ADDR + 0x8C000)
+#define IOMUXC_SNVS_BASE_ADDR       (AIPS3_ARB_BASE_ADDR + 0x90000)
+#define SNVS_GPR_BASE_ADDR          (AIPS3_ARB_BASE_ADDR + 0x94000)
 #endif
 
 #define CHIP_REV_1_0                 0x10
