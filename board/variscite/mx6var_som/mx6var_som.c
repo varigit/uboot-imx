@@ -430,12 +430,6 @@ void setup_local_i2c(void) {
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, I2C_PADS_INFO(i2c_pad_info3));
 }
 
-static void var_setup_iomux_per_vcc_en(void)
-{
-	SETUP_IOMUX_PAD(PAD_EIM_D31__GPIO3_IO31 | MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
-	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
-}
-
 static void setup_iomux_uart(void)
 {
 	SETUP_IOMUX_PADS(uart1_pads);
@@ -969,8 +963,6 @@ int board_ehci_power(int port, int on)
 
 int board_early_init_f(void)
 {
-	var_setup_iomux_per_vcc_en();
-
 	setup_iomux_uart();
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
@@ -1099,12 +1091,6 @@ int power_init_board(void)
 			reg &= ~0x7f; /* SW3x OFF MASK */
 			reg = 0x23; /* SW3x 1.275V */
 			retval += pmic_reg_write(pfuze, PFUZE100_SW3AOFF, reg);
-
-			/* Set SW2 to 3.2V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW2VOL, &reg);
-			reg &= ~0x7f;
-			reg |= 0x70; /* SW2x 3.2V */
-			retval += pmic_reg_write(pfuze, PFUZE100_SW2VOL, reg);
 
 			/* SW4MODE = OFF in standby */
 			reg = PWM_OFF;
@@ -1407,6 +1393,36 @@ static void gpr_init(void)
 	writel(0x007F007F, &iomux->gpr[7]);
 }
 
+static int power_init_pmic_sw2(void)
+{
+	if (!is_som_solo() && !is_dart_board()) {
+		unsigned char reg;
+
+		i2c_set_bus_num(PMIC_I2C_BUS);
+
+		if (i2c_probe(CONFIG_POWER_PFUZE100_I2C_ADDR))
+			return -1;
+
+		/* Set SW2 to 3.2V */
+		if (i2c_read(CONFIG_POWER_PFUZE100_I2C_ADDR, PFUZE100_SW2VOL, 1, &reg, 1))
+			return -1;
+
+		reg &= ~0x7f;
+		reg |= 0x70; /* SW2x 3.2V */
+
+		if (i2c_write(CONFIG_POWER_PFUZE100_I2C_ADDR, PFUZE100_SW2VOL, 1, &reg, 1))
+			return -1;
+	}
+
+	return 0;
+}
+
+static void var_setup_iomux_per_vcc_en(void)
+{
+	SETUP_IOMUX_PAD(PAD_EIM_D31__GPIO3_IO31 | MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
+	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
+}
+
 /*
  * Writes RAM size to RAM_SIZE_ADDR so U-Boot can read it
  */
@@ -1679,6 +1695,11 @@ void board_init_f(ulong dummy)
 
 	/* setup GP timer */
 	timer_init();
+
+#ifdef LOW_POWER_MODE_ENABLE
+	power_init_pmic_sw2();
+#endif
+	var_setup_iomux_per_vcc_en();
 
 	/* Wait 330ms before starting to print to console */
 	mdelay(330);
