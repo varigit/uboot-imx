@@ -580,6 +580,11 @@ config TARGET_PICOSOM_IMX6UL
         bool "Support picosom-imx6ul"
         select CPU_V7
 
+config TARGET_MX6UL_VAR_DART
+	bool "Support Variscite DART-6UL"
+	select CPU_V7
+	select SUPPORT_SPL
+
 config TARGET_GW_VENTANA
 	bool "Support gw_ventana"
 	select CPU_V7
@@ -940,6 +945,7 @@ source "board/trizepsiv/Kconfig"
 source "board/ttcontrol/vision2/Kconfig"
 source "board/udoo/Kconfig"
 source "board/vpac270/Kconfig"
+source "board/variscite/mx6ul_var_dart/Kconfig"
 source "board/wandboard/Kconfig"
 source "board/warp/Kconfig"
 source "board/woodburn/Kconfig"

@@ -290,9 +290,8 @@
 #define ENET2_BASE_ADDR             (AIPS2_OFF_BASE_ADDR + 0x34000)
 #elif defined(CONFIG_MX6UL)
 #define SIM2_BASE_ADDR              (AIPS2_OFF_BASE_ADDR + 0x34000)
-#else
-#define MMDC_P1_BASE_ADDR           (AIPS2_OFF_BASE_ADDR + 0x34000)
 #endif
+#define MMDC_P1_BASE_ADDR           (AIPS2_OFF_BASE_ADDR + 0x34000)
 
 #define WEIM_BASE_ADDR              (AIPS2_OFF_BASE_ADDR + 0x38000)
 #define OCOTP_BASE_ADDR             (AIPS2_OFF_BASE_ADDR + 0x3C000)
