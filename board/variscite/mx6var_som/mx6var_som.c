@@ -9,31 +9,33 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#include <common.h>
+#include <fsl_esdhc.h>
+#include <i2c.h>
+#include <malloc.h>
+#include <micrel.h>
+#include <miiphy.h>
+#include <mmc.h>
+#include <netdev.h>
+#include <power/pmic.h>
+#include <power/pfuze100_pmic.h>
+#include <splash.h>
+#include <usb.h>
+#include <usb/ehci-fsl.h>
 #include <asm/arch/clock.h>
+#include <asm/arch/crm_regs.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/iomux.h>
-#include <malloc.h>
 #include <asm/arch/mx6-pins.h>
+#include <asm/arch/mxc_hdmi.h>
+#include <asm/arch/sys_proto.h>
 #include <asm/errno.h>
 #include <asm/gpio.h>
 #include <asm/imx-common/mxc_i2c.h>
 #include <asm/imx-common/iomux-v3.h>
 #include <asm/imx-common/boot_mode.h>
 #include <asm/imx-common/video.h>
-#include <mmc.h>
-#include <fsl_esdhc.h>
-#include <micrel.h>
-#include <miiphy.h>
-#include <netdev.h>
-#include <asm/arch/mxc_hdmi.h>
-#include <asm/arch/crm_regs.h>
 #include <asm/io.h>
-#include <asm/arch/sys_proto.h>
-#include <i2c.h>
-#include <power/pmic.h>
-#include <power/pfuze100_pmic.h>
-#include <usb.h>
-#include <usb/ehci-fsl.h>
 
 #ifdef CONFIG_FSL_FASTBOOT
 #include <fsl_fastboot.h>
@@ -77,229 +79,287 @@ DECLARE_GLOBAL_DATA_PTR;
 
 bool lvds_enabled=false;
 
-#ifdef CONFIG_SYS_USE_NAND
-static int var_load_file_from_nand(u32 addr, char *filename)
+/*
+ * OCOTP_CFG3[17:16] (see Fusemap Description Table offset 0x440)
+ * defines a 2-bit SPEED_GRADING
+ */
+#define OCOTP_CFG3_SPEED_SHIFT  16
+#define OCOTP_CFG3_SPEED_800MHZ 0
+#define OCOTP_CFG3_SPEED_850MHZ 1
+#define OCOTP_CFG3_SPEED_1GHZ   2
+#define OCOTP_CFG3_SPEED_1P2GHZ 3
+
+u32 get_cpu_speed_grade_hz(void)
 {
-	extern int ubi_part(char *part_name, const char *vid_header_offset);
-	extern int ubifs_init(void);
-	extern int uboot_ubifs_mount(char *vol_name);
-	extern int ubifs_load(char *filename, u32 addr, u32 size);
-	extern void cmd_ubifs_umount(void);
+	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+	struct fuse_bank *bank = &ocotp->bank[0];
+	struct fuse_bank0_regs *fuse =
+		(struct fuse_bank0_regs *)bank->fuse_regs;
+	uint32_t val;
 
-	char *ubi_part_name = "rootfs";
-	char *ubifs_vol_name = "ubi0:rootfs";
+	val = readl(&fuse->cfg3);
+	val >>= OCOTP_CFG3_SPEED_SHIFT;
+	val &= 0x3;
 
-	if (ubi_part(ubi_part_name, NULL))
-		return -1;
-	if (ubifs_init())
-		return -1;
-	if (uboot_ubifs_mount(ubifs_vol_name))
-		return -1;
-
-	/* Load the file to memory */
-	if (ubifs_load(filename, addr, 0)) {
-		printf("Error: splash file not found %s\n", filename);
-		cmd_ubifs_umount();
-		return -1;
+	switch (val) {
+	/* Valid for IMX6DQ */
+	case OCOTP_CFG3_SPEED_1P2GHZ:
+		if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+			return 1200000000;
+	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
+	case OCOTP_CFG3_SPEED_1GHZ:
+		return 996000000;
+	/* Valid for IMX6DQ */
+	case OCOTP_CFG3_SPEED_850MHZ:
+		if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+			return 852000000;
+	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
+	case OCOTP_CFG3_SPEED_800MHZ:
+		return 792000000;
 	}
-	cmd_ubifs_umount();
 	return 0;
 }
-#endif
 
-static int var_load_file_from_mmc(u32 addr, char *filename)
-{
-#define FS_TYPE_EXT 2
-	extern int fs_set_blk_dev(const char *ifname, const char *dev_part_str, int fstype);
-	extern int fs_read(const char *filename, ulong addr, loff_t offset, loff_t len,
-			loff_t *actread);
-
-	loff_t len_read;
-
-#ifdef CONFIG_SYS_USE_NAND
-	if (fs_set_blk_dev("mmc", "1:1", FS_TYPE_EXT))
-		return -1;
-#else
-	if (fs_set_blk_dev("mmc", "0:2", FS_TYPE_EXT))
-		return -1;
-#endif
-
-	if (fs_read(filename, addr, 0, 0, &len_read)) {
-		printf("Error: splash file not found %s\n", filename);
-		return -1;
-	}
-
-	printf("%llu bytes read\n", len_read);
-	return 0;
-#undef FS_TYPE_EXT
-}
-
-#ifdef CONFIG_SPLASH_SCREEN
-int splash_screen_prepare(void)
-{
-	char *filename;
-	const char *addr_str;
-	u32 addr = 0;
-#ifdef CONFIG_SYS_USE_NAND
-	char *s;
-#endif
-
-	/* Get filename and load address from env */
-	addr_str = getenv("splashimage");
-	if (!addr_str) {
-		return -1;
-	}
-	addr = simple_strtoul(addr_str, 0, 16);
-	if (addr == 0) {
-		printf("Error: bad splashimage value %s\n", addr_str);
-		return -1;
-	}
-	filename = getenv("splash_filename");
-	if (!filename) {
-		printf("Error: splashimage defined, but splash_filename isn't\n");
-		return -1;
-	}
-
-#ifdef CONFIG_SYS_USE_NAND
-	s = getenv("chosen_rootfs");
-	if ((s != NULL) && (!strcmp(s, "emmc"))) {
-		if (var_load_file_from_mmc(addr, filename))
-			return -1;
-	} else {
-		if (var_load_file_from_nand(addr, filename))
-			return -1;
-	}
-#else /* MMC */
-	if (var_load_file_from_mmc(addr, filename))
-		return -1;
-#endif
-
-	/* Turn on backlight */
-	if (lvds_enabled)
-		gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);
-
-	return 0;
-}
-#endif
-
+/*
+ * Returns true iff the SOM is VAR-SOM-SOLO
+ */
 static bool is_som_solo(void)
 {
 	bool ret;
 	int oldbus = i2c_get_bus_num();
 
 	i2c_set_bus_num(PMIC_I2C_BUS);
-	/* Probing for PMIC which is not preset only on som solo */
+	/* Probing for PMIC which is preset on all SOM types but SOM-SOLO */
 	ret = (0 != i2c_probe(CONFIG_POWER_PFUZE100_I2C_ADDR));
 
 	i2c_set_bus_num(oldbus);
 	return ret;
 }
 
+/*
+ * Returns true iff the carrier board is VAR-SOLOCustomBoard
+ */
 static bool is_solo_custom_board(void)
 {
 	bool ret;
 	int oldbus = i2c_get_bus_num();
 
 	i2c_set_bus_num(1);
-	/* Probing for extra EEPROM present only on solo custom board */
+	/* Probing for extra EEPROM present only on SOLOCustomBoard */
 	ret = (0 == i2c_probe(0x51));
 
 	i2c_set_bus_num(oldbus);
 	return ret;
 }
 
-static bool is_cpu_pop_package(void)
+static bool is_cpu_pop_packaged(void)
 {
-	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
-	struct anatop_regs *anatop = (struct anatop_regs *)ANATOP_BASE_ADDR;
-	u32 reg;
-	u32 type;
+	struct src *src_regs = (struct src *)SRC_BASE_ADDR;
+	u32 soc_sbmr = readl(&src_regs->sbmr1);
+	u8  boot_cfg3 = (soc_sbmr >> 16) & 0xFF;
 
-	reg = readl(&anatop->digprog);
-	type = ((reg >> 16) & 0xff);
-	if (type != MXC_CPU_MX6DL)
-		return ((soc_sbmr & 0x200000) != 0);
-	return false;
+	/* DDR Memory Map config == 4KB Interleaving Enabled */
+	return ((boot_cfg3 & 0x30) == 0x20);
 }
 
+/*
+ * Returns true iff the carrier board is VAR-DT6CustomBoard
+ *  (and the SOM is DART-MX6)
+ */
 static inline bool is_dart_board(void)
 {
-	return is_cpu_pop_package();
+	return is_cpu_pop_packaged();
 }
 
+/*
+ * Returns true iff the carrier board is VAR-MX6CustomBoard
+ */
 static inline bool is_mx6_custom_board(void)
 {
 	return (!is_dart_board() && !is_solo_custom_board());
 }
 
-enum mmc_boot_device {
-	SD_BOOT,
-	MMC_BOOT,
-	OTHER_BOOT,
+enum current_board {
+	DART_BOARD,
+	SOLO_CUSTOM_BOARD,
+	MX6_CUSTOM_BOARD,
 };
 
-static unsigned get_mmc_boot_device(void)
+static enum current_board get_board_indx(void)
 {
-	struct src *psrc = (struct src *)SRC_BASE_ADDR;
-	unsigned reg = (readl(&psrc->sbmr1) >> 5) & 0x7;
+	if (is_dart_board())
+		return DART_BOARD;
+	if (is_solo_custom_board())
+		return SOLO_CUSTOM_BOARD;
+	if (is_mx6_custom_board())
+		return MX6_CUSTOM_BOARD;
 
-	switch(reg) {
-	case 0x2:
-		return SD_BOOT;
-	case 0x3:
-		return MMC_BOOT;
-	default:
-		return OTHER_BOOT;
+	printf("Error identifing carrier board!\n");
+	hang();
+}
+
+int mmc_get_env_devno(void)
+{
+	struct src *src_regs = (struct src *)SRC_BASE_ADDR;
+	u32 soc_sbmr = readl(&src_regs->sbmr1);
+	u32 bootsel;
+	int devno;
+
+	/*
+	 * Refer to
+	 * "i.MX 6Dual/6Quad Applications Processor Reference Manual"
+	 * Chapter "8.5.3.1 Expansion Device eFUSE Configuration"
+	 * i.MX6SL/SX/UL has same layout.
+	 */
+	bootsel = (soc_sbmr & 0x000000FF) >> 6;
+
+	/* No boot from sd/mmc */
+	if (bootsel != 1)
+		return -1;
+
+	/* BOOT_CFG2[3] and BOOT_CFG2[4] */
+	devno = (soc_sbmr & 0x00001800) >> 11;
+
+	return devno -1;
+}
+
+static int check_env(char *var, char *val)
+{
+	char *read_val;
+	if (var==NULL || val==NULL)
+		return 0;
+
+	read_val = getenv(var);
+
+	if ((read_val != NULL) &&
+			(strcmp(read_val, val) == 0)) {
+		return 1;
 	}
+
+	return 0;
 }
 
-static bool is_mmc_present(struct mmc *mmc)
+#ifdef CONFIG_SPLASH_SCREEN
+static void set_splashsource_to_boot_rootfs(void)
 {
-	int err;
-	struct mmc_cmd cmd;
+	if (!check_env("splashsourceauto", "yes"))
+		return;
 
-	if (mmc->has_init)
-		return true;
-
-	mdelay(1);
-	cmd.cmdidx = MMC_CMD_GO_IDLE_STATE;
-	cmd.cmdarg = 0;
-	cmd.resp_type = MMC_RSP_NONE;
-
-	err = mmc->cfg->ops->send_cmd(mmc, &cmd, NULL);
-	if (err)
-		return false;
-
-	mdelay(2);
-
-	cmd.cmdidx = MMC_CMD_SEND_OP_COND;
-	cmd.resp_type = MMC_RSP_R3;
-	cmd.cmdarg = 0;
-
-	err = mmc->cfg->ops->send_cmd(mmc, &cmd, NULL);
-	return (!err);
+#ifdef CONFIG_SYS_BOOT_NAND
+	setenv("splashsource", getenv("rootfs_device"));
+#else
+	if (mmc_get_env_devno() == 0)
+		setenv("splashsource", "sd");
+	else if (mmc_get_env_devno() == 1)
+		setenv("splashsource", "emmc");
+#endif
 }
+
+#ifdef CONFIG_SYS_BOOT_NAND
+int splash_load_from_ubifs(void)
+{
+	char *mtdpart = "rootfs";
+	char *ubivolume = "ubi0:rootfs";
+	char *splash_file;
+	char *env_splashimage_value;
+	char cmd[64];
+	int ret;
+
+	env_splashimage_value = getenv("splashimage");
+	if (env_splashimage_value == NULL) {
+		return -ENOENT;
+	}
+
+	splash_file = getenv("splashfile");
+	if (!splash_file)
+		splash_file = "splash.bmp";
+
+	sprintf(cmd, "ubi part %s", mtdpart);
+	ret = run_command(cmd, 0);
+	if (ret)
+		return ret;
+
+	sprintf(cmd, "ubifsmount %s", ubivolume);
+	ret = run_command(cmd, 0);
+	if (ret)
+		return ret;
+
+	sprintf(cmd, "ubifsload %s %s", env_splashimage_value, splash_file);
+	ret = run_command(cmd, 0);
+	if (ret)
+		printf("Error loading splash file %s\n", splash_file);
+
+	run_command("ubifsumount", 0);
+
+	return ret;
+}
+#endif
+
+int splash_screen_prepare(void)
+{
+	int ret=0;
+
+	set_splashsource_to_boot_rootfs();
+
+	if (check_env("splashsource", "nand")) {
+#ifdef CONFIG_SYS_BOOT_NAND
+		ret = splash_load_from_ubifs();
+#endif
+	} else {
+		struct splash_location var_splash_locations[] = {
+			{
+				.name = "sd",
+				.storage = SPLASH_STORAGE_MMC,
+				.flags = SPLASH_STORAGE_FS,
+				.devpart = "0:2",
+			},
+			{
+				.name = "emmc",
+				.storage = SPLASH_STORAGE_MMC,
+				.flags = SPLASH_STORAGE_FS,
+				.devpart = (is_dart_board() ? "1:2" : "1:1"),
+			},
+		};
+
+		ret = splash_source_load(var_splash_locations,
+				ARRAY_SIZE(var_splash_locations));
+	}
+
+	/* Turn on backlight */
+	if (lvds_enabled)
+		gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);
+
+	return ret;
+}
+#endif
 
 static void print_emmc_size(void)
 {
 	struct mmc *mmc;
-	int device;
+	int err;
 
-	if (is_dart_board() && (MMC_BOOT == get_mmc_boot_device()))
-		device=0;
-	else
-		device=1;
+	mmc = find_mmc_device(1);
+	err = !mmc;
+	if (!err) {
+		/* Silence mmc_init since SOMs can be with or without eMMC */
+		gd->flags |= GD_FLG_SILENT;
+		err = mmc_init(mmc);
+		gd->flags &= ~GD_FLG_SILENT;
+	}
 
-	mmc = find_mmc_device(device);
-	if (!mmc || !is_mmc_present(mmc) || mmc_init(mmc) || IS_SD(mmc)) {
+	if (err) {
 		puts("No eMMC\n");
 		return;
 	}
+
 	puts("eMMC:  ");
 	print_size(mmc->capacity, "\n");
 }
 
-static u32 var_ram_size(void)
+/*
+ * Returns DRAM size in MiB
+ */
+static u32 var_get_ram_size(void)
 {
 	u32 *p_ram_size = (u32 *)RAM_SIZE_ADDR;
 	return *p_ram_size;
@@ -307,7 +367,7 @@ static u32 var_ram_size(void)
 
 int dram_init(void)
 {
-	gd->ram_size = var_ram_size() * 1024 * 1024;
+	gd->ram_size = var_get_ram_size() * 1024 * 1024;
 	return 0;
 }
 
@@ -337,23 +397,23 @@ static iomux_v3_cfg_t const enet_pads1[] = {
 	/* pin 27 - 1 - (MODE3) all */
 	IOMUX_PADS(PAD_RGMII_RD3__GPIO6_IO29		| MUX_PAD_CTRL(NO_PAD_CTRL)),
 	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
-	IOMUX_PADS(PAD_RGMII_RX_CTL__GPIO6_IO24	| MUX_PAD_CTRL(NO_PAD_CTRL)),
-	/* AR8031 PHY Reset */
+	IOMUX_PADS(PAD_RGMII_RX_CTL__GPIO6_IO24		| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	/* PHY Reset */
 	IOMUX_PADS(PAD_ENET_CRS_DV__GPIO1_IO25		| MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
 static iomux_v3_cfg_t const enet_pads2[] = {
-	IOMUX_PADS(PAD_RGMII_RXC__RGMII_RXC	| MUX_PAD_CTRL(ENET_PAD_CTRL)),
-	IOMUX_PADS(PAD_RGMII_RD0__RGMII_RD0	| MUX_PAD_CTRL(ENET_PAD_CTRL)),
-	IOMUX_PADS(PAD_RGMII_RD1__RGMII_RD1	| MUX_PAD_CTRL(ENET_PAD_CTRL)),
-	IOMUX_PADS(PAD_RGMII_RD2__RGMII_RD2	| MUX_PAD_CTRL(ENET_PAD_CTRL)),
-	IOMUX_PADS(PAD_RGMII_RD3__RGMII_RD3	| MUX_PAD_CTRL(ENET_PAD_CTRL)),
+	IOMUX_PADS(PAD_RGMII_RXC__RGMII_RXC		| MUX_PAD_CTRL(ENET_PAD_CTRL)),
+	IOMUX_PADS(PAD_RGMII_RD0__RGMII_RD0		| MUX_PAD_CTRL(ENET_PAD_CTRL)),
+	IOMUX_PADS(PAD_RGMII_RD1__RGMII_RD1		| MUX_PAD_CTRL(ENET_PAD_CTRL)),
+	IOMUX_PADS(PAD_RGMII_RD2__RGMII_RD2		| MUX_PAD_CTRL(ENET_PAD_CTRL)),
+	IOMUX_PADS(PAD_RGMII_RD3__RGMII_RD3		| MUX_PAD_CTRL(ENET_PAD_CTRL)),
 	IOMUX_PADS(PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL)),
 };
 
 static void setup_iomux_enet(void)
 {
-	gpio_direction_output(IMX_GPIO_NR(1, 25), 0);   /* Variscite SOM PHY reset */
+	gpio_direction_output(IMX_GPIO_NR(1, 25), 0);
 	gpio_direction_output(IMX_GPIO_NR(6, 30), 1);
 	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
 	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
@@ -365,14 +425,15 @@ static void setup_iomux_enet(void)
 	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
 
 	mdelay(10);
+	/* Reset PHY */
 	gpio_set_value(IMX_GPIO_NR(1, 25), 1);
 
 	SETUP_IOMUX_PADS(enet_pads2);
 }
 
 static iomux_v3_cfg_t const usdhc1_pads[] = {
-	IOMUX_PADS(PAD_SD1_CLK__SD1_CLK	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD1_CMD__SD1_CMD	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_CLK__SD1_CLK		| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_CMD__SD1_CMD		| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD1_DAT0__SD1_DATA0	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD1_DAT1__SD1_DATA1	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD1_DAT2__SD1_DATA2	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
@@ -381,21 +442,32 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 
 
 static iomux_v3_cfg_t const usdhc2_pads[] = {
-	IOMUX_PADS(PAD_SD2_CLK__SD2_CLK	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD2_CMD__SD2_CMD	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD2_CLK__SD2_CLK		| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD2_CMD__SD2_CMD		| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT0__SD2_DATA0	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT1__SD2_DATA1	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT2__SD2_DATA2	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT3__SD2_DATA3	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 };
 
+static iomux_v3_cfg_t const usdhc2_cd_pad[][1*2] = {
+	{
+		/* DART */
+		IOMUX_PADS(PAD_GPIO_6__GPIO1_IO06 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	},
+	{
+		/* Non-DART */
+		IOMUX_PADS(PAD_KEY_COL4__GPIO4_IO14 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	}
+};
+
 static iomux_v3_cfg_t const usdhc3_pads[] = {
-	IOMUX_PADS(PAD_SD3_CLK__SD3_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD3_CMD__SD3_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD3_DAT0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD3_DAT1__SD3_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD3_DAT2__SD3_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD3_DAT3__SD3_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD3_CLK__SD3_CLK		| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD3_CMD__SD3_CMD		| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD3_DAT0__SD3_DATA0	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD3_DAT1__SD3_DATA1	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD3_DAT2__SD3_DATA2	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD3_DAT3__SD3_DATA3	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 };
 
 #ifdef CONFIG_SYS_I2C_MXC
@@ -436,25 +508,68 @@ static void setup_iomux_uart(void)
 }
 
 #ifdef CONFIG_FSL_ESDHC
-struct fsl_esdhc_cfg usdhc_cfg[2] = {
-	/*
-	 * This is incorrect for DART board but it's overwritten
-	 * in board_mmc_init() according to board setup
-	 */
-	{USDHC2_BASE_ADDR},
-	{USDHC1_BASE_ADDR},
+static struct fsl_esdhc_cfg usdhc_cfg[2];
+
+#ifdef CONFIG_ENV_IS_IN_MMC
+static int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no + 1;
+}
+#endif
+
+static int usdhc2_cd_gpio[] = {
+	/* DART */
+	IMX_GPIO_NR(1, 6),
+	/* Non-DART */
+	IMX_GPIO_NR(4, 14)
 };
 
 int board_mmc_getcd(struct mmc *mmc)
 {
+	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
+	int board = is_dart_board() ? 0 : 1;
+
+	/* SD card */
+	if (cfg->esdhc_base == USDHC2_BASE_ADDR) {
+		return !gpio_get_value(usdhc2_cd_gpio[board]);
+	}
+
+	/*
+	 * On DART SOMs eMMC is always present.
+	 *
+	 * On non DART SOMs eMMC can be present or not,
+	 * but we can't know until we try to init it
+	 * so return 1 here anyway
+	 */
 	return 1;
 }
+
+#ifdef CONFIG_SPL_BUILD
+enum mmc_boot_device {
+	USDHC1,
+	USDHC2,
+	USDHC3,
+	USDHC4,
+};
+
+static enum mmc_boot_device get_mmc_boot_device(void)
+{
+	struct src *psrc = (struct src *)SRC_BASE_ADDR;
+	unsigned reg = readl(&psrc->sbmr1) >> 11;
+	/*
+	 * Upon reading BOOT_CFG register
+	 * Bit 11 and 12 of BOOT_CFG register can determine the current
+	 * mmc port
+	 */
+
+	return (reg & 0x3);
+}
+#endif
 
 int board_mmc_init(bd_t *bis)
 {
 #ifndef CONFIG_SPL_BUILD
-	int ret;
-	int i;
+	int ret, i, board;
 
 	/*
 	 * According to the board_mmc_init() the following map is done:
@@ -463,35 +578,25 @@ int board_mmc_init(bd_t *bis)
 	 * mmc0                    SD2 (SD)
 	 * mmc1                    SD1 (eMMC)
 	 *
-	 * On DART board when booting from SD:
+	 * On DART board:
 	 * mmc0                    SD2 (SD)
 	 * mmc1                    SD3 (eMMC)
-	 *
-	 * On DART board when booting from eMMC:
-	 * mmc0                    SD3 (eMMC)
-	 * mmc1                    SD2 (SD)
 	 */
 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
 		switch (i) {
 		case 0:
-			if (is_dart_board() && (MMC_BOOT == get_mmc_boot_device())) {
-				SETUP_IOMUX_PADS(usdhc3_pads);
-				usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
-				usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-			} else {
-				SETUP_IOMUX_PADS(usdhc2_pads);
-				usdhc_cfg[0].esdhc_base = USDHC2_BASE_ADDR;
-				usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-			}
-			gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
+			SETUP_IOMUX_PADS(usdhc2_pads);
+
+			board = is_dart_board() ? 0 : 1;
+			SETUP_IOMUX_PADS(usdhc2_cd_pad[board]);
+			gpio_direction_input(usdhc2_cd_gpio[board]);
+
+			usdhc_cfg[0].esdhc_base = USDHC2_BASE_ADDR;
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
 			usdhc_cfg[0].max_bus_width = 4;
 			break;
 		case 1:
-			if (is_dart_board() && (MMC_BOOT == get_mmc_boot_device())) {
-				SETUP_IOMUX_PADS(usdhc2_pads);
-				usdhc_cfg[1].esdhc_base = USDHC2_BASE_ADDR;
-				usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-			} else if (is_dart_board()) {
+			if (is_dart_board()) {
 				SETUP_IOMUX_PADS(usdhc3_pads);
 				usdhc_cfg[1].esdhc_base = USDHC3_BASE_ADDR;
 				usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
@@ -500,7 +605,6 @@ int board_mmc_init(bd_t *bis)
 				usdhc_cfg[1].esdhc_base = USDHC1_BASE_ADDR;
 				usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 			}
-			gd->arch.sdhc_clk = usdhc_cfg[1].sdhc_clk;
 			usdhc_cfg[1].max_bus_width = 4;
 			break;
 		default:
@@ -516,35 +620,57 @@ int board_mmc_init(bd_t *bis)
 	}
 	return 0;
 #else
-	struct src *psrc = (struct src *)SRC_BASE_ADDR;
-	unsigned reg = readl(&psrc->sbmr1) >> 11;
 	/*
-	 * Upon reading BOOT_CFG register the following map is done:
-	 * Bit 11 and 12 of BOOT_CFG register can determine the current
-	 * mmc port
-	 * 0x1                  SD2 (SD)
-	 * 0x2                  SD3 (DART eMMC)
+	 * Possible MMC boot devices:
+	 * SD2 (SD)
+	 * SD3 (DART eMMC)
 	 */
-
-	switch (reg & 0x3) {
-	case 0x1:
+	puts("MMC Boot Device: ");
+	switch (get_mmc_boot_device()) {
+	case USDHC2:
+		puts("mmc0 (SD)");
 		SETUP_IOMUX_PADS(usdhc2_pads);
 		usdhc_cfg[0].esdhc_base = USDHC2_BASE_ADDR;
 		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
 		gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
 		usdhc_cfg[0].max_bus_width = 4;
 		break;
-	case 0x2:
+	case USDHC3:
+		puts("mmc1 (eMMC)");
 		SETUP_IOMUX_PADS(usdhc3_pads);
 		usdhc_cfg[0].esdhc_base = USDHC3_BASE_ADDR;
 		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 		gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
 		usdhc_cfg[0].max_bus_width = 4;
 		break;
+	default:
+		break;
 	}
 
 	return fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
 #endif
+}
+#endif
+
+#ifdef CONFIG_ENV_IS_IN_MMC
+static void mmc_late_init(void)
+{
+	char cmd[32];
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_devno();
+
+	if (!check_env("mmcautodetect", "yes"))
+		return;
+
+	setenv_ulong("mmcdev", dev_no);
+
+	/* Set mmcroot env */
+	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
+			mmc_map_to_kernel_blk(dev_no));
+	setenv("mmcroot", mmcblk);
+
+	sprintf(cmd, "mmc dev %d", dev_no);
+	run_command(cmd, 0);
 }
 #endif
 
@@ -649,7 +775,7 @@ static void do_enable_hdmi(struct display_info_t const *dev)
 	 * imx_enable_hdmi_phy(); should be called here.
 	 * It is ommitted to avoid a current known bug where
 	 * the boot sometimes hangs if an HDMI cable is attached
-	 * - at least on some DART SOMs.
+	 * - at least on some SOMs.
 	 */
 }
 
@@ -707,7 +833,7 @@ struct display_info_t const displays[] = {{
 	.enable	= do_enable_hdmi,
 	.mode	= {
 		.name           = "HDMI",
-		.refresh        = 60,
+		.refresh        = 60,  /* optional */
 		.xres           = 800,
 		.yres           = 480,
 		.pixclock       = 31777,
@@ -727,7 +853,7 @@ struct display_info_t const displays[] = {{
 	.enable	= lvds_enable_disable,
 	.mode	= {
 		.name           = "VAR-WVGA",
-		.refresh        = 60, /* optional */
+		.refresh        = 60,  /* optional */
 		.xres           = 800,
 		.yres           = 480,
 		.pixclock       = MHZ2PS(50),
@@ -747,7 +873,7 @@ struct display_info_t const displays[] = {{
 	.enable	= lvds_enable_disable,
 	.mode	= {
 		.name           = "VAR-WVGA MX6CB-C",
-		.refresh        = 60, /* optional */
+		.refresh        = 60,  /* optional */
 		.xres           = 800,
 		.yres           = 480,
 		.pixclock       = MHZ2PS(50),
@@ -767,7 +893,7 @@ struct display_info_t const displays[] = {{
 	.enable	= lvds_enable_disable,
 	.mode	= {
 		.name           = "VAR-WVGA MX6CB-R",
-		.refresh        = 60, /* optional */
+		.refresh        = 60,  /* optional */
 		.xres           = 800,
 		.yres           = 480,
 		.pixclock       = MHZ2PS(50),
@@ -835,10 +961,8 @@ static void setup_display(void)
 	writel(reg, &iomux->gpr[2]);
 
 	reg = readl(&iomux->gpr[3]);
-	reg = (reg & ~(IOMUXC_GPR3_LVDS1_MUX_CTL_MASK
-			| IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
-	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
-	       << IOMUXC_GPR3_LVDS1_MUX_CTL_OFFSET);
+	reg = (reg & ~(IOMUXC_GPR3_LVDS1_MUX_CTL_MASK | IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
+		| (IOMUXC_GPR3_MUX_SRC_IPU1_DI0 << IOMUXC_GPR3_LVDS1_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
 }
 #endif /* CONFIG_VIDEO_IPUV3 */
@@ -868,15 +992,14 @@ int board_eth_init(bd_t *bis)
 		return 0;
 	}
 
-	/* scan phy 3,4,5,6,7 */
-	phydev = phy_find_by_mask(bus, (0x1f << 3), PHY_INTERFACE_MODE_RGMII);
+	phydev = phy_find_by_mask(bus, (0x1 << CONFIG_FEC_MXC_PHYADDR), PHY_INTERFACE_MODE_RGMII);
 	if (!phydev) {
 		printf("FEC MXC phy find: %s:failed\n", __func__);
 		free(bus);
 		return 0;
 	}
-
 	printf("using phy at %d\n", phydev->addr);
+
 	ret  = fec_probe(bis, -1, base, bus, phydev);
 	if (ret) {
 		printf("FEC MXC probe: %s:failed\n", __func__);
@@ -894,42 +1017,55 @@ int board_eth_init(bd_t *bis)
 }
 
 #ifdef CONFIG_USB_EHCI_MX6
-#define VSC_USB_H1_PWR_EN	IMX_GPIO_NR(4, 15)
-#define VSC_USB_OTG_PWR_EN	IMX_GPIO_NR(3, 22)
-#define DART_USB_H1_PWR_EN	IMX_GPIO_NR(1, 28)
-#define DART_USB_OTG_PWR_EN	IMX_GPIO_NR(4, 15)
+static int const usb_otg_pwr_en_gpio[] = {
+	/* DART */
+	IMX_GPIO_NR(4, 15),
+	/* SOLOCustomBoard */
+	IMX_GPIO_NR(3, 22),
+};
+
+static int const usb_h1_pwr_en_gpio[] = {
+	/* DART */
+	IMX_GPIO_NR(1, 28),
+	/* SOLOCustomBoard */
+	IMX_GPIO_NR(4, 15),
+};
+
+static iomux_v3_cfg_t const usb_pads[][3*2] = {
+	{
+		/* DART */
+		IOMUX_PADS(PAD_ENET_RX_ER__USB_OTG_ID	| MUX_PAD_CTRL(OTG_ID_PAD_CTRL)),
+		IOMUX_PADS(PAD_KEY_ROW4__GPIO4_IO15	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+		IOMUX_PADS(PAD_ENET_TX_EN__GPIO1_IO28	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	},
+	{
+		/* SOLOCustomBoard */
+		IOMUX_PADS(PAD_GPIO_1__USB_OTG_ID	| MUX_PAD_CTRL(OTG_ID_PAD_CTRL)),
+		IOMUX_PADS(PAD_EIM_D22__GPIO3_IO22	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+		IOMUX_PADS(PAD_KEY_ROW4__GPIO4_IO15	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	}
+};
 
 static void setup_usb(void)
 {
-	if (is_dart_board()) {
-		/* config OTG ID iomux */
-		SETUP_IOMUX_PAD(PAD_ENET_RX_ER__USB_OTG_ID | MUX_PAD_CTRL(OTG_ID_PAD_CTRL));
+	int board = get_board_indx();
+	if (board == MX6_CUSTOM_BOARD)
+		return;
+
+	SETUP_IOMUX_PADS(usb_pads[board]);
+	gpio_direction_output(usb_otg_pwr_en_gpio[board], 0);
+	gpio_direction_output(usb_h1_pwr_en_gpio[board], 0);
+
+	if (board == DART_BOARD)
 		imx_iomux_set_gpr_register(1, 13, 1, 0);
-
-		SETUP_IOMUX_PAD(PAD_KEY_ROW4__GPIO4_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL));
-		gpio_direction_output(DART_USB_OTG_PWR_EN, 0);
-
-		SETUP_IOMUX_PAD(PAD_ENET_TX_EN__GPIO1_IO28  | MUX_PAD_CTRL(NO_PAD_CTRL));
-		gpio_direction_output(DART_USB_H1_PWR_EN, 0);
-	} else if (is_solo_custom_board()) {
-		/* config OTG ID iomux */
-		SETUP_IOMUX_PAD(PAD_GPIO_1__USB_OTG_ID | MUX_PAD_CTRL(OTG_ID_PAD_CTRL));
+	else if (board == SOLO_CUSTOM_BOARD)
 		imx_iomux_set_gpr_register(1, 13, 1, 1);
-
-		SETUP_IOMUX_PAD(PAD_EIM_D22__GPIO3_IO22  | MUX_PAD_CTRL(NO_PAD_CTRL));
-		gpio_direction_output(VSC_USB_OTG_PWR_EN, 0);
-
-		SETUP_IOMUX_PAD(PAD_KEY_ROW4__GPIO4_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL));
-		gpio_direction_output(VSC_USB_H1_PWR_EN, 0);
-	}
 }
 
 int board_usb_phy_mode(int port)
 {
-	char *s;
 	if (is_mx6_custom_board() && port == 0) {
-		s = getenv("usbmode");
-		if ((s != NULL) && (!strcmp(s, "host")))
+		if (check_env("usbmode", "host"))
 			return USB_INIT_HOST;
 		else
 			return USB_INIT_DEVICE;
@@ -939,23 +1075,17 @@ int board_usb_phy_mode(int port)
 
 int board_ehci_power(int port, int on)
 {
-	if (is_mx6_custom_board())
+	int board = get_board_indx();
+	if (board == MX6_CUSTOM_BOARD)
 		return 0; /* no power enable needed */
 
 	if (port > 1)
 		return -EINVAL;
 
-	if (port) {
-		if (is_dart_board())
-			gpio_set_value(DART_USB_H1_PWR_EN, on);
-		else if (is_solo_custom_board())
-			gpio_set_value(VSC_USB_H1_PWR_EN, on);
-	} else {
-		if (is_dart_board())
-			gpio_set_value(DART_USB_OTG_PWR_EN, on);
-		else if (is_solo_custom_board())
-			gpio_set_value(VSC_USB_OTG_PWR_EN, on);
-	}
+	if (port)
+		gpio_set_value(usb_h1_pwr_en_gpio[board], on);
+	else
+		gpio_set_value(usb_otg_pwr_en_gpio[board], on);
 
 	return 0;
 }
@@ -993,35 +1123,61 @@ int board_init(void)
 
 static struct pmic *pfuze;
 
+struct pmic_write_values {
+	u32 reg;
+	u32 mask;
+	u32 writeval;
+};
+
+static int pmic_write_val(struct pmic *p, struct pmic_write_values pmic_struct)
+{
+	unsigned int val = 0;
+	int retval = 0;
+
+	if (!p) {
+		printf("No PMIC found!\n");
+		return -1;
+	}
+
+	retval += pmic_reg_read(p, pmic_struct.reg, &val);
+	val &= ~(pmic_struct.mask);
+	val |= pmic_struct.writeval;
+	retval += pmic_reg_write(p, pmic_struct.reg, val);
+
+	if (retval)
+		printf("PMIC write voltages error!\n");
+
+	return retval;
+}
+
+static int pmic_write_vals(struct pmic *p, struct pmic_write_values *arr, int arr_size)
+{
+	int i, retval;
+
+	for (i = 0; i < arr_size; ++i) {
+		retval = pmic_write_val(p, arr[i]);
+		if (retval)
+			return retval;
+	}
+
+	return 0;
+}
+
 #ifdef CONFIG_LDO_BYPASS_CHECK
 void ldo_mode_set(int ldo_bypass)
 {
 	if (!is_som_solo()) {
-		unsigned int reg;
 		struct pmic *p = pfuze;
-		int retval = 0;
 
-		if (!p) {
-			printf("No PMIC found!\n");
+		struct pmic_write_values ldo_mode_arr[] = {
+			/* Set SW1AB to 1.325V */
+			{PFUZE100_SW1ABVOL, SW1x_NORMAL_MASK, SW1x_1_325V},
+			/* Set SW1C to 1.325V */
+			{PFUZE100_SW1CVOL, SW1x_NORMAL_MASK, SW1x_1_325V}
+		};
+
+		if (pmic_write_vals(p, ldo_mode_arr, ARRAY_SIZE(ldo_mode_arr)))
 			return;
-		}
-
-		/* Set SW1AB to 1.325V */
-		retval += pmic_reg_read(p, PFUZE100_SW1ABVOL, &reg);
-		reg &= ~SW1x_NORMAL_MASK;
-		reg |= SW1x_1_325V;
-		retval += pmic_reg_write(p, PFUZE100_SW1ABVOL, reg);
-
-		/* Set SW1C to 1.325V */
-		retval += pmic_reg_read(p, PFUZE100_SW1CVOL, &reg);
-		reg &= ~SW1x_NORMAL_MASK;
-		reg |= SW1x_1_325V;
-		retval += pmic_reg_write(p, PFUZE100_SW1CVOL, reg);
-
-		if (retval) {
-			printf("PMIC write voltages error!\n");
-			return;
-		}
 
 		set_anatop_bypass(0);
 		printf("switch to ldo_bypass mode!\n");
@@ -1045,194 +1201,130 @@ int power_init_board(void)
 		pmic_reg_read(pfuze, PFUZE100_DEVICEID, &reg);
 		printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
 
-		if (!is_dart_board()) {
+		if (is_dart_board()) {
 
-			/* Set Gigbit Ethernet voltage (SOM v1.1/1.0) */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW4VOL, &reg);
-			reg &= ~0x7f;
-			reg |= 0x60; /* 2.4V */
-			retval += pmic_reg_write(pfuze, PFUZE100_SW4VOL, reg);
+			struct pmic_write_values dart_pmic_arr[] = {
+				/* Set SW1AB standby volage to 0.9V */
+				{PFUZE100_SW1ABSTBY, SW1x_STBY_MASK, SW1x_0_900V},
 
-			/* Increase VGEN5 from 2.8 to 3V */
-			retval += pmic_reg_read(pfuze, PFUZE100_VGEN5VOL, &reg);
-			reg &= ~LDO_VOL_MASK;
-			reg |= LDOB_3_00V;
-			retval += pmic_reg_write(pfuze, PFUZE100_VGEN5VOL, reg);
+				/* Set SW1AB off volage to 0.9V */
+				{PFUZE100_SW1ABOFF, SW1x_OFF_MASK, SW1x_0_900V},
 
-			/* Set SW1AB standby volage to 0.975V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1ABSTBY, &reg);
-			reg &= ~SW1x_STBY_MASK;
-			reg |= SW1x_0_975V;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1ABSTBY, reg);
+				/* Set SW1C standby voltage to 0.9V */
+				{PFUZE100_SW1CSTBY, SW1x_STBY_MASK, SW1x_0_900V},
 
-			/* Set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1ABCONF, &reg);
-			reg &= ~SW1xCONF_DVSSPEED_MASK;
-			reg |= SW1xCONF_DVSSPEED_4US;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1ABCONF, reg);
+				/* Set SW1C off volage to 0.9V */
+				{PFUZE100_SW1COFF, SW1x_OFF_MASK, SW1x_0_900V},
 
-			/* Set SW1C standby voltage to 0.975V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1CSTBY, &reg);
-			reg &= ~SW1x_STBY_MASK;
-			reg |= SW1x_0_975V;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1CSTBY, reg);
+				/* Set SW2 to 3.3V */
+				{PFUZE100_SW2VOL, SWx_NORMAL_MASK, SWx_HR_3_300V},
 
-#ifdef LOW_POWER_MODE_ENABLE
-			/* Set low power mode voltages to disable */
+				/* Set SW2 standby voltage to 3.2V */
+				{PFUZE100_SW2STBY, SWx_STBY_MASK, SWx_HR_3_200V},
 
-			/* Set SW3A standby voltage to 1.275V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW3ASTBY, &reg);
-			reg &= ~0x7f; /* SW3x STBY MASK */
-			reg = 0x23; /* SW3x 1.275V */
-			retval += pmic_reg_write(pfuze, PFUZE100_SW3ASTBY, reg);
+				/* Set SW2 off voltage to 3.2V */
+				{PFUZE100_SW2OFF, SWx_OFF_MASK, SWx_HR_3_200V},
 
-			/* Set SW3A off voltage to 1.275V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW3AOFF, &reg);
-			reg &= ~0x7f; /* SW3x OFF MASK */
-			reg = 0x23; /* SW3x 1.275V */
-			retval += pmic_reg_write(pfuze, PFUZE100_SW3AOFF, reg);
+				/* Set SW1AB/VDDARM step ramp up time 2us */
+				{PFUZE100_SW1ABCONF, SW1xCONF_DVSSPEED_MASK, SW1xCONF_DVSSPEED_2US},
 
-			/* SW4MODE = OFF in standby */
-			reg = PWM_OFF;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW4MODE, reg);
+				/* Set SW1AB, SW1C, SW2 normal mode to PWM, and standby mode to PFM */
+				{PFUZE100_SW1ABMODE, SW_MODE_MASK, PWM_PFM},
+				{PFUZE100_SW1CMODE, SW_MODE_MASK, PWM_PFM},
+				{PFUZE100_SW2MODE, SW_MODE_MASK, PWM_PFM},
 
-			/* Set VGEN3 to 2.5V, VGEN3CTL = OFF in standby */
-			retval += pmic_reg_read(pfuze, PFUZE100_VGEN3VOL, &reg);
-			reg &= ~0x7f;
-			reg |= 0x30; /* VGEN3EN, VGEN3STBY, ~VGEN3LPWR */
-			reg |= LDOB_2_50V;
-			retval += pmic_reg_write(pfuze, PFUZE100_VGEN3VOL, reg);
-#else
-			/* Set VGEN3 to 2.5V, VGEN3CTL = low power in standby */
-			retval += pmic_reg_read(pfuze, PFUZE100_VGEN3VOL, &reg);
-			reg &= ~0x7f;
-			reg |= 0x70; /* VGEN3EN, VGEN3STBY, VGEN3LPWR */
-			reg |= LDOB_2_50V;
-			retval += pmic_reg_write(pfuze, PFUZE100_VGEN3VOL, reg);
-#endif
+				/* Set VGEN6 to 3.3V */
+				{PFUZE100_VGEN6VOL, LDO_VOL_MASK, LDOB_3_30V}
+			};
+
+			retval = pmic_write_vals(pfuze, dart_pmic_arr, ARRAY_SIZE(dart_pmic_arr));
+
 		} else {
 
-			/* Set SW1AB standby volage to 0.9V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1ABSTBY, &reg);
-			reg &= ~SW1x_STBY_MASK;
-			reg |= SW1x_0_900V;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1ABSTBY, reg);
+			struct pmic_write_values pmic_arr[] = {
+				/* Set SW1AB standby volage to 0.975V */
+				{PFUZE100_SW1ABSTBY, SW1x_STBY_MASK, SW1x_0_975V},
 
-			/* Set SW1AB off volage to 0.9V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1ABOFF, &reg);
-			reg &= ~SW1x_OFF_MASK;
-			reg |= SW1x_0_900V;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1ABOFF, reg);
+				/* Set SW1AB/VDDARM step ramp up time from 16us to 4us/25mV */
+				{PFUZE100_SW1ABCONF, SW1xCONF_DVSSPEED_MASK, SW1xCONF_DVSSPEED_4US},
 
-			/* Set SW1C standby voltage to 0.9V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1CSTBY, &reg);
-			reg &= ~SW1x_STBY_MASK;
-			reg |= SW1x_0_900V;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1CSTBY, reg);
+				/* Set SW1C standby voltage to 0.975V */
+				{PFUZE100_SW1CSTBY, SW1x_STBY_MASK, SW1x_0_975V},
 
-			/* Set SW1C off volage to 0.9V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1COFF, &reg);
-			reg &= ~SW1x_OFF_MASK;
-			reg |= SW1x_0_900V;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1COFF, reg);
+				/* Set Gigbit Ethernet voltage */
+				{PFUZE100_SW4VOL, SWx_NORMAL_MASK, SWx_LR_1_200V},
 
-			/* Set SW2 to 3.3V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW2VOL, &reg);
-			reg &= ~0x7f; /* SW2x NORMAL MASK */
-			reg |= 0x72; /* SW2x 3.3V */
-			retval += pmic_reg_write(pfuze, PFUZE100_SW2VOL, reg);
+				/* Increase VGEN5 from 2.8 to 3V */
+				{PFUZE100_VGEN5VOL, LDO_VOL_MASK, LDOB_3_00V},
 
-			/* Set SW2 standby voltage to 3.2V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW2STBY, &reg);
-			reg &= ~0x7f; /* SW2x STBY MASK */
-			reg |= 0x70; /* SW2x 3.2V */
-			retval += pmic_reg_write(pfuze, PFUZE100_SW2STBY, reg);
+				/* Set VGEN3 to 2.5V */
+				{PFUZE100_VGEN3VOL, LDO_VOL_MASK, LDOB_2_50V},
+#ifdef LOW_POWER_MODE_ENABLE
+				/* Set low power mode voltages to disable */
 
-			/* Set SW2 off voltage to 3.2V */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW2OFF, &reg);
-			reg &= ~0x7f; /* SW2x OFF MASK */
-			reg |= 0x70; /* SW2x 3.2V */
-			retval += pmic_reg_write(pfuze, PFUZE100_SW2OFF, reg);
+				/* SW2 already set to 3.2V in SPL */
 
-			reg = PWM_PFM;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1ABMODE, reg);
+				/* Set SW3A standby voltage to 1.275V */
+				{PFUZE100_SW3ASTBY, SWx_STBY_MASK, SWx_LR_1_275V},
 
-			/* Set SW1AB/VDDARM step ramp up time 2us */
-			retval += pmic_reg_read(pfuze, PFUZE100_SW1ABCONF, &reg);
-			reg &= ~SW1xCONF_DVSSPEED_MASK;
-			reg |= SW1xCONF_DVSSPEED_2US;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1ABCONF, reg);
+				/* Set SW3A off voltage to 1.275V */
+				{PFUZE100_SW3AOFF, SWx_OFF_MASK, SWx_LR_1_275V},
 
-			reg = PWM_PFM;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW1CMODE, reg);
+				/* SW4MODE = OFF in standby */
+				{PFUZE100_SW4MODE, SW_MODE_MASK, PWM_OFF},
 
-			reg = PWM_PFM;
-			retval += pmic_reg_write(pfuze, PFUZE100_SW2MODE, reg);
+				/* Set VGEN3CTL = OFF in standby */
+				{PFUZE100_VGEN3VOL, (LDO_MODE_MASK | LDO_EXT_MODE_MASK), \
+					((LDO_MODE_ON << LDO_MODE_SHIFT) | LDO_EXT_MODE_ON_OFF << LDO_EXT_MODE_SHIFT)}
+#else
+				/* Set VGEN3CTL = low power in standby */
+				{PFUZE100_VGEN3VOL, (LDO_MODE_MASK | LDO_EXT_MODE_MASK), \
+					((LDO_MODE_ON << LDO_MODE_SHIFT) | LDO_EXT_MODE_ON_LPM << LDO_EXT_MODE_SHIFT)}
+#endif
+			};
 
-			reg = LDOB_3_30V;
-			retval += pmic_reg_write(pfuze, PFUZE100_VGEN6VOL, reg);
+			retval = pmic_write_vals(pfuze, pmic_arr, ARRAY_SIZE(pmic_arr));
 		}
 
 		/* Set SW1C/VDDSOC step ramp up time from 16us to 4us/25mV */
-		retval += pmic_reg_read(pfuze, PFUZE100_SW1CCONF, &reg);
-		reg &= ~SW1xCONF_DVSSPEED_MASK;
-		reg |= SW1xCONF_DVSSPEED_4US;
-		retval += pmic_reg_write(pfuze, PFUZE100_SW1CCONF, reg);
+		retval += pmic_write_val(pfuze,
+				(struct pmic_write_values)
+				{PFUZE100_SW1CCONF, SW1xCONF_DVSSPEED_MASK, SW1xCONF_DVSSPEED_4US});
 
-		if (retval) {
-			printf("PMIC write voltages error!\n");
-			return -1;
-		}
+		if (retval)
+			return retval;
 	}
 
 	return 0;
 }
 
-static void update_env(void)
-{
-	setenv("mmcroot" , "/dev/mmcblk0p2 rootwait rw");
-	switch (get_cpu_type()) {
-	case MXC_CPU_MX6Q:
-	case MXC_CPU_MX6D:
-		if (is_dart_board()) {
-			setenv("fdt_file", "imx6q-var-dart.dtb");
-			if (MMC_BOOT == get_mmc_boot_device())
-				setenv("mmcroot" , "/dev/mmcblk2p2 rootwait rw");
-			else
-				setenv("mmcroot" , "/dev/mmcblk1p2 rootwait rw");
-		} else {
-			if (is_solo_custom_board())
-				setenv("fdt_file", "imx6q-var-som-vsc.dtb");
-			else
-				setenv("fdt_file", "imx6q-var-som.dtb");
-		}
-		break;
-	case MXC_CPU_MX6DL:
-	case MXC_CPU_MX6SOLO:
-		if (is_som_solo())
-			if (is_solo_custom_board())
-				setenv("fdt_file", "imx6dl-var-som-solo-vsc.dtb");
-			else
-				setenv("fdt_file", "imx6dl-var-som-solo.dtb");
-		else
-			setenv("fdt_file", "imx6dl-var-som.dtb");
-		break;
-	default:
-		printf("Error: Could not auto-match correct fdt due to CPU type.\n");
-		printf("CPU type num is 0x%x\n", get_cpu_type());
-		break;
-	}
-}
-
 int board_late_init(void)
 {
-	char *s;
-
+#ifdef CONFIG_ENV_IS_IN_MMC
+	mmc_late_init();
+#endif
 	print_emmc_size();
 
-	s = getenv("var_auto_env");
-	if (s[0] == 'Y')
-		update_env();
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	if (is_dart_board())
+		setenv("board_name", "DT6CUSTOM");
+	else if (is_solo_custom_board())
+		setenv("board_name", "SOLOCUSTOM");
+	else
+		setenv("board_name", "MX6CUSTOM");
+
+	if (is_som_solo())
+		setenv("board_som", "SOM-SOLO");
+	else if (is_dart_board())
+		setenv("board_som", "DART-MX6");
+	else
+		setenv("board_som", "SOM-MX6");
+
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+		setenv("board_rev", "MX6Q");
+	else if (is_cpu_type(MXC_CPU_MX6DL) || is_cpu_type(MXC_CPU_MX6SOLO))
+		setenv("board_rev", "MX6DL");
+#endif
 
 	return 0;
 }
@@ -1244,13 +1336,13 @@ int checkboard(void)
 	switch (get_cpu_type()) {
 	case MXC_CPU_MX6Q:
 		puts("Quad");
-		if (is_cpu_pop_package())
-			puts("-POP");
+		if (is_cpu_pop_packaged())
+			puts("-PoP");
 		break;
 	case MXC_CPU_MX6D:
 		puts("Dual");
-		if (is_cpu_pop_package())
-			puts("-POP");
+		if (is_cpu_pop_packaged())
+			puts("-PoP");
 		break;
 	case MXC_CPU_MX6DL:
 		if (is_som_solo())
@@ -1268,8 +1360,8 @@ int checkboard(void)
 		puts("????");
 		break;
 	}
+	printf(" %d MHz\n", get_cpu_speed_grade_hz() / 1000000);
 
-	puts("\n");
 	return 0;
 }
 
@@ -1363,11 +1455,18 @@ void board_recovery_setup(void)
 #include <spl.h>
 #include <libfdt.h>
 #include <asm/arch/mx6-ddr.h>
-#include "mx6var_eeprom.h"
-#include "mx6var_eeprom_v2.h"
-#include "mx6var_legacy.h"
+#include "mx6var_dram.h"
 
-#include "mx6var_legacy_dart_auto.c"
+/*
+ * Writes RAM size (MiB) to RAM_SIZE_ADDR so U-Boot can read it
+ */
+void var_set_ram_size(u32 ram_size)
+{
+	u32 *p_ram_size = (u32 *)RAM_SIZE_ADDR;
+	if (ram_size > 3840)
+		ram_size = 3840;
+	*p_ram_size = ram_size;
+}
 
 static void ccgr_init(void)
 {
@@ -1417,240 +1516,24 @@ static int power_init_pmic_sw2(void)
 	return 0;
 }
 
-static void var_setup_iomux_per_vcc_en(void)
+static void setup_iomux_var_per_vcc_en(void)
 {
 	SETUP_IOMUX_PAD(PAD_EIM_D31__GPIO3_IO31 | MUX_PAD_CTRL(PER_VCC_EN_PAD_CTRL));
 	gpio_direction_output(IMX_GPIO_NR(3, 31), 1);
 }
 
-/*
- * Writes RAM size to RAM_SIZE_ADDR so U-Boot can read it
- */
-static void var_set_ram_size(u32 ram_size)
+static void setup_iomux_audiocodec(void)
 {
-	u32 *p_ram_size = (u32 *)RAM_SIZE_ADDR;
-	if (ram_size > 3840)
-		ram_size = 3840;
-	*p_ram_size = ram_size;
+	SETUP_IOMUX_PAD(PAD_GPIO_19__GPIO4_IO05 | MUX_PAD_CTRL(NO_PAD_CTRL));
+	gpio_direction_output(IMX_GPIO_NR(4, 5), 1);
 }
 
-/*
- * OCOTP_CFG3[17:16] (see Fusemap Description Table offset 0x440)
- * defines a 2-bit SPEED_GRADING
- */
-#define OCOTP_CFG3_SPEED_SHIFT  16
-#define OCOTP_CFG3_SPEED_800MHZ 0
-#define OCOTP_CFG3_SPEED_850MHZ 1
-#define OCOTP_CFG3_SPEED_1GHZ   2
-#define OCOTP_CFG3_SPEED_1P2GHZ 3
-
-u32 get_cpu_speed_grade_hz(void)
+static void audiocodec_reset(int rst)
 {
-	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
-	struct fuse_bank *bank = &ocotp->bank[0];
-	struct fuse_bank0_regs *fuse =
-		(struct fuse_bank0_regs *)bank->fuse_regs;
-	uint32_t val;
-
-	val = readl(&fuse->cfg3);
-	val >>= OCOTP_CFG3_SPEED_SHIFT;
-	val &= 0x3;
-
-	switch (val) {
-	/* Valid for IMX6DQ */
-	case OCOTP_CFG3_SPEED_1P2GHZ:
-		if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-			return 1200000000;
-	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
-	case OCOTP_CFG3_SPEED_1GHZ:
-		return 996000000;
-	/* Valid for IMX6DQ */
-	case OCOTP_CFG3_SPEED_850MHZ:
-		if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
-			return 852000000;
-	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
-	case OCOTP_CFG3_SPEED_800MHZ:
-		return 792000000;
-	}
-	return 0;
-}
-
-static void print_board_info(int eeprom_rev, void* var_eeprom, u32 ram_size)
-{
-	u32 boot_device;
-	u32 max_freq;
-
-	printf("\ni.MX%s SOC P-%s\n", get_imx_type(get_cpu_type()), \
-			is_cpu_pop_package() ? "POP" : "STD");
-
-	max_freq = get_cpu_speed_grade_hz();
-	if (!max_freq)
-		printf("CPU running at %dMHz\n", mxc_get_clock(MXC_ARM_CLK) / 1000000);
+	if (rst)
+		gpio_set_value(IMX_GPIO_NR(4, 5), 0);
 	else
-		printf("%d MHz CPU (running at %d MHz)\n", max_freq / 1000000,
-				mxc_get_clock(MXC_ARM_CLK) / 1000000);
-
-	if (eeprom_rev == 1)
-		var_eeprom_strings_print((struct var_eeprom_cfg *) var_eeprom);
-	else if (eeprom_rev == 2)
-		var_eeprom_v2_strings_print((struct var_eeprom_v2_cfg *) var_eeprom);
-	else
-		printf("DDR LEGACY configuration\n");
-
-	printf("RAM: ");
-	print_size(ram_size * 1024 * 1024, "\n");
-
-	printf("Boot Device: ");
-	boot_device = spl_boot_device();
-	switch (boot_device) {
-	case BOOT_DEVICE_MMC1:
-		switch (get_mmc_boot_device()) {
-		case SD_BOOT:
-			printf("MMC0 (SD)\n");
-			break;
-		case MMC_BOOT:
-			printf("MMC1 (DART eMMC)\n");
-			break;
-		default:
-			printf("MMC?\n");
-			break;
-		}
-		break;
-
-	case BOOT_DEVICE_NAND:
-		printf("NAND\n");
-		break;
-
-	default:
-		printf("UNKNOWN (%d)\n", boot_device);
-		break;
-	}
-}
-
-static int spl_dram_init_by_eeprom(void)
-{
-	struct var_eeprom_cfg var_eeprom_cfg = {{0}};
-	int ret;
-
-	ret = var_eeprom_read_struct(&var_eeprom_cfg);
-	if (ret)
-		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
-
-	/* is valid Variscite EEPROM? */
-	if (!var_eeprom_is_valid(&var_eeprom_cfg))
-		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
-
-	switch (get_cpu_type()) {
-	case MXC_CPU_MX6DL:
-	case MXC_CPU_MX6SOLO:
-		var_eeprom_mx6dlsl_dram_setup_iomux_from_struct(&var_eeprom_cfg.pinmux_group);
-		break;
-	case MXC_CPU_MX6Q:
-	case MXC_CPU_MX6D:
-	default:
-		var_eeprom_mx6qd_dram_setup_iomux_from_struct(&var_eeprom_cfg.pinmux_group);
-		break;
-	}
-
-	var_eeprom_dram_init_from_struct(&var_eeprom_cfg);
-
-	var_set_ram_size(var_eeprom_cfg.header.ddr_size);
-	print_board_info(1, (void*) &var_eeprom_cfg, var_eeprom_cfg.header.ddr_size);
-
-	return SPL_DRAM_INIT_STATUS_OK;
-}
-
-static int spl_dram_init_by_eeprom_v2(void)
-{
-	u32 ram_addresses[MAXIMUM_RAM_ADDRESSES];
-	u32 ram_values[MAXIMUM_RAM_VALUES];
-	struct var_eeprom_v2_cfg var_eeprom_v2_cfg = {0};
-	int ret, ram_size;
-
-	ret = var_eeprom_v2_read_struct(&var_eeprom_v2_cfg, \
-			is_dart_board() ? VAR_DART_EEPROM_CHIP : VAR_MX6_EEPROM_CHIP);
-
-	if (ret)
-		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
-
-	if (!var_eeprom_v2_is_valid(&var_eeprom_v2_cfg))
-		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
-
-	/*
-	 * The MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands
-	 * revision is incorrect.
-	 * If the data is equal to it, use mt128x64mx32_Step3_commands revision instead
-	 */
-	if (!memcmp(var_eeprom_v2_cfg.eeprom_commands, \
-				MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands, 254)) {
-
-		load_custom_data(mt128x64mx32_Step3_RamValues, ram_addresses, ram_values);
-		setup_ddr_parameters((struct eeprom_command *) mt128x64mx32_Step3_commands, \
-				ram_addresses, ram_values);
-	} else {
-		handle_eeprom_data(&var_eeprom_v2_cfg, ram_addresses, ram_values);
-	}
-
-	ram_size = var_eeprom_v2_cfg.ddr_size * 128;
-	var_set_ram_size(ram_size);
-	print_board_info(2, (void*) &var_eeprom_v2_cfg, ram_size);
-	return SPL_DRAM_INIT_STATUS_OK;
-}
-
-static void legacy_spl_dram_init(void)
-{
-	u32 ram_size;
-	switch (get_cpu_type()) {
-	case MXC_CPU_MX6SOLO:
-		spl_mx6dlsl_dram_setup_iomux();
-		spl_dram_init_mx6solo_1gb();
-		ram_size = get_actual_ram_size(1024);
-		if (ram_size == 512) {
-			udelay(1000);
-			reset_ddr_solo();
-			spl_mx6dlsl_dram_setup_iomux();
-			spl_dram_init_mx6solo_512mb();
-			udelay(1000);
-		}
-		break;
-	case MXC_CPU_MX6Q:
-	case MXC_CPU_MX6D:
-		if (is_dart_board()) {
-			u32 ram_addresses[MAXIMUM_RAM_ADDRESSES];
-			u32 ram_values[MAXIMUM_RAM_VALUES];
-			load_custom_data(mt128x64mx32_Step3_RamValues, ram_addresses, ram_values);
-			setup_ddr_parameters((struct eeprom_command *) mt128x64mx32_Step3_commands, \
-					ram_addresses, ram_values);
-			ram_size = 1024;
-		} else {
-			spl_mx6qd_dram_setup_iomux();
-#ifdef CONFIG_DDR_2GB
-			spl_dram_init_mx6q_2g();
-			ram_size = get_actual_ram_size(2048);
-#else
-			if (get_cpu_speed_grade_hz() == 1200000000) {
-				spl_dram_init_mx6q_2g();
-				ram_size = get_actual_ram_size(2048);
-			} else {
-				spl_dram_init_mx6q_1g();
-				ram_size = get_actual_ram_size(1024);
-			}
-#endif
-		}
-		break;
-	case MXC_CPU_MX6DL:
-	default:
-		spl_mx6dlsl_dram_setup_iomux();
-		if (is_som_solo())
-			spl_dram_init_mx6solo_1gb();
-		else
-			spl_dram_init_mx6dl_1g();
-		ram_size = get_actual_ram_size(1024);
-		break;
-	}
-
-	var_set_ram_size(ram_size);
-	print_board_info(0, NULL, ram_size);
+		gpio_set_value(IMX_GPIO_NR(4, 5), 1);
 }
 
 /*
@@ -1658,27 +1541,24 @@ static void legacy_spl_dram_init(void)
  */
 static void spl_mx6qd_dram_setup_iomux_check_reset(void)
 {
-	volatile struct mx6dq_iomux_ddr_regs *mx6q_ddr_iomux;
-	u32 cputype = get_cpu_type();
+	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {
+		volatile struct mx6dq_iomux_ddr_regs *mx6dq_ddr_iomux;
 
-	if ((cputype == MXC_CPU_MX6D) || (cputype == MXC_CPU_MX6Q)) {
-		mx6q_ddr_iomux = (struct mx6dq_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
+		mx6dq_ddr_iomux = (struct mx6dq_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;
 
-		if (mx6q_ddr_iomux->dram_reset == (u32)0x000C0030)
-			mx6q_ddr_iomux->dram_reset = (u32)0x00000030;
+		if (mx6dq_ddr_iomux->dram_reset == (u32)0x000C0030)
+			mx6dq_ddr_iomux->dram_reset = (u32)0x00000030;
 	}
 }
 
 static void spl_dram_init(void)
 {
-	int status;
+	if (is_dart_board())
+		var_eeprom_v2_dram_init();
+	else
+		if (var_eeprom_v1_dram_init())
+			var_legacy_dram_init(is_som_solo());
 
-	status = spl_dram_init_by_eeprom();
-	if (status != SPL_DRAM_INIT_STATUS_OK) {
-		status = spl_dram_init_by_eeprom_v2();
-		if (status != SPL_DRAM_INIT_STATUS_OK)
-			legacy_spl_dram_init();
-	}
 	spl_mx6qd_dram_setup_iomux_check_reset();
 }
 
@@ -1690,19 +1570,25 @@ void board_init_f(ulong dummy)
 	ccgr_init();
 	gpr_init();
 
+	setup_iomux_var_per_vcc_en();
+	setup_iomux_audiocodec();
+	audiocodec_reset(1);
+
 	/* iomux and setup of i2c */
 	board_early_init_f();
 
 	/* setup GP timer */
 	timer_init();
 
+	mdelay(150);
+
 #ifdef LOW_POWER_MODE_ENABLE
 	power_init_pmic_sw2();
 #endif
-	var_setup_iomux_per_vcc_en();
 
-	/* Wait 330ms before starting to print to console */
-	mdelay(330);
+	mdelay(180);
+
+	audiocodec_reset(0);
 
 	/* UART clocks enabled and gd valid - init serial console */
 	preloader_console_init();
@@ -1720,4 +1606,4 @@ void board_init_f(ulong dummy)
 void reset_cpu(ulong addr)
 {
 }
-#endif
+#endif /* CONFIG_SPL_BUILD */

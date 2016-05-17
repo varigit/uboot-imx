@@ -61,9 +61,13 @@ enum {
  * Buck Regulators
  */
 
+#define SW_MODE_MASK	0xf
+#define SW_MODE_SHIFT	0
+
+/* SW1A/B/C */
 #define PFUZE100_SW1ABC_SETP(x)	((x - 3000) / 250)
 
-/* SW1A/B/C Output Voltage Configuration */
+/* Output Voltage Configuration */
 #define SW1x_0_300V 0
 #define SW1x_0_325V 1
 #define SW1x_0_350V 2
@@ -129,15 +133,161 @@ enum {
 #define SW1x_1_850V 62
 #define SW1x_1_875V 63
 
-#define SW1x_NORMAL_MASK  0x3f
-#define SW1x_STBY_MASK    0x3f
-#define SW1x_OFF_MASK     0x3f
+#define SW1x_NORMAL_MASK	0x3f
+#define SW1x_STBY_MASK		0x3f
+#define SW1x_OFF_MASK		0x3f
 
-#define SW1xCONF_DVSSPEED_MASK 0xc0
-#define SW1xCONF_DVSSPEED_2US  0x00
-#define SW1xCONF_DVSSPEED_4US  0x40
-#define SW1xCONF_DVSSPEED_8US  0x80
-#define SW1xCONF_DVSSPEED_16US 0xc0
+#define SW1xCONF_DVSSPEED_MASK	0xc0
+#define SW1xCONF_DVSSPEED_2US	0x00
+#define SW1xCONF_DVSSPEED_4US	0x40
+#define SW1xCONF_DVSSPEED_8US	0x80
+#define SW1xCONF_DVSSPEED_16US	0xc0
+
+
+/* SW2,SW3A/B and SW4 */
+
+/*
+ * PFUZE100_SWxVOL[bit 6] == 0 -> Low Range used
+ * PFUZE100_SWxVOL[bit 6] == 1 -> High Range used
+ *
+ * In order to optimize the performance:
+ * 0.4V to 1.975V should be used in Low Range, and
+ * 2.0V to 3.300V should be used in the High Range
+ */
+#define PFUZE100_SWx_LR_SETP(x)	((x - 4000) / 250)
+#define PFUZE100_SWx_HR_SETP(x)	(((x - 8000) / 500) + 64)
+
+/* Output Voltage Configuration */
+
+/* Low output voltage range */
+#define SWx_LR_0_400V 0
+#define SWx_LR_0_425V 1
+#define SWx_LR_0_450V 2
+#define SWx_LR_0_475V 3
+#define SWx_LR_0_500V 4
+#define SWx_LR_0_525V 5
+#define SWx_LR_0_550V 6
+#define SWx_LR_0_575V 7
+#define SWx_LR_0_600V 8
+#define SWx_LR_0_625V 9
+#define SWx_LR_0_650V 10
+#define SWx_LR_0_675V 11
+#define SWx_LR_0_700V 12
+#define SWx_LR_0_725V 13
+#define SWx_LR_0_750V 14
+#define SWx_LR_0_775V 15
+#define SWx_LR_0_800V 16
+#define SWx_LR_0_825V 17
+#define SWx_LR_0_850V 18
+#define SWx_LR_0_875V 19
+#define SWx_LR_0_900V 20
+#define SWx_LR_0_925V 21
+#define SWx_LR_0_950V 22
+#define SWx_LR_0_975V 23
+#define SWx_LR_1_000V 24
+#define SWx_LR_1_025V 25
+#define SWx_LR_1_050V 26
+#define SWx_LR_1_075V 27
+#define SWx_LR_1_100V 28
+#define SWx_LR_1_125V 29
+#define SWx_LR_1_150V 30
+#define SWx_LR_1_175V 31
+#define SWx_LR_1_200V 32
+#define SWx_LR_1_225V 33
+#define SWx_LR_1_250V 34
+#define SWx_LR_1_275V 35
+#define SWx_LR_1_300V 36
+#define SWx_LR_1_325V 37
+#define SWx_LR_1_350V 38
+#define SWx_LR_1_375V 39
+#define SWx_LR_1_400V 40
+#define SWx_LR_1_425V 41
+#define SWx_LR_1_450V 42
+#define SWx_LR_1_475V 43
+#define SWx_LR_1_500V 44
+#define SWx_LR_1_525V 45
+#define SWx_LR_1_550V 46
+#define SWx_LR_1_575V 47
+#define SWx_LR_1_600V 48
+#define SWx_LR_1_625V 49
+#define SWx_LR_1_650V 50
+#define SWx_LR_1_675V 51
+#define SWx_LR_1_700V 52
+#define SWx_LR_1_725V 53
+#define SWx_LR_1_750V 54
+#define SWx_LR_1_775V 55
+#define SWx_LR_1_800V 56
+#define SWx_LR_1_825V 57
+#define SWx_LR_1_850V 58
+#define SWx_LR_1_875V 59
+#define SWx_LR_1_900V 60
+#define SWx_LR_1_925V 61
+#define SWx_LR_1_950V 62
+#define SWx_LR_1_975V 63
+
+/* High output voltage range */
+#define SWx_HR_0_800V 64
+#define SWx_HR_0_850V 65
+#define SWx_HR_0_900V 66
+#define SWx_HR_0_950V 67
+#define SWx_HR_1_000V 68
+#define SWx_HR_1_050V 69
+#define SWx_HR_1_100V 70
+#define SWx_HR_1_150V 71
+#define SWx_HR_1_200V 72
+#define SWx_HR_1_250V 73
+#define SWx_HR_1_300V 74
+#define SWx_HR_1_350V 75
+#define SWx_HR_1_400V 76
+#define SWx_HR_1_450V 77
+#define SWx_HR_1_500V 78
+#define SWx_HR_1_550V 79
+#define SWx_HR_1_600V 80
+#define SWx_HR_1_650V 81
+#define SWx_HR_1_700V 82
+#define SWx_HR_1_750V 83
+#define SWx_HR_1_800V 84
+#define SWx_HR_1_850V 85
+#define SWx_HR_1_900V 86
+#define SWx_HR_1_950V 87
+#define SWx_HR_2_000V 88
+#define SWx_HR_2_050V 89
+#define SWx_HR_2_100V 90
+#define SWx_HR_2_150V 91
+#define SWx_HR_2_200V 92
+#define SWx_HR_2_250V 93
+#define SWx_HR_2_300V 94
+#define SWx_HR_2_350V 95
+#define SWx_HR_2_400V 96
+#define SWx_HR_2_450V 97
+#define SWx_HR_2_500V 98
+#define SWx_HR_2_550V 99
+#define SWx_HR_2_600V 100
+#define SWx_HR_2_650V 101
+#define SWx_HR_2_700V 102
+#define SWx_HR_2_750V 103
+#define SWx_HR_2_800V 104
+#define SWx_HR_2_850V 105
+#define SWx_HR_2_900V 106
+#define SWx_HR_2_950V 107
+#define SWx_HR_3_000V 108
+#define SWx_HR_3_050V 109
+#define SWx_HR_3_100V 110
+#define SWx_HR_3_150V 111
+#define SWx_HR_3_200V 112
+#define SWx_HR_3_250V 113
+#define SWx_HR_3_300V 114
+
+/* Note that bit 6 is read only */
+#define SWx_NORMAL_MASK	0x7f
+#define SWx_STBY_MASK	0x7f
+#define SWx_OFF_MASK	0x7f
+
+#define SWxCONF_DVSSPEED_MASK	0xc0
+#define SWxCONF_DVSSPEED_4US	0x00
+#define SWxCONF_DVSSPEED_8US	0x40
+#define SWxCONF_DVSSPEED_16US	0x80
+#define SWxCONF_DVSSPEED_32US	0xc0
 
 /*
  * LDO Configuration
@@ -182,6 +332,51 @@ enum {
 #define LDO_VOL_MASK	0xf
 #define LDO_EN		4
 
+/*
+ * LDO Mode Control
+ *
+ * VGENxCTL[4]
+ * Mode		|      value
+ *   ON   		0x0
+ *   OFF		0x1
+ */
+
+#define LDO_MODE_SHIFT	4
+#define LDO_MODE_MASK	(1 << 4)
+#define LDO_MODE_OFF	0
+#define LDO_MODE_ON	1
+
+/*
+ * LDO "Extended" Mode Control
+ *
+ * If LDO Mode (VGENxCTL[4]) is ON:
+ *
+ * VGENxCTL[6:5]
+ * Normal Mode   |   Standby Mode   |   value
+ *   ON   		ON		0x0
+ *   LOW POWER		LOW POWER	0x1
+ *   ON			OFF		0x2
+ *   ON			LOW POWER	0x3
+ *
+ *
+ * If LDO Mode (VGENxCTL[4]) is OFF:
+ *
+ * VGENxCTL[6:5]
+ * Normal Mode  |  Standby Mode	|      value
+ *   OFF		OFF		Irrelevant
+ *
+ */
+#define LDO_STBY		(1 << 5)
+#define LDO_LPWR		(1 << 6)
+#define LDO_EXT_MODE_SHIFT	5
+#define LDO_EXT_MODE_MASK	(3 << 5)
+#define LDO_EXT_MODE_ON_ON	0
+#define LDO_EXT_MODE_LPM_LPM	1
+#define LDO_EXT_MODE_ON_OFF	2
+#define LDO_EXT_MODE_ON_LPM	3
+
+
+#define VREFDDRCON_EN	(1 << 4)
 /*
  * Boost Regulator
  */

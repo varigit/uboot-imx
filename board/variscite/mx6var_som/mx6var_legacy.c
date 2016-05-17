@@ -1,53 +1,23 @@
 /*
  * Copyright (C) 2016 Variscite Ltd. All Rights Reserved.
  *
+ * Setup "Legacy" DRAM parametes
+ *
+ * For non-DART boards
+ *
  * SPDX-License-Identifier: GPL-2.0+
  */
 
 #ifdef CONFIG_SPL_BUILD
+#include <common.h>
+#include <asm/arch/mx6-ddr.h>
+#include <asm/arch/sys_proto.h>
 #include <asm/imx-common/iomux-v3.h>
 #include <asm/io.h>
-#include <asm/arch/mx6-ddr.h>
-#include "mx6var_legacy.h"
 
-/*
- * Sizes are in MiB
- */
-u32 get_actual_ram_size(u32 max_size)
-{
-#define PATTERN 0x3f3f3f3f
-	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
-	unsigned int volatile * port2;
-	unsigned int temp1;
-	unsigned int temp2;
-	u32 ram_size=max_size;
+u32 get_cpu_speed_grade_hz(void);
+void var_set_ram_size(u32 ram_size);
 
-	do {
-		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((ram_size * 1024 * 1024) / 2));
-
-		temp2 = *port2;
-		temp1 = *port1;
-
-		*port2 = 0;			/* Write 0 to start of 2nd half of memory */
-		*port1 = PATTERN;		/* Write pattern to start of memory */
-
-		if ((PATTERN == *port2) && (ram_size > 512)) {
-			*port1 = temp1;
-			ram_size /= 2;		/* Next step: devide size by 2 */
-		}
-		else
-		{
-			if (0 == *port2) {	/* Done - actual size found */
-				*port1 = temp1;
-				*port2 = temp2;
-				break;
-			}
-		}
-	} while (ram_size > 512);
-
-	return ram_size;
-#undef PATTERN
-}
 
 static int wait_for_bit(volatile void *reg, const uint32_t mask, bool set)
 {
@@ -71,7 +41,7 @@ static int wait_for_bit(volatile void *reg, const uint32_t mask, bool set)
 	hang();
 }
 
-void reset_ddr_solo(void)
+static void reset_ddr_solo(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
 
@@ -85,12 +55,12 @@ void reset_ddr_solo(void)
 	wait_for_bit(&mmdc_p0->mpdgctrl0, 1 << 31, 0);
 
 	mmdc_p0->mdmisc = 2;
-	mmdc_p0->mdscr  = (u32)0x00008000;
+	mmdc_p0->mdscr = (u32)0x00008000;
 
 	wait_for_bit(&mmdc_p0->mdscr, 1 << 14, 1);
 }
 
-void spl_dram_init_mx6solo_512mb(void)
+static void spl_dram_init_mx6solo_512mb(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
@@ -142,7 +112,7 @@ void spl_dram_init_mx6solo_512mb(void)
 	mmdc_p0->mdscr          = (u32)0x00000000;
 }
 
-void spl_mx6qd_dram_setup_iomux(void)
+static void spl_mx6qd_dram_setup_iomux(void)
 {
 	volatile struct mx6dq_iomux_ddr_regs *mx6q_ddr_iomux;
 	volatile struct mx6dq_iomux_grp_regs *mx6q_grp_iomux;
@@ -192,7 +162,7 @@ void spl_mx6qd_dram_setup_iomux(void)
 	mx6q_ddr_iomux->dram_dqm7	= (u32)0x00000030;
 }
 
-void spl_dram_init_mx6dl_1g(void)
+static void spl_dram_init_mx6dl_1g(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
 	volatile struct mmdc_p_regs *mmdc_p1;
@@ -268,7 +238,8 @@ void spl_dram_init_mx6dl_1g(void)
 	mmdc_p0->mdscr 		= (u32)0x00000000;
 }
 
-void spl_dram_init_mx6q_1g(void)
+#ifndef CONFIG_DDR_2GB
+static void spl_dram_init_mx6q_1g(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
 	volatile struct mmdc_p_regs *mmdc_p1;
@@ -342,8 +313,9 @@ void spl_dram_init_mx6q_1g(void)
 	mmdc_p0->mapsr 		= (u32)0x00011006;
 	mmdc_p0->mdscr 		= (u32)0x00000000;
 }
+#endif
 
-void spl_dram_init_mx6q_2g(void)
+static void spl_dram_init_mx6q_2g(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
 	volatile struct mmdc_p_regs *mmdc_p1;
@@ -442,7 +414,7 @@ void spl_dram_init_mx6q_2g(void)
 	mmdc_p0->mdscr 		= (u32)0x00000000;
 }
 
-void spl_mx6dlsl_dram_setup_iomux(void)
+static void spl_mx6dlsl_dram_setup_iomux(void)
 {
 	volatile struct mx6sdl_iomux_ddr_regs *mx6dl_ddr_iomux;
 	volatile struct mx6sdl_iomux_grp_regs *mx6dl_grp_iomux;
@@ -492,7 +464,7 @@ void spl_mx6dlsl_dram_setup_iomux(void)
 	mx6dl_ddr_iomux->dram_dqm7      = (u32)0x00000030;
 }
 
-void spl_dram_init_mx6solo_1gb(void)
+static void spl_dram_init_mx6solo_1gb(void)
 {
 	volatile struct mmdc_p_regs *mmdc_p0;
 	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
@@ -543,4 +515,91 @@ void spl_dram_init_mx6solo_1gb(void)
 	mmdc_p0->mdpdc          = (u32)0x00025565;
 	mmdc_p0->mdscr          = (u32)0x00000000;
 }
+
+/*
+ * Sizes are in MiB
+ */
+static u32 get_actual_ram_size(u32 max_size)
+{
+#define PATTERN 0x3f3f3f3f
+	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
+	unsigned int volatile * port2;
+	unsigned int temp1;
+	unsigned int temp2;
+	u32 ram_size = max_size;
+
+	do {
+		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((ram_size * 1024 * 1024) / 2));
+
+		temp2 = *port2;
+		temp1 = *port1;
+
+		*port2 = 0;			/* Write 0 to start of 2nd half of memory */
+		*port1 = PATTERN;		/* Write pattern to start of memory */
+
+		if ((PATTERN == *port2) && (ram_size > 512)) {
+			*port1 = temp1;
+			ram_size /= 2;		/* Next step: devide size by 2 */
+		}
+		else
+		{
+			if (0 == *port2) {	/* Done - actual size found */
+				*port1 = temp1;
+				*port2 = temp2;
+				break;
+			}
+		}
+	} while (ram_size > 512);
+
+	return ram_size;
+#undef PATTERN
+}
+
+void var_legacy_dram_init(bool is_som_solo)
+{
+	u32 ram_size;
+	switch (get_cpu_type()) {
+	case MXC_CPU_MX6Q:
+	case MXC_CPU_MX6D:
+		spl_mx6qd_dram_setup_iomux();
+#ifdef CONFIG_DDR_2GB
+		spl_dram_init_mx6q_2g();
+		ram_size = get_actual_ram_size(2048);
+#else
+		if (get_cpu_speed_grade_hz() == 1200000000) {
+			spl_dram_init_mx6q_2g();
+			ram_size = get_actual_ram_size(2048);
+		} else {
+			spl_dram_init_mx6q_1g();
+			ram_size = get_actual_ram_size(1024);
+		}
 #endif
+		break;
+	case MXC_CPU_MX6SOLO:
+		spl_mx6dlsl_dram_setup_iomux();
+		spl_dram_init_mx6solo_1gb();
+		ram_size = get_actual_ram_size(1024);
+		if (ram_size == 512) {
+			mdelay(1);
+			reset_ddr_solo();
+			spl_mx6dlsl_dram_setup_iomux();
+			spl_dram_init_mx6solo_512mb();
+			mdelay(1);
+		}
+		break;
+	case MXC_CPU_MX6DL:
+	default:
+		spl_mx6dlsl_dram_setup_iomux();
+		if (is_som_solo)
+			spl_dram_init_mx6solo_1gb();
+		else
+			spl_dram_init_mx6dl_1g();
+		ram_size = get_actual_ram_size(1024);
+		break;
+	}
+
+	var_set_ram_size(ram_size);
+	printf("\nDDR LEGACY configuration\n");
+}
+
+#endif /* CONFIG_SPL_BUILD */
