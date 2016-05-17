@@ -21,10 +21,12 @@
 #else
 #define CONFIG_SPL_MMC_SUPPORT
 #endif
-#include "mx6var_spl.h"
+#include "imx6_spl.h"
 #endif
 
-/* Address of reserved 4Bytes in OCRAM for sending RAM size from SPL to U-Boot */
+/* Reserve 4Bytes in OCRAM for sending RAM size from SPL to U-Boot */
+#undef CONFIG_SPL_MAX_SIZE
+#define CONFIG_SPL_MAX_SIZE	0xFFFC  /* ==0x10000-0x4 */
 #define RAM_SIZE_ADDR	((CONFIG_SPL_TEXT_BASE) + (CONFIG_SPL_MAX_SIZE))
 
 #define CONFIG_MX6
@@ -72,6 +74,8 @@
 #define CONFIG_BOARD_LATE_INIT
 #define CONFIG_MXC_GPIO
 #define CONFIG_CMD_GPIO
+
+#define CONFIG_SILENT_CONSOLE
 
 #define CONFIG_MXC_UART
 
@@ -161,16 +165,17 @@
 	"initrd_high=0xffffffff\0" \
 	"bootcmd_mfg=run mfgtool_args;bootm ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
 
+#define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #define MMC_BOOT_ENV_SETTINGS \
 	"uimage=uImage\0" \
-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	MMC_DEV_SET \
 	"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} root=${mmcroot}; " \
 		"run videoargs\0" \
 	"loadbootscript=" \
@@ -178,7 +183,8 @@
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadfdt=run findfdt; " \
+		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
@@ -197,15 +203,16 @@
 
 
 #define NAND_BOOT_ENV_SETTINGS \
-	"bootargs_ubifs=setenv bootargs console=${console},${baudrate} ubi.mtd=3 " \
+	"bootargs_nand=setenv bootargs console=${console},${baudrate} ubi.mtd=3 " \
 		"root=ubi0:rootfs rootfstype=ubifs; " \
 		"run videoargs\0" \
 	"bootargs_emmc=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/mmcblk1p1 rootwait rw; " \
+		"root=/dev/mmcblk0p1 rootwait rw; " \
 		"run videoargs\0" \
+	"rootfs_device=nand\0" \
 	"bootcmd=" \
-		"if test ${chosen_rootfs} != emmc; then " \
-			"run bootargs_ubifs; " \
+		"if test ${rootfs_device} != emmc; then " \
+			"run bootargs_nand; " \
 		"else " \
 			"run bootargs_emmc; " \
 		"fi; " \
@@ -239,14 +246,15 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	MFG_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
-	"var_auto_env=Y\0" \
+	"fdt_file=undefined\0" \
 	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0" \
-	"splash_filename=/boot/splash.bmp\0" \
+	"splashsourceauto=yes\0" \
+	"splashfile=/boot/splash.bmp\0" \
 	"splashimage=0x18100000\0" \
-	"enable_splash=setenv splash_filename /boot/splash.bmp; " \
+	"splashenable=setenv splashfile /boot/splash.bmp; " \
 		"setenv splashimage 0x18100000\0" \
-	"disable_splash=setenv splash_filename; setenv splashimage\0" \
+	"splashdisable=setenv splashfile; setenv splashimage\0" \
 	"console=" CONFIG_CONSOLE_DEV "\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs rw " \
@@ -261,6 +269,7 @@
 		"fi; " \
 		"${get_cmd} ${uimage}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+			"run findfdt; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"bootm ${loadaddr} - ${fdt_addr}; " \
 			"else " \
@@ -279,23 +288,54 @@
 				"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24; " \
 		"fi; " \
 		"setenv bootargs ${bootargs} " \
-			"video=mxcfb1:off; " \
-		"i2c dev 2; " \
-		"if i2c probe 0x38; then " \
-			"setenv bootargs ${bootargs} " \
-				"screen_alternate=yes;" \
+			"video=mxcfb1:off;\0" \
+	"findfdt="\
+		"if test $fdt_file = undefined; then " \
+			"if test $board_name = DT6CUSTOM && test $board_rev = MX6Q; then " \
+				"setenv fdt_file imx6q-var-dart.dtb; " \
+			"fi; " \
+			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6Q; then " \
+				"setenv fdt_file imx6q-var-som-vsc.dtb; " \
+			"fi; " \
+			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6DL && test $board_som = SOM-SOLO; then " \
+				"setenv fdt_file imx6dl-var-som-solo-vsc.dtb; " \
+			"fi; " \
+			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6DL && test $board_som = SOM-MX6; then " \
+				"setenv fdt_file imx6dl-var-som-vsc.dtb; " \
+			"fi; " \
+			"if test $board_name = MX6CUSTOM && test $board_rev = MX6Q; then " \
+				"i2c dev 2; " \
+				"if i2c probe 0x38; then " \
+					"setenv fdt_file imx6q-var-som-cap.dtb; " \
+				"else " \
+					"setenv fdt_file imx6q-var-som-res.dtb; " \
+				"fi; " \
+			"fi; " \
+			"if test $board_name = MX6CUSTOM && test $board_rev = MX6DL && test $board_som = SOM-SOLO; then " \
+				"i2c dev 2; " \
+				"if i2c probe 0x38; then " \
+					"setenv fdt_file imx6dl-var-som-solo-cap.dtb; " \
+				"else " \
+					"setenv fdt_file imx6dl-var-som-solo-res.dtb; " \
+				"fi; " \
+			"fi; " \
+			"if test $board_name = MX6CUSTOM && test $board_rev = MX6DL && test $board_som = SOM-MX6; then " \
+				"i2c dev 2; " \
+				"if i2c probe 0x38; then " \
+					"setenv fdt_file imx6dl-var-som-cap.dtb; " \
+				"else " \
+					"setenv fdt_file imx6dl-var-som-res.dtb; " \
+				"fi; " \
+			"fi; " \
+			"if test $fdt_file = undefined; then " \
+				"echo WARNING: Could not determine dtb to use; " \
+			"fi; " \
 		"fi;\0"
 
 
 #define CONFIG_ARP_TIMEOUT		200UL
 
 /* Miscellaneous configurable options */
-#undef CONFIG_SYS_PROMPT
-#ifdef CONFIG_SYS_BOOT_NAND
-#define CONFIG_SYS_PROMPT		"VAR-SOM-MX6 (NAND) => "
-#else
-#define CONFIG_SYS_PROMPT		"VAR-SOM-MX6 (MMC) => "
-#endif
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
@@ -345,16 +385,6 @@
 #define CONFIG_ENV_IS_IN_MMC
 #endif
 
-#if defined(CONFIG_MX6DL)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6dl-var-som.dtb"
-#elif defined(CONFIG_MX6S)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6dl-var-som.dtb"
-#elif defined(CONFIG_MX6Q)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6q-var-som.dtb"
-#else
-#define CONFIG_DEFAULT_FDT_FILE		"imx6q-var-som.dtb"
-#endif
-
 #ifdef CONFIG_SYS_USE_NAND
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_NAND_TRIMFFS
@@ -362,6 +392,8 @@
 /* UBI/UBIFS support */
 #define CONFIG_CMD_UBI
 #define CONFIG_CMD_UBIFS
+#define CONFIG_UBI_SILENCE_MSG
+#define CONFIG_UBIFS_SILENCE_MSG
 #define CONFIG_RBTREE
 #define CONFIG_MTD_DEVICE
 #define CONFIG_MTD_PARTITIONS
@@ -422,6 +454,7 @@
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
