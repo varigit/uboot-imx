@@ -32,15 +32,9 @@
 
 #undef BOOT_ENV_SETTINGS
 
-#ifdef CONFIG_SYS_BOOT_NAND
 #define BOOT_ENV_SETTINGS \
 	"bootcmd=boota mmc1\0" \
 	"fastboot_dev=mmc1\0"
-#else
-#define BOOT_ENV_SETTINGS \
-	"bootcmd=boota mmc0\0" \
-	"fastboot_dev=mmc0\0"
-#endif
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
