@@ -77,6 +77,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 bool lvds_enabled=false;
 
+#ifdef CONFIG_SPLASH_SCREEN
 #ifdef CONFIG_SYS_USE_NAND
 static int var_load_file_from_nand(u32 addr, char *filename)
 {
@@ -134,7 +135,6 @@ static int var_load_file_from_mmc(u32 addr, char *filename)
 #undef FS_TYPE_EXT
 }
 
-#ifdef CONFIG_SPLASH_SCREEN
 int splash_screen_prepare(void)
 {
 	char *filename;
