@@ -226,7 +226,7 @@ int mmc_get_env_devno(void)
 static int check_env(char *var, char *val)
 {
 	char *read_val;
-	if (var==NULL || val==NULL)
+	if (var == NULL || val == NULL)
 		return 0;
 
 	read_val = getenv(var);
@@ -574,12 +574,12 @@ int board_mmc_init(bd_t *bis)
 	/*
 	 * According to the board_mmc_init() the following map is done:
 	 * (U-Boot device node)    (Physical Port)
-	 * On non DART boards:
 	 * mmc0                    SD2 (SD)
+	 *
+	 * On non DART boards:
 	 * mmc1                    SD1 (eMMC)
 	 *
 	 * On DART board:
-	 * mmc0                    SD2 (SD)
 	 * mmc1                    SD3 (eMMC)
 	 */
 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
@@ -1518,10 +1518,7 @@ static void setup_iomux_audiocodec(void)
 
 static void audiocodec_reset(int rst)
 {
-	if (rst)
-		gpio_set_value(IMX_GPIO_NR(4, 5), 0);
-	else
-		gpio_set_value(IMX_GPIO_NR(4, 5), 1);
+	gpio_set_value(IMX_GPIO_NR(4, 5), !rst);
 }
 
 /*
