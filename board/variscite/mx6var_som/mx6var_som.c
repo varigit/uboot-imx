@@ -779,22 +779,10 @@ static void do_enable_hdmi(struct display_info_t const *dev)
 	 */
 }
 
-static void enable_lvds(struct display_info_t const *dev)
-{
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT |
-	       IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT;
-	writel(reg, &iomux->gpr[2]);
-
-	lvds_enabled=true;
-}
-
 static void lvds_enable_disable(struct display_info_t const *dev)
 {
 	if (getenv("splashimage") != NULL)
-		enable_lvds(dev);
+		lvds_enabled=true;
 	else
 		disable_lvds(dev);
 }
