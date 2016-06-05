@@ -147,12 +147,6 @@
 #define MFG_NAND_PARTITION ""
 #endif
 
-#ifdef CONFIG_SYS_BOOT_NAND
-#define MMC_DEV_SET " "
-#else
-#define MMC_DEV_SET "mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV)
-#endif
-
 #define MFG_ENV_SETTINGS \
 	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
 		"rdinit=/linuxrc " \
@@ -172,8 +166,7 @@
 	"uimage=uImage\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	MMC_DEV_SET \
-	"\0" \
+	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
