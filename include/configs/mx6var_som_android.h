@@ -29,18 +29,36 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #undef CONFIG_BOOTCOMMAND
-
 #undef BOOT_ENV_SETTINGS
 
+
 #define BOOT_ENV_SETTINGS \
-	"bootcmd=boota mmc1\0" \
-	"fastboot_dev=mmc1\0"
+	"bootcmd=" \
+		"run videoargs; " \
+		"boota ${boota_dev}\0" \
+	"bootcmd_android_recovery=" \
+		"run videoargs; " \
+		"boota ${recovery_dev} recovery\0" \
+	"fastboot_dev=mmc1\0" \
+	"boota_dev=mmc1\0" \
+	"recovery_dev=mmc1\0" \
+	"dev_autodetect=yes\0" \
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
+	VIDEO_ENV_SETTINGS \
 	"splashpos=m,m\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"bootargs=" \
+		"console=ttymxc0,115200 " \
+		"init=/init " \
+		"vmalloc=256M " \
+		"androidboot.console=ttymxc0 " \
+		"consoleblank=0 " \
+		"androidboot.hardware=freescale " \
+		"cma=384M " \
+		"androidboot.selinux=disabled\0" \
 
 
 #define CONFIG_USB_FASTBOOT_BUF_ADDR   CONFIG_SYS_LOAD_ADDR
