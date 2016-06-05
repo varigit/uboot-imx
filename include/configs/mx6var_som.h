@@ -237,9 +237,23 @@
 #endif
 
 
+#define VIDEO_ENV_SETTINGS \
+	"videoargs=" \
+		"if hdmidet; then " \
+			"setenv bootargs ${bootargs} " \
+				"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24; " \
+		"else " \
+			"setenv bootargs ${bootargs} " \
+				"video=mxcfb0:dev=ldb,bpp=32; " \
+		"fi; " \
+		"setenv bootargs ${bootargs} " \
+			"video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off;\0" \
+
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	MFG_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
+	VIDEO_ENV_SETTINGS \
 	"fdt_file=undefined\0" \
 	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0" \
@@ -276,13 +290,6 @@
 		"else " \
 			"bootm; " \
 		"fi;\0" \
-	"videoargs=" \
-		"if hdmidet; then " \
-			"setenv bootargs ${bootargs} " \
-				"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24; " \
-		"fi; " \
-		"setenv bootargs ${bootargs} " \
-			"video=mxcfb1:off;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = DT6CUSTOM && test $board_rev = MX6Q; then " \
