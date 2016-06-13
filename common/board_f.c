@@ -114,8 +114,8 @@ static int init_func_watchdog_init(void)
 	defined(CONFIG_SH) || defined(CONFIG_AT91SAM9_WATCHDOG) || \
 	defined(CONFIG_IMX_WATCHDOG))
 	hw_watchdog_init();
-# endif
 	puts("       Watchdog enabled\n");
+# endif
 	WATCHDOG_RESET();
 
 	return 0;
