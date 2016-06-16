@@ -158,7 +158,7 @@
 		"\0" \
 	"initrd_addr=0x12C00000\0" \
 	"initrd_high=0xffffffff\0" \
-	"bootcmd_mfg=run mfgtool_args;bootm ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
+	"bootcmd_mfg=run mfgtool_args;bootm ${loadaddr} ${initrd_addr} ${fdt_addr};\0"
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
@@ -193,7 +193,7 @@
 			"fi; " \
 		"else " \
 			"bootm; " \
-		"fi;\0" \
+		"fi;\0"
 
 
 #define NAND_BOOT_ENV_SETTINGS \
@@ -214,7 +214,7 @@
 		"nand read ${fdt_addr} 0x3e0000 0x20000;" \
 		"bootm ${loadaddr} - ${fdt_addr}\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
-	"mtdparts=" MTDPARTS_DEFAULT "\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0"
 
 
 #ifdef CONFIG_SYS_BOOT_NAND
@@ -247,7 +247,7 @@
 				"video=mxcfb0:dev=ldb,bpp=32; " \
 		"fi; " \
 		"setenv bootargs ${bootargs} " \
-			"video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off;\0" \
+			"video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off;\0"
 
 
 #define CONFIG_EXTRA_ENV_SETTINGS \

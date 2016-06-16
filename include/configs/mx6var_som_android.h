@@ -42,7 +42,7 @@
 	"fastboot_dev=mmc1\0" \
 	"boota_dev=mmc1\0" \
 	"recovery_dev=mmc1\0" \
-	"dev_autodetect=yes\0" \
+	"dev_autodetect=yes\0"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
@@ -58,7 +58,7 @@
 		"consoleblank=0 " \
 		"androidboot.hardware=freescale " \
 		"cma=384M " \
-		"androidboot.selinux=disabled\0" \
+		"androidboot.selinux=disabled\0"
 
 
 #define CONFIG_USB_FASTBOOT_BUF_ADDR   CONFIG_SYS_LOAD_ADDR

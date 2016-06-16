@@ -1368,7 +1368,6 @@ static void setenv_dev(char *var)
 	sprintf(str, "mmc%d", mmc_get_env_devno());
 #endif
 	setenv(var, str);
-	setenv(var, str);
 }
 
 void board_fastboot_setup(void)
