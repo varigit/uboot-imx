@@ -163,6 +163,7 @@
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #define MMC_BOOT_ENV_SETTINGS \
+	"script=boot.scr\0" \
 	"uimage=uImage\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
