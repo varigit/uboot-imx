@@ -1038,9 +1038,6 @@ int board_eth_init(bd_t *bis)
 	}
 #endif
 
-	if (ret)
-		printf("FEC MXC: %s:failed\n", __func__);
-
 #endif /* #if  !defined(CONFIG_SPL_BUILD) */
 	return 0;
 }
