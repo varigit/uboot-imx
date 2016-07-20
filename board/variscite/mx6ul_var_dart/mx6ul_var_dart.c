@@ -704,6 +704,9 @@ int board_late_init(void)
 
 	setenv("board_rev", "01");
 
+	if(sdram_size<512)
+		setenv("cma_size", "cma=64MB");
+
 	s = getenv ("var_auto_fdt_file");
 	if (s[0] != 'Y') return 0;
 

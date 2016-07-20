@@ -109,8 +109,9 @@
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"bootargs=console=ttymxc0,115200 ubi.mtd=4 "  \
-		"root=ubi0:rootfs rootfstype=ubifs rw\0"\
-	"bootcmd=nand read ${loadaddr} 0x600000 0x600000;"\
+		"root=ubi0:rootfs rootfstype=ubifs rw \0"\
+	"bootcmd=setenv bootargs ${bootargs} ${cma_size};"\
+		"nand read ${loadaddr} 0x600000 0x600000;"\
 		"nand read ${fdt_addr} 0xde0000 0x20000;"\
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
@@ -155,7 +156,7 @@
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=${mmcroot}\0" \
+		"root=${mmcroot} ${cma_size}\0" \
 	"loadbootscript=" \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
@@ -179,7 +180,7 @@
 			"bootz; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs " \
+		"root=/dev/nfs ${cma_size}" \
 	"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 		"netboot=echo Booting from net ...; " \
 		"run netargs; " \
