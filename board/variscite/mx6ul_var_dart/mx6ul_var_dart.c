@@ -48,6 +48,8 @@ static long sdram_size __attribute__ ((section ("sram")));
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define DDR0_CS0_END 0x021b0040
+
 #define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -228,10 +230,12 @@ int power_init_board(void)
 #endif
 
 int dram_init(void){
-unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
-unsigned int volatile * port2;
-
-	sdram_size = 512;
+	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
+	unsigned int volatile * port2;
+	unsigned int volatile * ddr_cs0_end= (unsigned int*)DDR0_CS0_END;
+	
+	/* Set the sdram_size to the actually configured one */
+	sdram_size=((*ddr_cs0_end)-63)*32;
 	do {
 		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
 
