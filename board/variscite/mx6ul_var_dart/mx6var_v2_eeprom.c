@@ -60,7 +60,7 @@ void load_custom_data(u32 *custom_addresses_values)
 	}
 	
 	i++;
-	if(i>sizeof(custom_addresses_values))
+	if(i>MAXIMUM_RAM_ADDRESSES)
 		return;
 	
 	j=0;
