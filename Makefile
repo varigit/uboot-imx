@@ -624,7 +624,9 @@ HAVE_VENDOR_COMMON_LIB = $(if $(wildcard $(srctree)/board/$(VENDOR)/common/Makef
 
 libs-y += lib/
 libs-$(HAVE_VENDOR_COMMON_LIB) += board/$(VENDOR)/common/
+ifeq ($(CONFIG_TARGET_PICOSOM_IMX6UL),y)
 libs-$(CONFIG_FSL_FASTBOOT) += board/freescale/common/
+endif
 libs-$(CONFIG_OF_EMBED) += dts/
 libs-y += fs/
 libs-y += net/
