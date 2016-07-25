@@ -405,17 +405,17 @@
 #define MTDIDS_DEFAULT		"nand0=nandflash-0"
 
 /*
- * Partions' layout for NAND is:
+ * Partitions layout for NAND is:
  *     mtd0: 2M       (spl) First boot loader
  *     mtd1: 2M       (u-boot, dtb)
- *     mtd2: 6M       (kernel)
+ *     mtd2: 8M       (kernel)
  *     mtd4: left     (rootfs)
  */
 /* Default mtd partition table */
 #define MTDPARTS_DEFAULT	"mtdparts=nandflash-0:"\
 					"2m(spl),"\
 					"2m(u-boot),"\
-					"6m(kernel),"\
+					"8m(kernel),"\
 					"-(rootfs)"	/* ubifs */
 
 /* NAND stuff */
