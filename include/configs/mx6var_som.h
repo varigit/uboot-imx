@@ -35,9 +35,6 @@
 #define CONFIG_MX6DL
 #endif
 
-/* Uncomment for PLUGIN mode support */
-/* #define CONFIG_USE_PLUGIN */
-
 /* Uncomment for SECURE mode support */
 /* #define CONFIG_SECURE_BOOT */
 
