@@ -1,0 +1,53 @@
+U-Boot for Variscite VAR-SOM-MX7 board
+--------------------------------------
+
+For more details:
+http://www.variscite.com/
+http://www.variwiki.com/index.php?title=VAR-SOM-MX7
+
+
+Building U-Boot
+---------------
+
+To build U-Boot for SD card/eMMC:
+
+$ make mx7dvar_som_defconfig
+$ make
+
+To build U-Boot for NAND flash:
+
+$ make mx7dvar_som_nand_defconfig
+$ make
+
+To build U-Boot for SD card/eMMC (Android):
+
+$ make mx7dvar_som_android_defconfig
+$ make
+
+To build U-Boot for NAND flash (Android):
+
+$ make mx7dvar_som_nand_android_defconfig
+$ make
+
+
+Flashing U-Boot to an SD card
+-----------------------------
+
+- After the 'make' command completes, flash the generated U-Boot
+binary into the SD card:
+
+$ sudo dd if=u-boot.imx of=/dev/sdX bs=1K seek=1; sync
+
+(replace /dev/sdX with your correct device node)
+
+- Insert the SD card into the slot
+
+- Connect the debug cable to the host PC
+
+- Make sure the boot select switches are on SD
+
+- Power up the board and U-Boot messages will appear in the serial console.
+
+
+For flashing U-Boot to NAND flash/eMMC and for a lot of more information,
+please refer to the Variscite wiki link above.

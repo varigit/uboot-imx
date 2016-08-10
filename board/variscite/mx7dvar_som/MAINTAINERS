@@ -1,0 +1,10 @@
+MX7DVAR_SOM BOARD
+M:	Eran Matityahu <eran.m@variscite.com>
+S:	Maintained
+F:	board/variscite/mx7dvar_som/
+F:	include/configs/mx7dvar_som.h
+F:	include/configs/mx7dvar_som_android.h
+F:	configs/mx7dvar_som_android_defconfig
+F:	configs/mx7dvar_som_defconfig
+F:	configs/mx7dvar_som_nand_android_defconfig
+F:	configs/mx7dvar_som_nand_defconfig

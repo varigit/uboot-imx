@@ -1,0 +1,15 @@
+if TARGET_MX7DVAR_SOM
+
+config SYS_BOARD
+	default "mx7dvar_som"
+
+config SYS_VENDOR
+	default "variscite"
+
+config SYS_SOC
+	default "mx7"
+
+config SYS_CONFIG_NAME
+	default "mx7dvar_som"
+
+endif
