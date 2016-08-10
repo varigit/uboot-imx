@@ -36,6 +36,8 @@
 
 #define	PS2KHZ(ps)	(1000000000UL / (ps))
 
+#define	FB_SYNC_CLK_LAT_FALL	0x40000000
+
 static GraphicDevice panel;
 struct mxs_dma_desc desc;
 
@@ -146,6 +148,8 @@ static void mxs_lcd_init(GraphicDevice *panel,
 #ifndef CONFIG_IMX_SEC_MIPI_DSI
 	vdctrl0 |= LCDIF_VDCTRL0_ENABLE_POL;
 #endif
+	if (mode->sync & FB_SYNC_CLK_LAT_FALL)
+		vdctrl0 |= LCDIF_VDCTRL0_DOTCLK_POL;
 	writel(vdctrl0, &regs->hw_lcdif_vdctrl0);
 	writel(mode->upper_margin + mode->lower_margin +
 		mode->vsync_len + mode->yres,
