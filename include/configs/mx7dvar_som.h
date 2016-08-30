@@ -215,42 +215,9 @@
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
-#if defined(CONFIG_SYS_BOOT_NAND)
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
-	CONFIG_VIDEO_MODE \
-	"fdt_addr=0x83000000\0" \
-	"fdt_high=0xffffffff\0" \
-	"console=ttymxc0\0" \
-	"bootargs=console=${console},${baudrate} ubi.mtd=4 " \
-		"root=ubi0:rootfs rootfstype=ubifs " \
-		"mtdparts=" MTDPARTS_DEFAULT "\0" \
-	"bootcmd=nand read ${loadaddr} 0x4000000 0x800000;" \
-		"nand read ${fdt_addr} 0x5000000 0x100000;" \
-		"bootz ${loadaddr} - ${fdt_addr}\0"
-
-#else
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
-	UPDATE_M4_ENV \
-	CONFIG_VIDEO_MODE \
+#define MMC_BOOT_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
-	"console=ttymxc0\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
-	"fdt_file=undefined\0" \
-	"fdt_addr=0x83000000\0" \
-	"boot_fdt=try\0" \
-	"splashsourceauto=yes\0" \
-	"splashfile=/boot/splash.bmp\0" \
-	"splashimage=0x83100000\0" \
-	"splashenable=setenv splashfile /boot/splash.bmp; " \
-		"setenv splashimage 0x83100000\0" \
-	"splashdisable=setenv splashfile; setenv splashimage\0" \
-	"ip_dyn=yes\0" \
-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -276,11 +243,64 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
-		"fi;\0" \
+		"fi;\0"
+
+
+#define NAND_BOOT_ENV_SETTINGS \
+	"nandargs=setenv bootargs console=${console},${baudrate} ubi.mtd=4 " \
+		"root=ubi0:rootfs rootfstype=ubifs\0" \
+	"bootcmd=run nandargs; "\
+		"nand read ${loadaddr} 0x600000 0x800000;" \
+		"nand read ${fdt_addr} 0xde0000 0x20000;" \
+		"bootz ${loadaddr} - ${fdt_addr}\0" \
+	"mtdids=" MTDIDS_DEFAULT "\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0"
+
+
+#ifdef CONFIG_SYS_BOOT_NAND
+#define BOOT_ENV_SETTINGS       NAND_BOOT_ENV_SETTINGS
+#else
+#define BOOT_ENV_SETTINGS       MMC_BOOT_ENV_SETTINGS
+#define CONFIG_BOOTCOMMAND \
+	"mmc dev ${mmcdev};" \
+	"mmc dev ${mmcdev}; if mmc rescan; then " \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"else " \
+			"if run loadimage; then " \
+				"run mmcboot; " \
+			"else " \
+				"run netboot; " \
+			"fi; " \
+		"fi; " \
+	"else run netboot; fi"
+#endif
+
+
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS \
+	UPDATE_M4_ENV \
+	BOOT_ENV_SETTINGS \
+	CONFIG_VIDEO_MODE \
+	"console=ttymxc0\0" \
+	"boot_fdt=try\0" \
+	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
+	"fdt_file=undefined\0" \
+	"fdt_addr=0x83000000\0" \
+	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+	"splashsourceauto=yes\0" \
+	"splashfile=/boot/splash.bmp\0" \
+	"splashimage=0x83100000\0" \
+	"splashenable=setenv splashfile /boot/splash.bmp; " \
+		"setenv splashimage 0x83100000\0" \
+	"splashdisable=setenv splashfile; setenv splashimage\0" \
+	"ip_dyn=yes\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs " \
-	"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-		"netboot=echo Booting from net ...; " \
+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
+	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
@@ -289,6 +309,7 @@
 		"fi; " \
 		"${get_cmd} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+			"run findfdt; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
@@ -313,20 +334,6 @@
 				"echo WARNING: Could not determine dtb to use; " \
 			"fi; " \
 		"fi;\0"
-
-#define CONFIG_BOOTCOMMAND \
-	"mmc dev ${mmcdev};" \
-	"mmc dev ${mmcdev}; if mmc rescan; then " \
-		"if run loadbootscript; then " \
-			"run bootscript; " \
-		"else " \
-			"if run loadimage; then " \
-				"run mmcboot; " \
-			"else run netboot; " \
-			"fi; " \
-		"fi; " \
-	"else run netboot; fi"
-#endif
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
@@ -384,12 +391,14 @@
 #define CONFIG_APBH_DMA_BURST
 #define CONFIG_APBH_DMA_BURST8
 
+#define MTDIDS_DEFAULT		"nand0=nandflash-0"
+
 /*
  * Partitions layout for NAND is:
  *     mtd0: 2M       (spl) First boot loader
- *     mtd1: 2M       (u-boot, dtb)
- *     mtd1: 2M       (u-boot environment)
- *     mtd2: 8M       (kernel)
+ *     mtd1: 2M       (u-boot)
+ *     mtd2: 2M       (u-boot environment)
+ *     mtd3: 8M       (kernel)
  *     mtd4: left     (rootfs)
  */
 /* Default mtd partition table */
@@ -397,7 +406,7 @@
 					"2m(spl),"\
 					"2m(u-boot),"\
 					"2m(u-boot_env),"\
-					"6m(kernel),"\
+					"8m(kernel),"\
 					"-(rootfs)"     /* ubifs */
 
 /* UBI/UBIFS support */
