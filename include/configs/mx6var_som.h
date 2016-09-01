@@ -208,8 +208,8 @@
 		"else " \
 			"run bootargs_emmc; " \
 		"fi; " \
-		"nand read ${loadaddr} 0x400000 0x600000;" \
-		"nand read ${fdt_addr} 0x3e0000 0x20000;" \
+		"nand read ${loadaddr} 0x400000 0x800000; " \
+		"nand read ${fdt_addr} 0x3e0000 0x20000; " \
 		"bootm ${loadaddr} - ${fdt_addr}\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0"
@@ -406,7 +406,7 @@
  *     mtd0: 2M       (spl) First boot loader
  *     mtd1: 2M       (u-boot, dtb)
  *     mtd2: 8M       (kernel)
- *     mtd4: left     (rootfs)
+ *     mtd3: left     (rootfs)
  */
 /* Default mtd partition table */
 #define MTDPARTS_DEFAULT	"mtdparts=nandflash-0:"\
