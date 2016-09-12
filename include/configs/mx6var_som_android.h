@@ -58,6 +58,7 @@
 		"consoleblank=0 " \
 		"androidboot.hardware=freescale " \
 		"cma=384M " \
+		"androidboot.dm_verity=disabled " \
 		"androidboot.selinux=disabled\0"
 
 
