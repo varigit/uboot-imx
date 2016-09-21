@@ -274,8 +274,6 @@ static iomux_v3_cfg_t const lcd_pads[] = {
 	MX7D_PAD_LCD_DATA21__LCD_DATA21 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA22__LCD_DATA22 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA23__LCD_DATA23 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-
-	MX7D_PAD_LCD_DATA00__GPIO3_IO5 | MUX_PAD_CTRL(LCD_PAD_CTRL), /* BACKLIGHT for beta board */
 };
 
 static iomux_v3_cfg_t const pwm_pads[] = {
@@ -857,9 +855,9 @@ void board_fastboot_setup(void)
 #ifdef CONFIG_ANDROID_RECOVERY
 
 /* Use back key for recovery key */
-#define GPIO_BACK_KEY IMX_GPIO_NR(6, 16)
+#define GPIO_BACK_KEY IMX_GPIO_NR(1, 11)
 iomux_v3_cfg_t const recovery_key_pads[] = {
-	(MX7D_PAD_SAI1_RX_SYNC__GPIO6_IO16 | MUX_PAD_CTRL(BUTTON_PAD_CTRL)),
+	(MX7D_PAD_GPIO1_IO11__GPIO1_IO11 | MUX_PAD_CTRL(BUTTON_PAD_CTRL)),
 };
 
 int check_recovery_cmd_file(void)
