@@ -60,6 +60,9 @@ defined(CONFIG_MX6DL)) && !defined(CONFIG_MX6SOLO)
 #define CONFIG_FSL_CAAM
 #define CONFIG_CMD_DEKBLOB
 #define CONFIG_SYS_FSL_SEC_LE
+#ifdef CONFIG_SPL_BUILD
+#define CONFIG_SPL_DRIVERS_MISC_SUPPORT
+#endif
 #endif
 
 #endif
