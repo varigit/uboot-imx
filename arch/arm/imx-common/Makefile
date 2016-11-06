@@ -36,9 +36,11 @@ obj-$(CONFIG_MXC_RDC) += rdc-sema.o
 obj-$(CONFIG_GPT_TIMER) += timer.o
 obj-$(CONFIG_SYSCOUNTER_TIMER) += syscounter.o
 endif
+ifneq ($(CONFIG_SPL_BUILD),y)
 obj-$(CONFIG_CMD_BMODE) += cmd_bmode.o
 obj-$(CONFIG_CMD_HDMIDETECT) += cmd_hdmidet.o
 obj-$(CONFIG_CMD_DEKBLOB) += cmd_dek.o
+endif
 
 quiet_cmd_cpp_cfg = CFGS    $@
       cmd_cpp_cfg = $(CPP) $(cpp_flags) -x c -o $@ $<
