@@ -738,7 +738,11 @@ else
 ALL-$(CONFIG_RAMBOOT_PBL) += u-boot.pbl
 endif
 ALL-$(CONFIG_SPL) += spl/u-boot-spl.bin
+ifeq ($(CONFIG_MX6)$(CONFIG_SECURE_BOOT), yy)
+ALL-$(CONFIG_SPL_FRAMEWORK) += u-boot-ivt.img
+else
 ALL-$(CONFIG_SPL_FRAMEWORK) += u-boot.img
+endif
 ALL-$(CONFIG_TPL) += tpl/u-boot-tpl.bin
 ALL-$(CONFIG_OF_SEPARATE) += u-boot.dtb u-boot-dtb.bin
 ifeq ($(CONFIG_SPL_FRAMEWORK),y)
@@ -874,6 +878,9 @@ endif
 MKIMAGEFLAGS_u-boot.img = -A $(ARCH) -T firmware -C none -O u-boot \
 	-a $(CONFIG_SYS_TEXT_BASE) -e $(CONFIG_SYS_UBOOT_START) \
 	-n "U-Boot $(UBOOTRELEASE) for $(BOARD) board"
+MKIMAGEFLAGS_u-boot-ivt.img = -A $(ARCH) -T firmware_ivt -C none -O u-boot \
+	-a $(CONFIG_SYS_TEXT_BASE) -e $(CONFIG_SYS_UBOOT_START) \
+	-n "U-Boot $(UBOOTRELEASE) for $(BOARD) board"
 
 MKIMAGEFLAGS_u-boot.kwb = -n $(srctree)/$(CONFIG_SYS_KWD_CONFIG:"%"=%) \
 	-T kwbimage -a $(CONFIG_SYS_TEXT_BASE) -e $(CONFIG_SYS_TEXT_BASE)
@@ -884,7 +891,7 @@ MKIMAGEFLAGS_u-boot-spl.kwb = -n $(srctree)/$(CONFIG_SYS_KWD_CONFIG:"%"=%) \
 MKIMAGEFLAGS_u-boot.pbl = -n $(srctree)/$(CONFIG_SYS_FSL_PBL_RCW:"%"=%) \
 		-R $(srctree)/$(CONFIG_SYS_FSL_PBL_PBI:"%"=%) -T pblimage
 
-u-boot.img u-boot.kwb u-boot.pbl: u-boot.bin FORCE
+u-boot.img u-boot.kwb u-boot.pbl u-boot-ivt.img: u-boot.bin FORCE
 	$(call if_changed,mkimage)
 
 u-boot-spl.kwb: u-boot.img spl/u-boot-spl.bin FORCE

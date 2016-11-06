@@ -243,6 +243,7 @@ struct lmb;
 #define IH_TYPE_SOCFPGAIMAGE	19	/* Altera SOCFPGA Preloader	*/
 #define IH_TYPE_X86_SETUP	20	/* x86 setup.bin Image		*/
 #define IH_TYPE_LPC32XXIMAGE	21	/* x86 setup.bin Image		*/
+#define IH_TYPE_FIRMWARE_IVT	31	/* Firmware Image with HABv4 IVT */
 
 /*
  * Compression Types
