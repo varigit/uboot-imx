@@ -111,7 +111,7 @@
 	"bootargs=console=ttymxc0,115200 ubi.mtd=4 "  \
 		"root=ubi0:rootfs rootfstype=ubifs rw \0"\
 	"bootcmd=setenv bootargs ${bootargs} ${cma_size};"\
-		"nand read ${loadaddr} 0x600000 0x600000;"\
+		"nand read ${loadaddr} 0x600000 0x7e0000;"\
 		"nand read ${fdt_addr} 0xde0000 0x20000;"\
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
