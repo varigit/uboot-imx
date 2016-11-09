@@ -139,7 +139,9 @@
 			"bootz; " \
 		"fi;\0" \
 	"usbnet_devaddr=f8:dc:7a:00:00:02\0" \
-	"usbnet_hostaddr=f8:dc:7a:00:00:01\0"
+	"usbnet_hostaddr=f8:dc:7a:00:00:01\0" \
+	"mtdids=" MTDIDS_DEFAULT "\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0"
 #else
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -303,6 +305,35 @@
 #ifdef CONFIG_SYS_USE_NAND
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_NAND_TRIMFFS
+
+/* UBI/UBIFS support */
+#define CONFIG_CMD_UBI
+#define CONFIG_CMD_UBIFS
+#define CONFIG_UBI_SILENCE_MSG
+#define CONFIG_UBIFS_SILENCE_MSG
+#define CONFIG_RBTREE
+#define CONFIG_MTD_DEVICE
+#define CONFIG_MTD_PARTITIONS
+#define CONFIG_CMD_MTDPARTS
+#define CONFIG_LZO
+
+#define MTDIDS_DEFAULT          "nand0=nandflash-0"
+
+/*
+ * Partitions layout for NAND is:
+ *     mtd0: 2M       (spl) First boot loader
+ *     mtd1: 2M       (u-boot)
+ *     mtd2: 2M       (u-boot env.)
+ *     mtd3: 8M       (kernel, dtb)
+ *     mtd4: left     (rootfs)
+ */
+/* Default mtd partition table */
+#define MTDPARTS_DEFAULT        "mtdparts=nandflash-0:"\
+                                        "2m(spl),"\
+                                        "2m(u-boot),"\
+                                        "2m(u-boot-env),"\
+                                        "8m(kernel),"\
+                                        "-(rootfs)"     /* ubifs */
 
 /* NAND stuff */
 #define CONFIG_NAND_MXS
