@@ -741,8 +741,9 @@ int eth_write_hwaddr(struct eth_device *dev, const char *base_name,
 		printf("\nWarning: %s (eth%d) using random MAC address - %pM\n",
 		       dev->name, eth_number, dev->enetaddr);
 #else
-		printf("\nError: %s address not set.\n",
-		       dev->name);
+		if (strcmp(dev->name, "usb_ether"))
+			printf("\nError: %s address not set.\n",
+			       dev->name);
 		return -EINVAL;
 #endif
 	}

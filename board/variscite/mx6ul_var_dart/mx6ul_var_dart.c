@@ -523,7 +523,7 @@ int board_usb_phy_mode(int port)
 	if (port == 1)
 		return USB_INIT_HOST;
 	else
-		return usb_phy_mode(port);
+		return USB_INIT_DEVICE;
 }
 
 int board_ehci_hcd_init(int port)
@@ -588,10 +588,17 @@ static void setup_iomux_fec(int fec_id)
 
 int board_eth_init(bd_t *bis)
 {
+	int ret;
 	setup_iomux_fec(CONFIG_FEC_ENET_DEV);
 
-	return fecmxc_initialize_multi(bis, CONFIG_FEC_ENET_DEV,
+	ret = fecmxc_initialize_multi(bis, CONFIG_FEC_ENET_DEV,
 				       CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
+
+#if defined(CONFIG_CI_UDC) && defined(CONFIG_USB_ETHER)
+	/* USB Ethernet Gadget */
+	usb_eth_initialize(bis);
+#endif
+	return ret;
 }
 
 static int setup_fec(int fec_id)
