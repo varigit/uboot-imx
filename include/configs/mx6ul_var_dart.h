@@ -137,7 +137,9 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
-		"fi;\0"
+		"fi;\0" \
+	"usbnet_devaddr=f8:dc:7a:00:00:02\0" \
+	"usbnet_hostaddr=f8:dc:7a:00:00:01\0"
 #else
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -202,7 +204,9 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
-		"fi;\0"
+		"fi;\0" \
+	"usbnet_devaddr=f8:dc:7a:00:00:02\0" \
+	"usbnet_hostaddr=f8:dc:7a:00:00:01\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev};" \
@@ -322,10 +326,33 @@
 #define CONFIG_USB_EHCI_MX6
 #define CONFIG_USB_STORAGE
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
+#define CONFIG_USB_HOST_ETHER
+#define CONFIG_USB_ETHER_ASIX
+#define CONFIG_USB_ETHER_MCS7830
+#define CONFIG_USB_ETHER_SMSC95XX
 #define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS   0
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #endif
+
+#define CONFIG_CI_UDC
+#define CONFIG_USBD_HS
+#define CONFIG_USB_GADGET_DUALSPEED
+
+#define CONFIG_USB_ETHER
+#define CONFIG_USB_ETH_CDC
+
+#define CONFIG_NETCONSOLE
+
+#define CONFIG_USB_GADGET
+#define CONFIG_CMD_USB_MASS_STORAGE
+#define CONFIG_USB_FUNCTION_MASS_STORAGE
+#define CONFIG_USB_GADGET_DOWNLOAD
+#define CONFIG_USB_GADGET_VBUS_DRAW     2
+
+#define CONFIG_G_DNL_VENDOR_NUM         0x0525
+#define CONFIG_G_DNL_PRODUCT_NUM        0xa4a5
+#define CONFIG_G_DNL_MANUFACTURER       "Variscite"
 
 #ifndef CONFIG_CMD_NET
 #define CONFIG_CMD_NET		1
