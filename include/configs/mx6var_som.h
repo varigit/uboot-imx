@@ -242,7 +242,7 @@
 				"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24; " \
 		"else " \
 			"setenv bootargs ${bootargs} " \
-				"video=mxcfb0:dev=ldb,bpp=32; " \
+				"video=mxcfb0:dev=ldb; " \
 		"fi; " \
 		"setenv bootargs ${bootargs} " \
 			"video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off;\0"
