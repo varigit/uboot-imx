@@ -198,6 +198,13 @@ static enum current_board get_board_indx(void)
 	hang();
 }
 
+enum mmc_boot_device {
+	USDHC1,
+	USDHC2,
+	USDHC3,
+	USDHC4,
+};
+
 int mmc_get_env_devno(void)
 {
 	struct src *src_regs = (struct src *)SRC_BASE_ADDR;
@@ -220,7 +227,17 @@ int mmc_get_env_devno(void)
 	/* BOOT_CFG2[3] and BOOT_CFG2[4] */
 	devno = (soc_sbmr & 0x00001800) >> 11;
 
-	return devno -1;
+	if ((devno == USDHC1) || (devno == USDHC3))
+		return 1; /* eMMC (non DART || DART) */
+	else if (devno == USDHC2)
+		return 0; /* SD card */
+	else
+		return -1;
+}
+
+static inline bool is_boot_from_emmc(void)
+{
+	return (mmc_get_env_devno() == 1);
 }
 
 static int check_env(char *var, char *val)
@@ -317,7 +334,7 @@ int splash_screen_prepare(void)
 				.name = "emmc",
 				.storage = SPLASH_STORAGE_MMC,
 				.flags = SPLASH_STORAGE_FS,
-				.devpart = (is_dart_board() ? "1:2" : "1:1"),
+				.devpart = ((is_dart_board() || is_boot_from_emmc()) ? "1:2" : "1:1"),
 			},
 		};
 
@@ -513,6 +530,8 @@ static struct fsl_esdhc_cfg usdhc_cfg[2];
 #ifdef CONFIG_ENV_IS_IN_MMC
 static int mmc_map_to_kernel_blk(int dev_no)
 {
+	if ((!is_dart_board()) && (dev_no == 1))
+		return 0;
 	return dev_no + 1;
 }
 #endif
@@ -545,13 +564,6 @@ int board_mmc_getcd(struct mmc *mmc)
 }
 
 #ifdef CONFIG_SPL_BUILD
-enum mmc_boot_device {
-	USDHC1,
-	USDHC2,
-	USDHC3,
-	USDHC4,
-};
-
 static enum mmc_boot_device get_mmc_boot_device(void)
 {
 	struct src *psrc = (struct src *)SRC_BASE_ADDR;
@@ -622,11 +634,20 @@ int board_mmc_init(bd_t *bis)
 #else
 	/*
 	 * Possible MMC boot devices:
+	 * SD1 (eMMC on non DART boards)
 	 * SD2 (SD)
-	 * SD3 (DART eMMC)
+	 * SD3 (eMMC on DART board)
 	 */
 	puts("MMC Boot Device: ");
 	switch (get_mmc_boot_device()) {
+	case USDHC1:
+		puts("mmc1 (eMMC)");
+		SETUP_IOMUX_PADS(usdhc1_pads);
+		usdhc_cfg[0].esdhc_base = USDHC1_BASE_ADDR;
+		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+		gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
+		usdhc_cfg[0].max_bus_width = 4;
+		break;
 	case USDHC2:
 		puts("mmc0 (SD)");
 		SETUP_IOMUX_PADS(usdhc2_pads);
