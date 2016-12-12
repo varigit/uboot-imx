@@ -1282,9 +1282,9 @@ int power_init_board(void)
 				/* SW4MODE = OFF in standby */
 				{PFUZE100_SW4MODE, SW_MODE_MASK, PWM_OFF},
 
-				/* Set VGEN3CTL = OFF in standby */
+				/* Set VGEN3CTL = low power */
 				{PFUZE100_VGEN3VOL, (LDO_MODE_MASK | LDO_EXT_MODE_MASK), \
-					((LDO_MODE_ON << LDO_MODE_SHIFT) | LDO_EXT_MODE_ON_OFF << LDO_EXT_MODE_SHIFT)}
+					((LDO_MODE_ON << LDO_MODE_SHIFT) | LDO_EXT_MODE_LPM_LPM << LDO_EXT_MODE_SHIFT)}
 #else
 				/* Set VGEN3CTL = low power in standby */
 				{PFUZE100_VGEN3VOL, (LDO_MODE_MASK | LDO_EXT_MODE_MASK), \
