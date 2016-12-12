@@ -354,8 +354,8 @@ enum {
  * VGENxCTL[6:5]
  * Normal Mode   |   Standby Mode   |   value
  *   ON   		ON		0x0
- *   LOW POWER		LOW POWER	0x1
- *   ON			OFF		0x2
+ *   ON			OFF		0x1
+ *   LOW POWER		LOW POWER	0x2
  *   ON			LOW POWER	0x3
  *
  *
@@ -371,8 +371,8 @@ enum {
 #define LDO_EXT_MODE_SHIFT	5
 #define LDO_EXT_MODE_MASK	(3 << 5)
 #define LDO_EXT_MODE_ON_ON	0
-#define LDO_EXT_MODE_LPM_LPM	1
-#define LDO_EXT_MODE_ON_OFF	2
+#define LDO_EXT_MODE_ON_OFF	1
+#define LDO_EXT_MODE_LPM_LPM	2
 #define LDO_EXT_MODE_ON_LPM	3
 
 
