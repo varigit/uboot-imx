@@ -706,6 +706,7 @@ int board_late_init(void)
 		setenv("cma_size", "cma=64MB");
 	if(sdram_size<256)
 	{
+                setenv("cma_size", "cma=32MB");
 		setenv("loadimagesize", "1A00000");
 		setenv("fdt_addr", "0x84000000");
 		setenv("loadaddr", "0x84600000");
