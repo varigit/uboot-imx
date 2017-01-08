@@ -248,7 +248,7 @@
 
 #define NAND_BOOT_ENV_SETTINGS \
 	"nandargs=setenv bootargs console=${console},${baudrate} ubi.mtd=4 " \
-		"root=ubi0:rootfs rootfstype=ubifs\0" \
+		"root=ubi0:rootfs rootfstype=ubifs rw\0" \
 	"bootcmd=run nandargs; "\
 		"nand read ${loadaddr} 0x600000 0x7e0000;" \
 		"nand read ${fdt_addr} 0xde0000 0x20000;" \
