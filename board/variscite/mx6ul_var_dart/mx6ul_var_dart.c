@@ -4,7 +4,7 @@
  * Copyright (C) 2015 Variscite Ltd. All Rights Reserved.
  * Maintainer: Ron Donio <ron.d@variscite.com>
  * Configuration settings for the Variscite  i.MX6UL DART board.
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -14,7 +14,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
@@ -233,7 +233,7 @@ int dram_init(void){
 	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 	unsigned int volatile * port2;
 	unsigned int volatile * ddr_cs0_end= (unsigned int*)DDR0_CS0_END;
-	
+
 	/* Set the sdram_size to the actually configured one */
 	sdram_size=((*ddr_cs0_end)-63)*32;
 	do {
@@ -269,7 +269,7 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	MX6_PAD_SD1_DATA3__USDHC1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
-#ifndef CONFIG_SYS_USE_NAND 
+#ifndef CONFIG_SYS_USE_NAND
 static iomux_v3_cfg_t const usdhc2_pads[] = {
 	MX6_PAD_NAND_RE_B__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_WE_B__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -468,7 +468,7 @@ int board_mmc_init(bd_t *bis)
 		err = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
 		if (err)
 			printf("Warning: failed to initialize mmc dev %d\n", i);
-#endif		
+#endif
 	}
 	return 0;
 }
@@ -688,10 +688,15 @@ static const struct boot_mode board_boot_modes[] = {
 #endif
 
 static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
-
+#define FDT_FILENAME_MAX_LEN	100
 int board_late_init(void)
 {
 	char *s;
+	char fdt_filename[FDT_FILENAME_MAX_LEN];
+	u32 imxtype,cpurev;
+
+	cpurev = get_cpu_rev();
+	imxtype = (cpurev & 0xFF000) >> 12;
 
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
@@ -711,7 +716,7 @@ int board_late_init(void)
 		setenv("fdt_addr", "0x84000000");
 		setenv("loadaddr", "0x84600000");
 	}
-		
+
 
 	s = getenv ("var_auto_fdt_file");
 	if (s[0] != 'Y') return 0;
@@ -723,31 +728,49 @@ int board_late_init(void)
 		switch (var_eeprom_config_struct_v2.som_info &0x3){
 			case 0x00:
 			case 0x02:
-				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_emmc.dtb" :
+					"imx6ul-var-dart-sd_emmc.dtb");
 			break;
 			case 0x01:
-				setenv("fdt_file", "imx6ul-var-dart-sd_nand.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_nand.dtb" :
+					"imx6ul-var-dart-sd_nand.dtb");
 			break;
 		}
 		break;
 	case VBOOT_DEVICE_MMC:
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
-				setenv("fdt_file", "imx6ul-var-dart-emmc_wifi.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-emmc_wifi.dtb" :
+					"imx6ul-var-dart-emmc_wifi.dtb");
 		else
-				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_emmc.dtb" :
+					"imx6ul-var-dart-sd_emmc.dtb");
 		break;
 	case VBOOT_DEVICE_NAND:
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
-				setenv("fdt_file", "imx6ul-var-dart-nand_wifi.dtb");
+				snprintf(fdt_filename,FDT_FILENAME_MAX_LEN,"%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-nand_wifi.dtb" :
+					"imx6ul-var-dart-nand_wifi.dtb");
 		else
-				setenv("fdt_file", "imx6ul-var-dart-sd_nand.dtb");
+				snprintf(fdt_filename,FDT_FILENAME_MAX_LEN,"%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_nand.dtb" :
+					"imx6ul-var-dart-sd_nand.dtb");
 		break;
 	default:
+		fdt_filename[0]=0x00;
 		printf("UNKNOWN\n");
 		break;
 	}
-
-
+	setenv("fdt_file", fdt_filename);
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
@@ -881,7 +904,7 @@ static void spl_dram_init(void)
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
 	mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_ddr);
 }
-/* 
+/*
  * Second phase ddr init. Use eeprom values.
  */
 static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
@@ -893,17 +916,17 @@ static int  spl_dram_init_v2(void)
 
 	/* Add here: Read EEPROM and parse Variscite struct */
 	memset(&var_eeprom_config_struct_v2, 0x00, sizeof(var_eeprom_config_struct_v2));
-	
+
 	ret = var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
-	
+
 	if (ret)
 		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
 
 	if(var_eeprom_config_struct_v2.variscite_magic!=0x32524156) //Test for VAR2 in the header.
 		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
-		
+
 	handle_eeprom_data(&var_eeprom_config_struct_v2);
-	
+
 	sdram_size = var_eeprom_config_struct_v2.ddr_size*128;
 
 	return SPL_DRAM_INIT_STATUS_OK;
@@ -921,7 +944,7 @@ void board_dram_init(void)
 			eeprom_revision=0;
 		}
 		else
-			eeprom_revision=2;	
+			eeprom_revision=2;
 
 //	spl_mx6qd_dram_setup_iomux_check_reset();
 }
