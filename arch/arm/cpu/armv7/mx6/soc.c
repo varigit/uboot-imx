@@ -316,13 +316,15 @@ int arch_cpu_init(void)
 	 */
 	init_bandgap();
 
-	/*
-	 * When low freq boot is enabled, ROM will not set AHB
-	 * freq, so we need to ensure AHB freq is 132MHz in such
-	 * scenario.
-	 */
-	if (mxc_get_clock(MXC_ARM_CLK) == 396000000)
-		set_ahb_rate(132000000);
+	if (!is_cpu_type(MXC_CPU_MX6UL) && !is_cpu_type(MXC_CPU_MX6ULL)) {
+		/*
+		 * When low freq boot is enabled, ROM will not set AHB
+		 * freq, so we need to ensure AHB freq is 132MHz in such
+		 * scenario.
+		 */
+		if (mxc_get_clock(MXC_ARM_CLK) == 396000000)
+			set_ahb_rate(132000000);
+	}
 
 		/* Set perclk to source from OSC 24MHz */
 #if defined(CONFIG_MX6SL)

@@ -83,7 +83,10 @@ void enable_enet_clk(unsigned char enable)
 {
 	u32 mask, *addr;
 
-	if (is_cpu_type(MXC_CPU_MX6UL)) {
+	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+		mask = MXC_CCM_CCGR0_ENET_CLK_ENABLE_MASK;
+		addr = &imx_ccm->CCGR0;
+	} else if (is_cpu_type(MXC_CPU_MX6UL)) {
 		mask = MXC_CCM_CCGR3_ENET_MASK;
 		addr = &imx_ccm->CCGR3;
 	} else {
@@ -103,7 +106,7 @@ void enable_uart_clk(unsigned char enable)
 {
 	u32 mask;
 
-	if (is_cpu_type(MXC_CPU_MX6UL))
+	if (is_cpu_type(MXC_CPU_MX6UL) || is_cpu_type(MXC_CPU_MX6ULL))
 		mask = MXC_CCM_CCGR5_UART_MASK;
 	else
 		mask = MXC_CCM_CCGR5_UART_MASK | MXC_CCM_CCGR5_UART_SERIAL_MASK;
@@ -154,7 +157,8 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
 			reg &= ~mask;
 		__raw_writel(reg, &imx_ccm->CCGR2);
 	} else {
-		if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL)) {
+		if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) ||
+		    is_cpu_type(MXC_CPU_MX6ULL)) {
 			mask = MXC_CCM_CCGR6_I2C4_MASK;
 			addr = &imx_ccm->CCGR6;
 		} else {
@@ -227,7 +231,8 @@ static u32 mxc_get_pll_pfd(enum pll_clocks pll, int pfd_num)
 
 	switch (pll) {
 	case PLL_BUS:
-		if (!is_cpu_type(MXC_CPU_MX6UL)) {
+		if (!is_cpu_type(MXC_CPU_MX6UL) &&
+		    !is_cpu_type(MXC_CPU_MX6ULL)) {
 			if (pfd_num == 3) {
 				/* No PFD3 on PPL2 */
 				return 0;
@@ -328,7 +333,8 @@ static u32 get_ipg_per_clk(void)
 
 	reg = __raw_readl(&imx_ccm->cscmr1);
 	if (is_cpu_type(MXC_CPU_MX6SL) || is_cpu_type(MXC_CPU_MX6SX) ||
-	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL)) {
+	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL) ||
+	    is_cpu_type(MXC_CPU_MX6ULL)) {
 		if (reg & MXC_CCM_CSCMR1_PER_CLK_SEL_MASK)
 			return MXC_HCLK; /* OSC 24Mhz */
 	}
@@ -345,7 +351,8 @@ static u32 get_uart_clk(void)
 	reg = __raw_readl(&imx_ccm->cscdr1);
 
 	if (is_cpu_type(MXC_CPU_MX6SL) || is_cpu_type(MXC_CPU_MX6SX) ||
-	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL)) {
+	    is_mx6dqp() || is_cpu_type(MXC_CPU_MX6UL) ||
+	    is_cpu_type(MXC_CPU_MX6ULL)) {
 		if (reg & MXC_CCM_CSCDR1_UART_CLK_SEL)
 			freq = MXC_HCLK;
 	}
@@ -365,7 +372,8 @@ static u32 get_cspi_clk(void)
 		     MXC_CCM_CSCDR2_ECSPI_CLK_PODF_OFFSET;
 
 	if (is_mx6dqp() || is_cpu_type(MXC_CPU_MX6SL) ||
-	    is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL)) {
+	    is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) ||
+	    is_cpu_type(MXC_CPU_MX6ULL)) {
 		if (reg & MXC_CCM_CSCDR2_ECSPI_CLK_SEL_MASK)
 			return MXC_HCLK / (cspi_podf + 1);
 	}
@@ -428,7 +436,7 @@ static u32 get_mmdc_ch0_clk(void)
 	u32 freq, podf, per2_clk2_podf;
 
 	if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) ||
-	    is_cpu_type(MXC_CPU_MX6SL)) {
+	    is_cpu_type(MXC_CPU_MX6SL) || is_cpu_type(MXC_CPU_MX6ULL)) {
 		podf = (cbcdr & MXC_CCM_CBCDR_MMDC_CH1_PODF_MASK) >>
 			MXC_CCM_CBCDR_MMDC_CH1_PODF_OFFSET;
 		if (cbcdr & MXC_CCM_CBCDR_PERIPH2_CLK_SEL) {
@@ -543,7 +551,8 @@ int enable_fec_anatop_clock(int fec_id, enum enet_freq freq)
 	} else if (fec_id == 1) {
 		/* Only i.MX6SX/UL support ENET2 */
 		if (!(is_cpu_type(MXC_CPU_MX6SX) ||
-		      is_cpu_type(MXC_CPU_MX6UL)))
+		      is_cpu_type(MXC_CPU_MX6UL) ||
+		      is_cpu_type(MXC_CPU_MX6ULL)))
 			return -EINVAL;
 		reg &= ~BM_ANADIG_PLL_ENET2_DIV_SELECT;
 		reg |= BF_ANADIG_PLL_ENET2_DIV_SELECT(freq);
@@ -765,17 +774,27 @@ void hab_caam_clock_enable(unsigned char enable)
 {
 	u32 reg;
 
-	/* CG4 ~ CG6, CAAM clocks */
-	reg = __raw_readl(&imx_ccm->CCGR0);
-	if (enable)
-		reg |= (MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
-			MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
-			MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
-	else
-		reg &= ~(MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
-			MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
-			MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
-	__raw_writel(reg, &imx_ccm->CCGR0);
+	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+		/* CG5, DCP clock */
+		reg = __raw_readl(&imx_ccm->CCGR0);
+		if (enable)
+			reg |= MXC_CCM_CCGR0_DCP_CLK_MASK;
+		else
+			reg &= ~MXC_CCM_CCGR0_DCP_CLK_MASK;
+		__raw_writel(reg, &imx_ccm->CCGR0);
+	} else {
+		/* CG4 ~ CG6, CAAM clocks */
+		reg = __raw_readl(&imx_ccm->CCGR0);
+		if (enable)
+			reg |= (MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
+				MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
+				MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
+		else
+			reg &= ~(MXC_CCM_CCGR0_CAAM_WRAPPER_IPG_MASK |
+				MXC_CCM_CCGR0_CAAM_WRAPPER_ACLK_MASK |
+				MXC_CCM_CCGR0_CAAM_SECURE_MEM_MASK);
+		__raw_writel(reg, &imx_ccm->CCGR0);
+	}
 
 	/* EMI slow clk */
 	reg = __raw_readl(&imx_ccm->CCGR6);
