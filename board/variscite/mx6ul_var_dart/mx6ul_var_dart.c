@@ -659,10 +659,15 @@ static const struct boot_mode board_boot_modes[] = {
 #endif
 
 static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
-
+#define FDT_FILENAME_MAX_LEN	100
 int board_late_init(void)
 {
 	char *s;
+	char fdt_filename[FDT_FILENAME_MAX_LEN];
+	u32 imxtype,cpurev;
+
+	cpurev = get_cpu_rev();
+	imxtype = (cpurev & 0xFF000) >> 12;
 
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
@@ -695,32 +700,50 @@ int board_late_init(void)
 		switch (var_eeprom_config_struct_v2.som_info &0x3){
 			case 0x00:
 			case 0x02:
-				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_emmc.dtb" :
+					"imx6ul-var-dart-sd_emmc.dtb");
 			break;
 			case 0x01:
-				setenv("fdt_file", "imx6ul-var-dart-sd_nand.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_nand.dtb" :
+					"imx6ul-var-dart-sd_nand.dtb");
 			break;
 		}
 		break;
 	case SD2_BOOT:
 	case MMC2_BOOT:
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
-				setenv("fdt_file", "imx6ul-var-dart-emmc_wifi.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-emmc_wifi.dtb" :
+					"imx6ul-var-dart-emmc_wifi.dtb");
 		else
-				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
+				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_emmc.dtb" :
+					"imx6ul-var-dart-sd_emmc.dtb");
 		break;
 	case NAND_BOOT:
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
-				setenv("fdt_file", "imx6ul-var-dart-nand_wifi.dtb");
+				snprintf(fdt_filename,FDT_FILENAME_MAX_LEN,"%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-nand_wifi.dtb" :
+					"imx6ul-var-dart-nand_wifi.dtb");
 		else
-				setenv("fdt_file", "imx6ul-var-dart-sd_nand.dtb");
+				snprintf(fdt_filename,FDT_FILENAME_MAX_LEN,"%s",
+					imxtype == MXC_CPU_MX6ULL ?
+					"imx6ull-var-dart-sd_nand.dtb" :
+					"imx6ul-var-dart-sd_nand.dtb");
 		break;
 	default:
+		fdt_filename[0]=0x00;
 		printf("Unsupported boot device!\n");
 		break;
 	}
-
-
+	setenv("fdt_file", fdt_filename);
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
@@ -893,6 +916,7 @@ void board_dram_init(void)
 	} else {
 		eeprom_revision=2;
 	}
+
 //	spl_mx6qd_dram_setup_iomux_check_reset();
 }
 
