@@ -60,7 +60,7 @@ void load_custom_data(u32 *custom_addresses_values)
 	}
 	
 	i++;
-	if(i>sizeof(custom_addresses_values))
+	if(i>32)
 		return;
 	
 	j=0;
