@@ -164,66 +164,21 @@
 
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
-#if defined(CONFIG_SYS_BOOT_NAND)
-
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	"script=boot.scr\0" \
-	"image=zImage\0" \
-	"console=ttymxc0\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
+#define NAND_BOOT_ENV_SETTINGS \
 	"fdt_file=imx6ul-var-dart-nand_wifi.dtb\0" \
-	"fdt_addr=0x83000000\0" \
-	"var_auto_fdt_file=Y\0" \
-	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
-	"bootargs=console=ttymxc0,115200 ubi.mtd=4 "  \
-		"root=ubi0:rootfs rootfstype=ubifs rw \0"\
-	"bootcmd=setenv bootargs ${bootargs} ${cma_size};"\
-		"nand read ${loadaddr} 0x600000 0x7e0000;"\
-		"nand read ${fdt_addr} 0xde0000 0x20000;"\
+	"nandargs=setenv bootargs console=${console},${baudrate} " \
+		"ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs rw ${cma_size}\0" \
+	"nandboot=echo Booting from nand ...; " \
+		"run nandargs; " \
+		"nand read ${loadaddr} 0x600000 0x7e0000; " \
+		"nand read ${fdt_addr} 0xde0000 0x20000; " \
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
-	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs " \
-	"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-		"netboot=echo Booting from net ...; " \
-		"run netargs; " \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi; " \
-		"${get_cmd} ${image}; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"bootz ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"bootz; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootz; " \
-		"fi;\0" \
-	"usbnet_devaddr=f8:dc:7a:00:00:02\0" \
-	"usbnet_hostaddr=f8:dc:7a:00:00:01\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0"
-#else
 
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	"script=boot.scr\0" \
-	"image=zImage\0" \
-	"console=ttymxc0\0" \
-	"fdt_high=0xffffffff\0" \
-	"var_auto_fdt_file=Y\0" \
-	"initrd_high=0xffffffff\0" \
+
+#define MMC_BOOT_ENV_SETTINGS \
 	"fdt_file=imx6ul-var-dart-sd_emmc.dtb\0" \
-	"fdt_addr=0x83000000\0" \
-	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -235,7 +190,8 @@
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimagesize=6300000\0" \
-	"loadimage=mw.b ${loadaddr} 0 ${loadimagesize};fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"loadimage=mw.b ${loadaddr} 0 ${loadimagesize}; " \
+		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
@@ -251,11 +207,47 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
-		"fi;\0" \
+		"fi\0" \
+
+
+#ifdef CONFIG_SYS_BOOT_NAND
+#define BOOT_ENV_SETTINGS	NAND_BOOT_ENV_SETTINGS
+#define CONFIG_BOOTCOMMAND \
+	"run nandboot"
+
+#else
+#define BOOT_ENV_SETTINGS	MMC_BOOT_ENV_SETTINGS
+#define CONFIG_BOOTCOMMAND \
+	"mmc dev ${mmcdev};" \
+	"mmc dev ${mmcdev}; if mmc rescan; then " \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"else " \
+			"if run loadimage; then " \
+				"run mmcboot; " \
+			"else run netboot; " \
+			"fi; " \
+		"fi; " \
+	"else run netboot; fi"
+
+#endif
+
+
+#define CONFIG_EXTRA_ENV_SETTINGS \
+        BOOT_ENV_SETTINGS \
+	"script=boot.scr\0" \
+	"image=zImage\0" \
+	"console=ttymxc0\0" \
+	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
+	"var_auto_fdt_file=Y\0" \
+	"fdt_addr=0x83000000\0" \
+	"boot_fdt=try\0" \
+	"ip_dyn=yes\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs ${cma_size}" \
-	"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-		"netboot=echo Booting from net ...; " \
+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
+	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
@@ -279,19 +271,6 @@
 	"usbnet_devaddr=f8:dc:7a:00:00:02\0" \
 	"usbnet_hostaddr=f8:dc:7a:00:00:01\0"
 
-#define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev};" \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
-		   "fi; " \
-	   "else run netboot; fi"
-#endif
 
 /* Miscellaneous configurable options */
 #define CONFIG_CMD_MEMTEST
