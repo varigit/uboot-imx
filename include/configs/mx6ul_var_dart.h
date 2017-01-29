@@ -213,7 +213,8 @@
 #ifdef CONFIG_SYS_BOOT_NAND
 #define BOOT_ENV_SETTINGS	NAND_BOOT_ENV_SETTINGS
 #define CONFIG_BOOTCOMMAND \
-	"run nandboot"
+	"run nandboot || " \
+	"run netboot"
 
 #else
 #define BOOT_ENV_SETTINGS	MMC_BOOT_ENV_SETTINGS
