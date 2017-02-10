@@ -4,7 +4,7 @@
  * Copyright (C) 2015 Variscite Ltd. All Rights Reserved.
  * Maintainer: Ron Donio <ron.d@variscite.com>
  * Configuration settings for the Variscite  i.MX6UL DART board.
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -14,7 +14,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
@@ -22,7 +22,6 @@
 #include <asm/arch/iomux.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/crm_regs.h>
-#include <asm/arch/mx6ul_pins.h>
 #include <asm/arch/mx6-pins.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/gpio.h>
@@ -140,14 +139,6 @@ static enum qn_func qn_output[8] = {
 	qn_disable, qn_enable
 };
 
-/* determine boot device from SRC_SBMR1 (BOOT_CFG[4:1]) or SRC_GPR9 register */
-enum {
-	VBOOT_DEVICE_SD,
-	VBOOT_DEVICE_MMC,
-	VBOOT_DEVICE_NAND,
-	VBOOT_DEVICE_NONE
-};
-
 static void iox74lv_init(void)
 {
 	int i;
@@ -226,6 +217,13 @@ int power_init_board(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_LDO_BYPASS_CHECK
+void ldo_mode_set(int ldo_bypass)
+{
+	return;
+}
+#endif
 #endif
 #endif
 
@@ -233,7 +231,7 @@ int dram_init(void){
 	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 	unsigned int volatile * port2;
 	unsigned int volatile * ddr_cs0_end= (unsigned int*)DDR0_CS0_END;
-	
+
 	/* Set the sdram_size to the actually configured one */
 	sdram_size=((*ddr_cs0_end)-63)*32;
 	do {
@@ -269,7 +267,7 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	MX6_PAD_SD1_DATA3__USDHC1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
-#ifndef CONFIG_SYS_USE_NAND 
+#ifndef CONFIG_SYS_USE_NAND
 static iomux_v3_cfg_t const usdhc2_pads[] = {
 	MX6_PAD_NAND_RE_B__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NAND_WE_B__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -382,33 +380,6 @@ int mmc_get_env_devno(void)
 	return dev_no;
 }
 
-static u32 get_boot_device(void)
-{
-	struct src *psrc = (struct src *)SRC_BASE_ADDR;
-	unsigned int gpr10_boot = readl(&psrc->gpr10) & (1 << 28);
-	unsigned reg = gpr10_boot ? readl(&psrc->gpr9) : readl(&psrc->sbmr1);
-
-	/* BOOT_CFG1[7:4] - see IMX6DQRM Table 8-8 */
-	switch ((reg & 0x000000FF) >> 4) {
-	 /* EIM: See 8.5.1, Table 8-9 */
-	/* SD/eSD: 8.5.3, Table 8-15  */
-	case 0x4:
-	case 0x5:
-	/* MMC/eMMC: 8.5.3 */
-	case 0x6:
-	case 0x7:
-		if (1== mmc_get_env_devno())
-			return VBOOT_DEVICE_MMC;
-		else
-			return VBOOT_DEVICE_SD;
-	/* NAND Flash: 8.5.2 */
-	case 0x8 ... 0xf:
-		return VBOOT_DEVICE_NAND;
-	}
-	return VBOOT_DEVICE_NONE;
-}
-
-
 int mmc_map_to_kernel_blk(int dev_no)
 {
 	return dev_no;
@@ -468,7 +439,7 @@ int board_mmc_init(bd_t *bis)
 		err = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
 		if (err)
 			printf("Warning: failed to initialize mmc dev %d\n", i);
-#endif		
+#endif
 	}
 	return 0;
 }
@@ -711,7 +682,7 @@ int board_late_init(void)
 		setenv("fdt_addr", "0x84000000");
 		setenv("loadaddr", "0x84600000");
 	}
-		
+
 
 	s = getenv ("var_auto_fdt_file");
 	if (s[0] != 'Y') return 0;
@@ -719,7 +690,8 @@ int board_late_init(void)
 	var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
 
 	switch (get_boot_device()) {
-	case VBOOT_DEVICE_SD:
+	case SD1_BOOT:
+	case MMC1_BOOT:
 		switch (var_eeprom_config_struct_v2.som_info &0x3){
 			case 0x00:
 			case 0x02:
@@ -730,20 +702,21 @@ int board_late_init(void)
 			break;
 		}
 		break;
-	case VBOOT_DEVICE_MMC:
+	case SD2_BOOT:
+	case MMC2_BOOT:
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
 				setenv("fdt_file", "imx6ul-var-dart-emmc_wifi.dtb");
 		else
 				setenv("fdt_file", "imx6ul-var-dart-sd_emmc.dtb");
 		break;
-	case VBOOT_DEVICE_NAND:
+	case NAND_BOOT:
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
 				setenv("fdt_file", "imx6ul-var-dart-nand_wifi.dtb");
 		else
 				setenv("fdt_file", "imx6ul-var-dart-sd_nand.dtb");
 		break;
 	default:
-		printf("UNKNOWN\n");
+		printf("Unsupported boot device!\n");
 		break;
 	}
 
@@ -815,7 +788,6 @@ struct mx6_ddr_sysinfo ddr_sysinfo = {
 	.bi_on = 1,		/* Bank interleaving enabled */
 	.sde_to_rst = 0x10,	/* 14 cycles, 200us (JEDEC default) */
 	.rst_to_cke = 0x23,	/* 33 cycles, 500us (JEDEC default) */
-	.ddr_type = DDR_TYPE_DDR3,
 };
 
 static struct mx6_ddr3_cfg mem_ddr = {
@@ -881,7 +853,7 @@ static void spl_dram_init(void)
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
 	mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_ddr);
 }
-/* 
+/*
  * Second phase ddr init. Use eeprom values.
  */
 static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
@@ -893,17 +865,17 @@ static int  spl_dram_init_v2(void)
 
 	/* Add here: Read EEPROM and parse Variscite struct */
 	memset(&var_eeprom_config_struct_v2, 0x00, sizeof(var_eeprom_config_struct_v2));
-	
+
 	ret = var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
-	
+
 	if (ret)
 		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
 
 	if(var_eeprom_config_struct_v2.variscite_magic!=0x32524156) //Test for VAR2 in the header.
 		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
-		
+
 	handle_eeprom_data(&var_eeprom_config_struct_v2);
-	
+
 	sdram_size = var_eeprom_config_struct_v2.ddr_size*128;
 
 	return SPL_DRAM_INIT_STATUS_OK;
@@ -911,18 +883,16 @@ static int  spl_dram_init_v2(void)
 
 void board_dram_init(void)
 {
- int spl_status;
+	int spl_status;
 
 	/* Initialize DDR based on eeprom if exist */
 	spl_status=spl_dram_init_v2();
-	if(spl_status != SPL_DRAM_INIT_STATUS_OK)
-		{
-			spl_dram_init();
-			eeprom_revision=0;
-		}
-		else
-			eeprom_revision=2;	
-
+	if(spl_status != SPL_DRAM_INIT_STATUS_OK) {
+		spl_dram_init();
+		eeprom_revision=0;
+	} else {
+		eeprom_revision=2;
+	}
 //	spl_mx6qd_dram_setup_iomux_check_reset();
 }
 

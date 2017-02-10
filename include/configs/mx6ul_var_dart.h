@@ -5,7 +5,7 @@
  * Maintainer: Ron Donio <ron.d@variscite.com>
  * Configuration settings for the Variscite  i.MX6UL DART board.
  *
-  * This program is free software; you can redistribute it and/or
+ * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
@@ -14,19 +14,88 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 #ifndef __MX6UL_VAR_DART_H
 #define __MX6UL_VAR_DART_H
 
-
 #include <asm/arch/imx-regs.h>
 #include <linux/sizes.h>
-#include "mx6ul_var_common.h"
+#include "mx6_common.h"
 #include <asm/imx-common/gpio.h>
 
 #undef CONFIG_LDO_BYPASS_CHECK
+
+#define CONFIG_MX6
+#define CONFIG_SYS_GENERIC_BOARD
+
+/* ATAGs */
+#define CONFIG_CMDLINE_TAG
+#define CONFIG_SETUP_MEMORY_TAGS
+#define CONFIG_INITRD_TAG
+#define CONFIG_REVISION_TAG
+
+/* Boot options */
+#if (defined(CONFIG_MX6SX) || defined(CONFIG_MX6SL) || defined(CONFIG_MX6UL))
+#define CONFIG_LOADADDR		0x82000000
+#ifndef CONFIG_SYS_TEXT_BASE
+#define CONFIG_SYS_TEXT_BASE	0x87800000
+#endif
+#else
+#define CONFIG_LOADADDR		0x12000000
+#ifndef CONFIG_SYS_TEXT_BASE
+#define CONFIG_SYS_TEXT_BASE	0x17800000
+#endif
+#endif
+
+#ifndef CONFIG_BOOTDELAY
+#define CONFIG_BOOTDELAY	1
+#endif
+
+/* allow to overwrite serial and ethaddr */
+#define CONFIG_ENV_OVERWRITE
+#define CONFIG_CONS_INDEX       1
+#define CONFIG_BAUDRATE         115200
+
+/* Command definition */
+#include <config_cmd_default.h>
+
+/* Filesystems and image support */
+#define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_CMD_FS_GENERIC
+#define CONFIG_DOS_PARTITION
+#define CONFIG_CMD_EXT2
+#define CONFIG_CMD_EXT4
+#define CONFIG_CMD_EXT4_WRITE
+#define CONFIG_CMD_FAT
+
+/* Miscellaneous configurable options */
+#undef CONFIG_CMD_IMLS
+#define CONFIG_SYS_LONGHELP
+#define CONFIG_SYS_HUSH_PARSER
+#define CONFIG_AUTO_COMPLETE
+#define CONFIG_SYS_CBSIZE	512
+
+/* Print Buffer Size */
+#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
+#define CONFIG_SYS_MAXARGS	32
+#define CONFIG_SYS_BARGSIZE	CONFIG_SYS_CBSIZE
+
+#ifndef CONFIG_SYS_DCACHE_OFF
+#define CONFIG_CMD_CACHE
+#endif
+
+/* GPIO */
+#define CONFIG_CMD_GPIO
+
+/* MMC */
+#define CONFIG_MMC
+#define CONFIG_CMD_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_BOUNCE_BUFFER
+#define CONFIG_FSL_ESDHC
+#define CONFIG_FSL_USDHC
 
 /* SPL options */
 #define CONFIG_SPL_LIBCOMMON_SUPPORT
@@ -377,8 +446,8 @@
 
 #define CONFIG_USB_GADGET
 #define CONFIG_CMD_USB_MASS_STORAGE
-#define CONFIG_USB_FUNCTION_MASS_STORAGE
-#define CONFIG_USB_GADGET_DOWNLOAD
+#define CONFIG_USB_GADGET_MASS_STORAGE
+#define CONFIG_USBDOWNLOAD_GADGET
 #define CONFIG_USB_GADGET_VBUS_DRAW     2
 
 #define CONFIG_G_DNL_VENDOR_NUM         0x0525
