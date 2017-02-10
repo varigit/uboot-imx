@@ -565,7 +565,7 @@ config TARGET_MX7DSABRESD
 	select CPU_V7
 
 config TARGET_MX7DVAR_SOM
-    bool "Support mx7dvar_som"
+	bool "Support mx7dvar_som"
 	select CPU_V7
 
 config TARGET_MX6UL_14X14_EVK
@@ -581,7 +581,12 @@ config TARGET_MX6UL_14X14_LPDDR2_ARM2
         select CPU_V7
 
 config TARGET_MX6VAR_SOM
-    bool "Support mx6var_som"
+	bool "Support mx6var_som"
+	select CPU_V7
+	select SUPPORT_SPL
+
+config TARGET_MX6UL_VAR_DART
+	bool "Support mx6ul_var_dart"
 	select CPU_V7
 	select SUPPORT_SPL
 
@@ -949,6 +954,7 @@ source "board/trizepsiv/Kconfig"
 source "board/ttcontrol/vision2/Kconfig"
 source "board/udoo/Kconfig"
 source "board/variscite/mx6var_som/Kconfig"
+source "board/variscite/mx6ul_var_dart/Kconfig"
 source "board/variscite/mx7dvar_som/Kconfig"
 source "board/vpac270/Kconfig"
 source "board/wandboard/Kconfig"

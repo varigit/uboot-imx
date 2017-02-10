@@ -6,6 +6,9 @@ config SYS_BOARD
 config SYS_VENDOR
 	default "variscite"
 
+config SYS_SOC
+	default "mx6"
+
 config SYS_CONFIG_NAME
 	default "mx6ul_var_dart"
 
