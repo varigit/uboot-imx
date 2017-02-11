@@ -478,6 +478,9 @@
 #define CONFIG_CMD_HDMIDETECT
 #define CONFIG_IMX_VIDEO_SKIP
 #define CONFIG_CMD_BMP
+#elif defined(CONFIG_VIDEO_HDMI)
+#define CONFIG_IMX_HDMI
+#define CONFIG_CMD_HDMIDETECT
 #endif
 
 #define PMIC_I2C_BUS		1
