@@ -82,6 +82,35 @@ DECLARE_GLOBAL_DATA_PTR;
 			PAD_CTL_SRE_FAST)
 #define GPMI_PAD_CTRL2 (GPMI_PAD_CTRL0 | GPMI_PAD_CTRL1)
 
+/*
+ * OCOTP_CFG3[17:16] (see Fusemap Description Table offset 0x440)
+ * defines a 2-bit SPEED_GRADING
+ */
+#define OCOTP_CFG3_SPEED_SHIFT	16
+#define OCOTP_CFG3_SPEED_528MHZ 1
+#define OCOTP_CFG3_SPEED_696MHZ 2
+
+u32 get_cpu_speed_grade_hz(void)
+{
+	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+	struct fuse_bank *bank = &ocotp->bank[0];
+	struct fuse_bank0_regs *fuse =
+		(struct fuse_bank0_regs *)bank->fuse_regs;
+	uint32_t val;
+
+	val = readl(&fuse->cfg3);
+	val >>= OCOTP_CFG3_SPEED_SHIFT;
+	val &= 0x3;
+
+	switch (val) {
+		case OCOTP_CFG3_SPEED_528MHZ:
+			return 528000000;
+		case OCOTP_CFG3_SPEED_696MHZ:
+			return 69600000;
+	}
+	return 0;
+}
+
 #define IOX_SDI IMX_GPIO_NR(5, 10)
 #define IOX_STCP IMX_GPIO_NR(5, 7)
 #define IOX_SHCP IMX_GPIO_NR(5, 11)
@@ -755,7 +784,9 @@ int board_late_init(void)
 
 int checkboard(void)
 {
-	puts("Board: MX6UL Variscite DART\n");
+	printf("Board: Variscite DART %s %d MHz\n",
+		is_cpu_type(MXC_CPU_MX6UL) ? "MX6UL" : "MX6ULL",
+		get_cpu_speed_grade_hz() / 1000000);
 
 	return 0;
 }
