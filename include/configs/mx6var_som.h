@@ -496,6 +496,8 @@
 #define CONFIG_POWER_PFUZE100
 #define CONFIG_POWER_PFUZE100_I2C_ADDR	0x08
 
+#define CONFIG_NETCONSOLE
+
 /* USB Configs */
 #define CONFIG_CMD_USB
 #ifdef CONFIG_CMD_USB
@@ -508,7 +510,6 @@
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS		0
 #define CONFIG_USB_MAX_CONTROLLER_COUNT	2 /* Enabled USB controller number */
-#endif
 
 #define CONFIG_CI_UDC
 #define CONFIG_USBD_HS
@@ -519,7 +520,6 @@
  * #define CONFIG_USB_ETHER
  * #define CONFIG_USB_ETH_CDC
  */
-#define CONFIG_NETCONSOLE
 
 #define CONFIG_USB_GADGET
 #define CONFIG_CMD_USB_MASS_STORAGE
@@ -530,10 +530,6 @@
 #define CONFIG_G_DNL_VENDOR_NUM		0x18d1
 #define CONFIG_G_DNL_PRODUCT_NUM	0x0d02
 #define CONFIG_G_DNL_MANUFACTURER	"Variscite"
-
-#if defined(CONFIG_ANDROID_SUPPORT)
-#include "mx6var_som_android.h"
-#endif
 
 /* USB Device Firmware Update support */
 #define CONFIG_CMD_DFU
@@ -546,6 +542,11 @@
 #if 0
 #define CONFIG_SYS_DFU_DATA_BUF_SIZE SZ_32M
 #define DFU_DEFAULT_POLL_TIMEOUT 300
+#endif
+#endif /* CONFIG_CMD_USB */
+
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "mx6var_som_android.h"
 #endif
 
 #endif	/* __MX6VAR_SOM_CONFIG_H */
