@@ -995,6 +995,15 @@ static void setup_display(void)
 		| (IOMUXC_GPR3_MUX_SRC_IPU1_DI0 << IOMUXC_GPR3_LVDS1_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
 }
+#elif defined(CONFIG_VIDEO_HDMI)
+static void setup_hdmi(void)
+{
+	/* Turn off standard backlight: pin as input pull down */
+	SETUP_IOMUX_PAD(PAD_DISP0_DAT9__GPIO4_IO30 | MUX_PAD_CTRL(PAD_CTL_PUS_100K_DOWN));
+	gpio_direction_input(VAR_SOM_BACKLIGHT_EN);
+
+	imx_setup_hdmi();
+}
 #endif /* CONFIG_VIDEO_IPUV3 */
 
 /*
@@ -1126,6 +1135,8 @@ int board_early_init_f(void)
 	setup_iomux_uart();
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
+#elif defined(CONFIG_VIDEO_HDMI)
+	setup_hdmi();
 #endif
 #ifdef CONFIG_SYS_I2C_MXC
 	setup_local_i2c();
