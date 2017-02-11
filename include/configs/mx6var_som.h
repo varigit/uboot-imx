@@ -179,6 +179,7 @@
 		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
+		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
 				"bootm ${loadaddr} - ${fdt_addr}; " \
@@ -196,11 +197,9 @@
 
 #define NAND_BOOT_ENV_SETTINGS \
 	"bootargs_nand=setenv bootargs console=${console},${baudrate} ubi.mtd=3 " \
-		"root=ubi0:rootfs rootfstype=ubifs; " \
-		"run videoargs\0" \
+		"root=ubi0:rootfs rootfstype=ubifs\0" \
 	"bootargs_emmc=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/mmcblk0p1 rootwait rw; " \
-		"run videoargs\0" \
+		"root=/dev/mmcblk0p1 rootwait rw\0" \
 	"rootfs_device=nand\0" \
 	"bootcmd=" \
 		"if test ${rootfs_device} != emmc; then " \
@@ -208,6 +207,8 @@
 		"else " \
 			"run bootargs_emmc; " \
 		"fi; " \
+		"run videoargs; " \
+		"run optargs; " \
 		"nand read ${loadaddr} 0x400000 0x800000; " \
 		"nand read ${fdt_addr} 0x3e0000 0x20000; " \
 		"bootm ${loadaddr} - ${fdt_addr}\0" \
@@ -234,6 +235,8 @@
 	"else run netboot; fi"
 #endif
 
+#define OPT_ENV_SETTINGS \
+	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0"
 
 #define VIDEO_ENV_SETTINGS \
 	"videoargs=" \
@@ -252,6 +255,7 @@
 	MFG_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
 	VIDEO_ENV_SETTINGS \
+	OPT_ENV_SETTINGS \
 	"fdt_file=undefined\0" \
 	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0" \
@@ -268,6 +272,7 @@
 		"run videoargs\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
+		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
