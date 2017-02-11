@@ -350,6 +350,15 @@ int splash_screen_prepare(void)
 }
 #endif
 
+static iomux_v3_cfg_t const usdhc1_gpio_pads[] = {
+	IOMUX_PADS(PAD_SD1_CLK__GPIO1_IO20	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_CMD__GPIO1_IO18	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT0__GPIO1_IO16	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT1__GPIO1_IO17	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT2__GPIO1_IO19	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD1_DAT3__GPIO1_IO21	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
 static void print_emmc_size(void)
 {
 	struct mmc *mmc;
@@ -366,6 +375,18 @@ static void print_emmc_size(void)
 
 	if (err) {
 		puts("No eMMC\n");
+		if (!is_dart_board()) {
+			/* VAR-SOM-MX6 rev 1.X externally exposes SD1 pins: */
+			/* avoid any HW conflict configuring them as inputs */
+			puts("Configuring SD1 pins as inputs\n");
+			SETUP_IOMUX_PADS(usdhc1_gpio_pads);
+			gpio_direction_input(IMX_GPIO_NR(1, 16));
+			gpio_direction_input(IMX_GPIO_NR(1, 17));
+			gpio_direction_input(IMX_GPIO_NR(1, 18));
+			gpio_direction_input(IMX_GPIO_NR(1, 19));
+			gpio_direction_input(IMX_GPIO_NR(1, 20));
+			gpio_direction_input(IMX_GPIO_NR(1, 21));
+		}
 		return;
 	}
 
