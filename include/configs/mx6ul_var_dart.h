@@ -170,6 +170,7 @@
 		"ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs rw ${cma_size}\0" \
 	"nandboot=echo Booting from nand ...; " \
 		"run nandargs; " \
+		"run optargs; " \
 		"nand read ${loadaddr} 0x600000 0x7e0000; " \
 		"nand read ${fdt_addr} 0xde0000 0x20000; " \
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
@@ -195,6 +196,7 @@
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
+		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
@@ -233,9 +235,12 @@
 
 #endif
 
+#define OPT_ENV_SETTINGS \
+	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-        BOOT_ENV_SETTINGS \
+	BOOT_ENV_SETTINGS \
+	OPT_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
@@ -250,6 +255,7 @@
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
+		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
