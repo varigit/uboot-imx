@@ -399,6 +399,8 @@
 #define CONFIG_APBH_DMA_BURST8
 #endif
 
+#define CONFIG_NETCONSOLE
+
 /* USB Configs */
 #define CONFIG_CMD_USB
 #ifdef CONFIG_CMD_USB
@@ -413,7 +415,6 @@
 #define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS   0
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
-#endif
 
 #define CONFIG_CI_UDC
 #define CONFIG_USBD_HS
@@ -421,8 +422,6 @@
 
 #define CONFIG_USB_ETHER
 #define CONFIG_USB_ETH_CDC
-
-#define CONFIG_NETCONSOLE
 
 #define CONFIG_USB_GADGET
 #define CONFIG_CMD_USB_MASS_STORAGE
@@ -433,6 +432,7 @@
 #define CONFIG_G_DNL_VENDOR_NUM         0x0525
 #define CONFIG_G_DNL_PRODUCT_NUM        0xa4a5
 #define CONFIG_G_DNL_MANUFACTURER       "Variscite"
+#endif /* CONFIG_CMD_USB */
 
 #ifndef CONFIG_CMD_NET
 #define CONFIG_CMD_NET		1
