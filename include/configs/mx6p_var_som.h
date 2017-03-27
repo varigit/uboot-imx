@@ -62,7 +62,7 @@
 
 #define CONFIG_MXC_UART_BASE		UART1_BASE
 #define CONFIG_CONSOLE_DEV		"ttymxc0"
-#define CONFIG_MMCROOT			"/dev/mmcblk0p2"
+#define CONFIG_MMCROOT			"/dev/mmcblk1p2"
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
@@ -167,7 +167,7 @@
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
-	"mmcautodetect=yes\0" \
+	"mmcautodetect=no\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} root=${mmcroot}; " \
 		"run videoargs\0" \
 	"loadbootscript=" \
@@ -252,7 +252,7 @@
 	MFG_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
 	VIDEO_ENV_SETTINGS \
-	"fdt_file=undefined\0" \
+	"fdt_file=imx6qp-var-som-cap.dtb\0" \
 	"fdt_addr=0x18000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"splashsourceauto=yes\0" \

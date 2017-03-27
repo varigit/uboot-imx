@@ -371,6 +371,7 @@ void board_late_mmc_env_init(void)
 }
 #endif
 
+#ifdef CONFIG_NAND_MXS
 static iomux_v3_cfg_t gpmi_pads[] = {
 	MX6_PAD_NANDF_CLE__NAND_CLE		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
 	MX6_PAD_NANDF_ALE__NAND_ALE		| MUX_PAD_CTRL(GPMI_PAD_CTRL2),
@@ -404,7 +405,7 @@ static void setup_gpmi_nand(void)
 	/* enable apbh clock gating */
 	setbits_le32(&mxc_ccm->CCGR0, MXC_CCM_CCGR0_APBHDMA_MASK);
 }
-
+#endif
 int mx6_rgmii_rework(struct phy_device *phydev)
 {
 	unsigned short val;
@@ -734,7 +735,9 @@ int board_init(void)
 	setup_display();
 #endif
 
+#ifdef CONFIG_NAND_MXS
 	setup_gpmi_nand();
+#endif
 
 	return 0;
 }
