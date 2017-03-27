@@ -1092,7 +1092,7 @@ static int fec_probe(bd_t *bd, int dev_id, uint32_t base_addr,
 	edev->index = fec->dev_id;
 
 	if (fec_get_hwaddr(fec->dev_id, ethaddr) == 0) {
-		debug("got MAC%d address from fuse: %pM\n", fec->dev_id, ethaddr);
+		printf("got MAC%d address from fuse: %pM\n", fec->dev_id, ethaddr);
 		memcpy(edev->enetaddr, ethaddr, 6);
 		if (fec->dev_id)
 			sprintf(mac, "eth%daddr", fec->dev_id);
