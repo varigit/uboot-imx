@@ -1,0 +1,12 @@
+MX6P_VAR_SOM BOARD BOARD
+M:	Leonid Segal <leonid.s@variscite.com>
+S:	Maintained
+F:	board/variscite/mx6p_var_som/
+F:	include/configs/mx6p_var_som.h
+F:	include/configs/mx6p_var_som_android.h
+F:      configs/mx6p_var_som_android_defconfig
+F:      configs/mx6p_var_som_android_nand_defconfig
+F:      configs/mx6p_var_som_defconfig
+F:      configs/mx6p_var_som_nand_defconfig
+F:      configs/mx6q_var_som_android_defconfig
+
