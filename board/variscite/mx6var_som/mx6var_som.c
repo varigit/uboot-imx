@@ -1579,11 +1579,11 @@ void board_init_f(ulong dummy)
 	setup_iomux_audiocodec();
 	audiocodec_reset(1);
 
-	/* iomux and setup of i2c */
-	board_early_init_f();
-
 	/* setup GP timer */
 	timer_init();
+
+	/* iomux and setup of i2c */
+	board_early_init_f();
 
 	mdelay(150);
 
