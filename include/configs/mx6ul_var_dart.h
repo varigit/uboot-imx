@@ -259,7 +259,7 @@
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs ${cma_size}" \
+		"root=/dev/nfs ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
