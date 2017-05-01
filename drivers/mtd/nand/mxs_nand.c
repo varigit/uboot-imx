@@ -202,6 +202,21 @@ static int mxs_nand_get_ecc_strength(struct mtd_info *mtd)
 	uint32_t page_oob_size = mtd->oobsize;
 	int meta = MXS_NAND_METADATA_SIZE;
 
+	if (strcmp("variscite", CONFIG_SYS_VENDOR) == 0) {
+		/*
+		 * Determine the ECC layout with the formula:
+		 *      ECC bits per chunk = (total page spare data bits) /
+		 *              (bits per ECC level) / (chunks per page)
+		 * where:
+		 *      total page spare data bits =
+		 *              (page oob size - meta data size) * (bits per byte)
+		 */
+		chip->ecc_strength_ds = ((mtd->oobsize - MXS_NAND_METADATA_SIZE) * 8)
+			/ (galois_field *
+			   mxs_nand_ecc_chunk_cnt(mtd->writesize));
+		chip->ecc_step_ds = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
+	}
+
 	if (chip->ecc_strength_ds > MXS_NAND_MAX_ECC_STRENGTH) {
 		printf("cannot support the NAND, ecc too weak\n");
 		return -EINVAL;

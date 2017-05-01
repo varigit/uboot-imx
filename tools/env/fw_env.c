@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -22,7 +23,6 @@
 #include <unistd.h>
 
 #ifdef MTD_OLD
-# include <stdint.h>
 # include <linux/mtd/mtd.h>
 #else
 # define  __user	/* nothing */
