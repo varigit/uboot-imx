@@ -1431,7 +1431,9 @@ int check_recovery_cmd_file(void)
 	int recovery_mode = 0;
 	int board = is_dart_board() ? 0 : 1;
 
-	recovery_mode = recovery_check_and_clean_flag();
+#ifdef CONFIG_BCB_SUPPORT
+	recovery_mode = recovery_check_and_clean_command();
+#endif
 
 	/* Check Recovery Combo Button press or not. */
 	SETUP_IOMUX_PADS(back_key_pad[board]);
