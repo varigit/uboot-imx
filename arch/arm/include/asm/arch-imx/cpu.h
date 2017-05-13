@@ -18,6 +18,9 @@
 #define MXC_CPU_MX6QP		0x69
 #define MXC_CPU_MX7D		0x72
 
+#define MXC_SOC_MX6		0x60
+#define MXC_SOC_MX7		0x70
+
 #define CS0_128					0
 #define CS0_64M_CS1_64M				1
 #define CS0_64M_CS1_32M_CS2_32M			2
