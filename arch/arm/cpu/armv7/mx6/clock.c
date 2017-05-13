@@ -1312,7 +1312,6 @@ int do_mx6_showclocks(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 #if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX6UL)
-#ifdef CONFIG_MX6QP
 static void pre_misc_setting(void)
 {
 	/* Bypass IPU1 QoS generator */
@@ -1336,7 +1335,6 @@ static void pre_misc_setting(void)
 	/* Saturation THR for of PRE */
 	writel(0x00000010, 0x00bb0814);
 }
-#endif
 
 void enable_ipu_clock(void)
 {
@@ -1346,7 +1344,9 @@ void enable_ipu_clock(void)
 	reg |= MXC_CCM_CCGR3_IPU1_IPU_MASK;
 	writel(reg, &mxc_ccm->CCGR3);
 
-#ifdef CONFIG_MX6QP
+	if (!is_mx6dqp())
+		return;
+
 	reg = readl(&mxc_ccm->CCGR6);
 	reg |= MXC_CCM_CCGR6_PRG_CLK0_MASK;
 	writel(reg, &mxc_ccm->CCGR6);
@@ -1361,7 +1361,6 @@ void enable_ipu_clock(void)
 	 * to do such settings.
 	 */
 	pre_misc_setting();
-#endif
 }
 
 #endif
