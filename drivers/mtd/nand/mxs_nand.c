@@ -702,9 +702,7 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 {
 	struct mxs_nand_info *nand_info = nand->priv;
 	struct mxs_dma_desc *d;
-#if defined(CONFIG_MX6QP) || defined(CONFIG_MX7) || defined(CONFIG_MX6UL)
 	struct mxs_bch_regs *bch_regs = (struct mxs_bch_regs *)MXS_BCH_BASE;
-#endif
 	uint32_t channel = MXS_DMA_CHANNEL_AHB_APBH_GPMI0 + nand_info->cur_chip;
 	uint32_t corrected = 0, failed = 0;
 	uint8_t	*status;
@@ -814,10 +812,10 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 			continue;
 
 		if (status[i] == 0xff) {
-#if defined(CONFIG_MX6QP) || defined(CONFIG_MX7) || defined(CONFIG_MX6UL)
-			if (readl(&bch_regs->hw_bch_debug1))
-				flag = 1;
-#endif
+			if (is_mx6dqp() || is_mx7() || is_mx6ul()) {
+				if (readl(&bch_regs->hw_bch_debug1))
+					flag = 1;
+			}
 			continue;
 		}
 
@@ -1178,10 +1176,10 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	writel(tmp, &bch_regs->hw_bch_flash0layout1);
 
 	/* Set erase threshold to ecc strength for mx6ul, mx6qp and mx7 */
-#if defined(CONFIG_MX6QP) || defined(CONFIG_MX7) || defined(CONFIG_MX6UL)
+	if (is_mx6dqp() || is_mx7() || is_mx6ul()) {
 		writel(BCH_MODE_ERASE_THRESHOLD(ecc_strength),
 		       &bch_regs->hw_bch_mode);
-#endif
+	}
 
 	/* Set *all* chip selects to use layout 0 */
 	writel(0, &bch_regs->hw_bch_layoutselect);
