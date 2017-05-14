@@ -131,7 +131,7 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	extern uint32_t authenticate_image(
 			uint32_t ddr_start, uint32_t image_size);
 
-	switch (genimg_get_format(load_addr)) {
+	switch (genimg_get_format((void *)load_addr)) {
 #if defined(CONFIG_IMAGE_FORMAT_LEGACY)
 	case IMAGE_FORMAT_LEGACY:
 		if (authenticate_image(load_addr,
