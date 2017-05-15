@@ -274,7 +274,7 @@ void mx6_dram_cfg(const struct mx6_ddr_sysinfo *sysinfo,
 #endif
 
 	/* MX6D/MX6Q: 1066 MHz memory clock, clkper = 1.894ns = 1894ps */
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {
+	if (is_mx6dq() || is_mx6dqp()) {
 		clock = 528;
 		tcwl = 4;
 	}

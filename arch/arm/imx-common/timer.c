@@ -43,10 +43,8 @@ DECLARE_GLOBAL_DATA_PTR;
 static inline int gpt_has_clk_source_osc(void)
 {
 #if defined(CONFIG_MX6)
-	if (((is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) &&
-	     (is_soc_rev(CHIP_REV_1_0) > 0)) || is_cpu_type(MXC_CPU_MX6DL) ||
-	      is_cpu_type(MXC_CPU_MX6SOLO) || is_cpu_type(MXC_CPU_MX6SX) ||
-	      is_cpu_type(MXC_CPU_MX6UL) || is_cpu_type(MXC_CPU_MX6ULL))
+	if (((is_mx6dq()) && (soc_rev() > CHIP_REV_1_0)) || is_mx6dqp() ||
+	    is_mx6sdl() || is_mx6sx() || is_mx6ul() || is_mx6ull())
 		return 1;
 
 	return 0;
@@ -111,12 +109,8 @@ int timer_init(void)
 		i |= GPTCR_CLKSOURCE_OSC | GPTCR_TEN;
 
 		/* For DL/S, SX, UL, ULL set 24Mhz OSC Enable bit and prescaler */
-		if (is_cpu_type(MXC_CPU_MX6DL) ||
-		    is_cpu_type(MXC_CPU_MX6SOLO) ||
-		    is_cpu_type(MXC_CPU_MX6SX) ||
-		    is_cpu_type(MXC_CPU_MX7D) ||
-		    is_cpu_type(MXC_CPU_MX6UL) ||
-		    is_cpu_type(MXC_CPU_MX6ULL)) {
+		if (is_mx6sdl() || is_mx6sx() || is_mx6ul() || is_mx6ull() ||
+		    is_mx7()) {
 			i |= GPTCR_24MEN;
 
 			/* Produce 3Mhz clock */
