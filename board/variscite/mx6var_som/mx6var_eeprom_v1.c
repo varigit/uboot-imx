@@ -311,9 +311,9 @@ int var_eeprom_v1_dram_init(void)
 	if (var_eeprom_v1_read_struct(&var_eeprom_v1_cfg))
 		return -1;
 
-	if (is_cpu_type(MXC_CPU_MX6DL) || is_cpu_type(MXC_CPU_MX6SOLO))
+	if (is_mx6sdl())
 		var_eeprom_v1_mx6sdl_dram_setup_iomux(&(var_eeprom_v1_cfg.pinmux_group));
-	else if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+	else if (is_mx6dq() || is_mx6dqp())
 		var_eeprom_v1_mx6dq_dram_setup_iomux(&(var_eeprom_v1_cfg.pinmux_group));
 
 	var_eeprom_v1_handle_write_opcodes(var_eeprom_v1_cfg.write_opcodes);

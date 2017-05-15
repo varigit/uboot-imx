@@ -293,6 +293,9 @@
 			"if test $board_name = DT6CUSTOM && test $board_rev = MX6Q; then " \
 				"setenv fdt_file imx6q-var-dart.dtb; " \
 			"fi; " \
+			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6QP; then " \
+				"setenv fdt_file imx6qp-var-som-vsc.dtb; " \
+			"fi; " \
 			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6Q; then " \
 				"setenv fdt_file imx6q-var-som-vsc.dtb; " \
 			"fi; " \
@@ -301,6 +304,14 @@
 			"fi; " \
 			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6DL && test $board_som = SOM-MX6; then " \
 				"setenv fdt_file imx6dl-var-som-vsc.dtb; " \
+			"fi; " \
+			"if test $board_name = MX6CUSTOM && test $board_rev = MX6QP; then " \
+				"i2c dev 2; " \
+				"if i2c probe 0x38; then " \
+					"setenv fdt_file imx6qp-var-som-cap.dtb; " \
+				"else " \
+					"setenv fdt_file imx6qp-var-som-res.dtb; " \
+				"fi; " \
 			"fi; " \
 			"if test $board_name = MX6CUSTOM && test $board_rev = MX6Q; then " \
 				"i2c dev 2; " \
