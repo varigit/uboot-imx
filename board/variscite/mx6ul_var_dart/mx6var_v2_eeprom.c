@@ -301,13 +301,24 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 			case 0x03:
 				printf("Ilegal!!! ");
 				break;
-			}
+		}
 		if (i & 0x04)
 			printf("WIFI\n");
 		else
 			printf("\n");
-	}
 
+		switch ((i >> 3) & 0x3) {
+			case 0x0:
+				printf("SOM Rev 1\n");
+				break;
+			case 0x1:
+				printf("SOM Rev 2\n");
+				break;
+			default:
+				printf("SOM Rev unknown\n");
+				break;
+		}
+	}
 	offset = (uchar *)&var_eeprom_cfg.part_number[0] - (uchar *)&var_eeprom_cfg;
 	if (var_eeprom_write((uchar *)&var_eeprom_cfg.part_number[0],
 				sizeof(var_eeprom_cfg.part_number),
