@@ -121,4 +121,7 @@
 #define CONFIG_CMD_FUSE
 #define CONFIG_MXC_OCOTP
 
+/* FDT */
+#define CONFIG_CMD_FDT
+
 #endif
