@@ -103,14 +103,6 @@
 #define CONFIG_SPL_DMA_SUPPORT
 #include "imx6_spl.h"
 
-#ifdef CONFIG_SYS_BOOT_NAND
-#undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT		"MX6UL_VAR_DART(nand)==> "
-#else
-#undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT		"MX6UL_VAR_DART(mmc)==> "
-#endif
-
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #define CONFIG_DISPLAY_CPUINFO
