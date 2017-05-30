@@ -35,15 +35,6 @@
 #define CONFIG_MX6DL
 #endif
 
-/* Uncomment for SECURE mode support */
-/* #define CONFIG_SECURE_BOOT */
-
-#ifdef CONFIG_SECURE_BOOT
-#ifndef CONFIG_CSF_SIZE
-#define CONFIG_CSF_SIZE 0x4000
-#endif
-#endif
-
 #include "mx6_common.h"
 #include <linux/sizes.h>
 
