@@ -180,7 +180,7 @@
            "if test ${som_rev} = 2 && test ${wifi} = yes && test ${boot_dev} != sd; then " \
               "fdt addr ${fdt_addr}; " \
               "fdt rm /soc/aips-bus@02100000/usdhc@02190000 no-1-8-v; " \
-              "fdt set /regulators/regulator@2 status okay; " \
+              "fdt set /regulators/regulator@1 status okay; " \
 	    "fi\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs ${cma_size} " \
