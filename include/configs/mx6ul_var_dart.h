@@ -163,6 +163,7 @@
 		"run optargs; " \
 		"nand read ${loadaddr} 0x600000 0x7e0000; " \
 		"nand read ${fdt_addr} 0xde0000 0x20000; " \
+		"run fixupfdt; " \
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0"
@@ -193,6 +194,7 @@
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
+				"run fixupfdt; " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
@@ -248,6 +250,12 @@
 	"fdt_addr=0x83000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
+	"fixupfdt=" \
+		"if test ${som_rev} = 2 && test ${wifi} = yes && test ${boot_dev} != sd; then " \
+			"fdt addr ${fdt_addr}; " \
+			"fdt rm /soc/aips-bus@02100000/usdhc@02190000 no-1-8-v; " \
+			"fdt set /regulators/regulator@1 status okay; " \
+		"fi;\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
@@ -262,6 +270,7 @@
 		"${get_cmd} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
+				"run fixupfdt; " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
