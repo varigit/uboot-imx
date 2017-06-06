@@ -7,5 +7,7 @@ F:	include/configs/mx6var_som.h
 F:	configs/mx6var_som_2gbram_defconfig
 F:	configs/mx6var_som_nand_android_defconfig
 F:	configs/mx6var_som_nand_defconfig
+F:	configs/mx6var_som_nand_SECURE_BOOT_defconfig
 F:	configs/mx6var_som_sd_android_defconfig
 F:	configs/mx6var_som_sd_defconfig
+F:	configs/mx6var_som_sd_SECURE_BOOT_defconfig

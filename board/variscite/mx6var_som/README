@@ -18,24 +18,16 @@ http://www.variwiki.com/index.php?title=VAR-SOM-MX6
 Building U-Boot
 ---------------
 
-To build U-Boot for SD card/eMMC:
+$ make mrproper
 
-$ make mx6var_som_sd_defconfig
-$ make
+Choose one of the following:
+$ make mx6var_som_sd_defconfig			# For booting from SD card/eMMC
+$ make mx6var_som_nand_defconfig		# For booting from NAND flash
+$ make mx6var_som_sd_SECURE_BOOT_defconfig	# For booting from SD card/eMMC with secure boot support
+$ make mx6var_som_nand_SECURE_BOOT_defconfig	# For booting from NAND flash with secure boot support
+$ make mx6var_som_sd_android_defconfig		# For booting from SD card/eMMC (Android)
+$ make mx6var_som_nand_android_defconfig	# For booting from NAND flash (Android)
 
-To build U-Boot for NAND flash:
-
-$ make mx6var_som_nand_defconfig
-$ make
-
-To build U-Boot for SD card/eMMC (Android):
-
-$ make mx6var_som_sd_android_defconfig
-$ make
-
-To build U-Boot for NAND flash (Android):
-
-$ make mx6var_som_nand_android_defconfig
 $ make
 
 
