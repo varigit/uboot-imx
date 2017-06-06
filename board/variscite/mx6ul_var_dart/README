@@ -1,33 +1,45 @@
-How to use U-boot on Variscite MX6UL DART
------------------------------------------------
+U-Boot for Variscite DART-6UL board
+-----------------------------------
 
-- Build U-boot for MX6UL DART:
+For more details:
+http://www.variscite.com/
+http://www.variwiki.com/index.php?title=DART-6UL
+
+
+Building U-Boot
+---------------
 
 $ make mrproper
 
-$ make mx6ul_var_dart_mmc_defconfig
-or
-$ make mx6ul_var_dart_nand_defconfig
+Choose one of the following:
+$ make mx6ul_var_dart_mmc_defconfig	# For booting from SD card/eMMC
+$ make mx6ul_var_dart_nand_defconfig	# For booting from NAND flash
 
 $ make
 
-This will generate the SPL image called SPL and the u-boot.img.
 
-- Flash the SPL image into the micro SD card:
+Flashing U-Boot to an SD card
+-----------------------------
 
-sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+- After the 'make' command completes, flash the generated SPL & U-Boot
+binaries into the SD card:
 
-- Flash the u-boot.img image into the micro SD card:
+$ sudo dd if=SPL of=/dev/sdX bs=1K seek=1; sync
+$ sudo dd if=u-boot.img of=/dev/sdX bs=1K seek=69; sync
 
-sudo dd if=u-boot.img of=/dev/mmcblk0 bs=1k seek=69; sync
+(replace /dev/sdX with your correct device node)
 
-- Jumper settings:
+- Insert the micro SD card into the slot on the board
 
-SD Boot: 0 0 
-eMMC Boot: 0 1
+- Connect the debug cable to the host PC
 
-- Connect the USB cable between the EVK and the PC for the console.
-(The USB console connector is the one close the push buttons)
+- Make sure the boot select DIP switches are set to SD:
+SD:	0 0
+eMMC:	0 1
+NAND:	1 0
 
-- Insert the micro SD card in the board, power it up and U-boot messages should
-come up.
+- Power up the board and U-Boot messages will appear in the serial console.
+
+
+For flashing U-Boot to NAND flash/eMMC and for a lot of more information,
+please refer to the Variscite wiki link above.

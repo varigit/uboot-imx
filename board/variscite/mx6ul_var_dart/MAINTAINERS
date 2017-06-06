@@ -1,7 +1,7 @@
-MX6ULEVK BOARD
-M:	Ron Donio <ron.d@variscite.com>
+MX6UL_VAR_DART BOARD
+M:	Eran Matityahu <eran.m@variscite.com>
 S:	Maintained
-F:	board/variscite/mx6ul_var_dart
+F:	board/variscite/mx6ul_var_dart/
 F:	include/configs/mx6ul_var_dart.h
 F:	configs/mx6ul_var_dart_mmc_defconfig
 F:	configs/mx6ul_var_dart_nand_defconfig
