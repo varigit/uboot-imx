@@ -875,8 +875,6 @@ void board_dram_init(void)
 
 void board_init_f(ulong dummy)
 {
-	u32 imxtype, cpurev;
-
 	/* setup AIPS and disable watchdog */
 	arch_cpu_init();
 
@@ -902,71 +900,60 @@ void board_init_f(ulong dummy)
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
 
-	cpurev = get_cpu_rev();
-	imxtype = (cpurev & 0xFF000) >> 12;
-	printf("i.MX%s SOC \n", get_imx_type(imxtype));
-	if(eeprom_revision==2){
+	if (eeprom_revision == 2) {
 		var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
 
-		var_eeprom_config_struct_v2.part_number[sizeof(var_eeprom_config_struct_v2.part_number)-1] = (u8)0x00;
-		var_eeprom_config_struct_v2.Assembly[sizeof(var_eeprom_config_struct_v2.Assembly)-1] = (u8)0x00;
-		var_eeprom_config_struct_v2.date[sizeof(var_eeprom_config_struct_v2.date)-1] = (u8)0x00;
+		var_eeprom_config_struct_v2.part_number[sizeof(var_eeprom_config_struct_v2.part_number) - 1] = (u8)0x00;
+		var_eeprom_config_struct_v2.Assembly[sizeof(var_eeprom_config_struct_v2.Assembly) - 1] = (u8)0x00;
+		var_eeprom_config_struct_v2.date[sizeof(var_eeprom_config_struct_v2.date) - 1] = (u8)0x00;
 
-		printf("Part number: %s\n", (char *)var_eeprom_config_struct_v2.part_number);
+		printf("\nPart number: %s\n", (char *)var_eeprom_config_struct_v2.part_number);
 		printf("Assembly: %s\n", (char *)var_eeprom_config_struct_v2.Assembly);
 		printf("Date of production: %s\n", (char *)var_eeprom_config_struct_v2.date);
-		printf("DART-6UL configuration: ");
-		switch (var_eeprom_config_struct_v2.som_info &0x3){
-			case 0x00:
-			printf("SDCARD Only ");
+
+		puts("DART-6UL");
+		if (((var_eeprom_config_struct_v2.som_info >> 3) & 0x3) == 1)
+			puts("-5G");
+		puts(" configuration: ");
+		switch (var_eeprom_config_struct_v2.som_info & 0x3) {
+		case 0x00:
+			puts("SD card Only ");
 			break;
-			case 0x01:
-			printf("NAND ");
+		case 0x01:
+			puts("NAND ");
 			break;
-			case 0x02:
-			printf("eMMC ");
+		case 0x02:
+			puts("eMMC ");
 			break;
-			case 0x03:
-			printf("Ilegal !!! ");
+		case 0x03:
+			puts("Ilegal !!! ");
 			break;
 		}
-		if (var_eeprom_config_struct_v2.som_info &0x04)
-			printf("WIFI\n");
-		else
-			printf("\n");
-
-		switch ((var_eeprom_config_struct_v2.som_info >> 3) & 0x3) {
-			case 0x0:
-				printf("SOM rev: 1\n");
-				break;
-			case 0x1:
-				printf("SOM rev: 2\n");
-				break;
-			default:
-				printf("SOM rev: unknown\n");
-				break;
-	}
-
+		if (var_eeprom_config_struct_v2.som_info & 0x04)
+			puts("WiFi");
+		puts("\n");
 	} else {
-		printf("DDR LEGACY configuration\n");
+		puts("DDR LEGACY configuration\n");
 	}
+
 	dram_init();
-	printf("Ram size: %ld\n", sdram_size);
-	printf("Boot Device: ");
+
+	puts("Boot Device: ");
 	switch (var_get_boot_device()) {
 	case BOOT_DEVICE_MMC1:
-		printf("SD\n");
+		puts("SD");
 		break;
 	case BOOT_DEVICE_MMC2:
-		printf("MMC\n");
+		puts("eMMC");
 		break;
 	case BOOT_DEVICE_NAND:
-		printf("NAND\n");
+		puts("NAND");
 		break;
 	default:
-		printf("UNKNOWN\n");
+		puts("UNKNOWN");
 		break;
 	}
+	puts("\n");
 
 	/* load/boot image from boot device */
 	board_init_r(NULL, 0);
