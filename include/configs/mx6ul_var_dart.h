@@ -69,6 +69,7 @@
 #define CONFIG_CMD_EXT4
 #define CONFIG_CMD_EXT4_WRITE
 #define CONFIG_CMD_FAT
+#define CONFIG_FAT_WRITE
 
 /* Miscellaneous configurable options */
 #undef CONFIG_CMD_IMLS
