@@ -688,6 +688,7 @@ int board_mmc_init(bd_t *bis)
 	default:
 		break;
 	}
+	puts("\n");
 
 	return fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
 #endif
