@@ -21,35 +21,39 @@
 static u32 get_address_by_index(unsigned char index);
 static u32 get_value_by_index(unsigned char index);
 static int handle_one_command(struct eeprom_command_type *eeprom_commands,int command_num);
- 
-//DDR Register struct
-//The eeprom contains structure of 
-// 1 byte index in this table, 1byte index to common values in the next tableto write to this address.
-// if there is some new addresses got from the calibration program they should be added in the end of the array.
-// The maximum array size is 256 addresses.
+
+/*
+ * DDR Register struct
+ * The eeprom contains structure of
+ * 1 byte index in this table,
+ * 1 byte index to common values in the next tableto write to this address.
+ * If there is some new addresses got from the calibration program
+ * they should be added in the end of the array.
+ * The maximum array size is 256 addresses.
+ */
 static const u32 rom_addresses[]=
 	{
 		#include "addresses.inc"
 	};
-				
-static const u32 rom_values[] = 
+
+static const u32 rom_values[] =
 	{
 		#include "values.inc"
 	};
 
 static u32 ram_addresses[MAXIMUM_RAM_ADDRESSES] __attribute__ ((section ("sram")));
 static u32 ram_values[MAXIMUM_RAM_VALUES] __attribute__ ((section ("sram")));
-				
+
 void load_custom_data(u32 *custom_addresses_values)
 {
 	int i;
-	
+
 	for(i=0;i<MAXIMUM_RAM_ADDRESSES;i++)
 	{
 		ram_addresses[i]=0;
 		ram_values[i]=0;
 	}
-	
+
 	int j=0;
 	for(i=0;i<32;i++)
 	{
@@ -58,11 +62,11 @@ void load_custom_data(u32 *custom_addresses_values)
 		ram_addresses[j]=custom_addresses_values[i];
 		j++;
 	}
-	
+
 	i++;
 	if(i>MAXIMUM_RAM_ADDRESSES)
 		return;
-	
+
 	j=0;
 	for(;i<32;i++)
 	{
@@ -72,9 +76,7 @@ void load_custom_data(u32 *custom_addresses_values)
 		j++;
 	}
 }
-	
-	
-	
+
 int handle_eeprom_data(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2)
 {
 	load_custom_data(var_eeprom_config_struct_v2->custom_addresses_values);
@@ -85,7 +87,7 @@ int handle_eeprom_data(struct var_eeprom_config_struct_v2_type *var_eeprom_confi
 int setup_ddr_parameters(struct eeprom_command_type *eeprom_commands)
 {
 	int i=0;
-	
+
 	while(i<MAXIMUM_COMMANDS_NUMBER)
 	{
 		i=handle_one_command(eeprom_commands, i);
@@ -105,11 +107,11 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 	u32 value;
 #if 0
 	printf("Executing command %03d: %03d,  %03d\n",
-													command_num,
-													eeprom_commands[command_num].address_index,
-													eeprom_commands[command_num].value_index);
+			command_num,
+			eeprom_commands[command_num].address_index,
+			eeprom_commands[command_num].value_index);
 #endif
-	
+
 	switch(eeprom_commands[command_num].address_index)
 	{
 		case WHILE_NOT_EQUAL_INDEX:
@@ -117,9 +119,9 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			address=get_address_by_index(eeprom_commands[command_num].address_index);
 			value=get_value_by_index(eeprom_commands[command_num].value_index);
 			data=(u32*)address;
-			//printf("waiting while data at address %08x is not equal %08x\n",address,value);
+			/* printf("waiting while data at address %08x is not equal %08x\n",address,value); */
 			while(data[0]!=value);
-			
+
 			command_num++;
 			break;
 		case WHILE_EQUAL_INDEX:
@@ -127,9 +129,9 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			address=get_address_by_index(eeprom_commands[command_num].address_index);
 			value=get_value_by_index(eeprom_commands[command_num].value_index);
 			data=(u32*)address;
-			//printf("waiting while data at address %08x is equal %08x\n",address,value);
+			/* printf("waiting while data at address %08x is equal %08x\n",address,value); */
 			while(data[0]==value);
-			
+
 			command_num++;
 			break;
 		case WHILE_AND_INDEX:
@@ -137,9 +139,9 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			address=get_address_by_index(eeprom_commands[command_num].address_index);
 			value=get_value_by_index(eeprom_commands[command_num].value_index);
 			data=(u32*)address;
-			//printf("waiting while data at address %08x and %08x is not zero\n",address,value);
+			/* printf("waiting while data at address %08x and %08x is not zero\n",address,value); */
 			while(data[0]&value);
-			
+
 			command_num++;
 			break;
 		case WHILE_NOT_AND_INDEX:
@@ -147,14 +149,14 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			address=get_address_by_index(eeprom_commands[command_num].address_index);
 			value=get_value_by_index(eeprom_commands[command_num].value_index);
 			data=(u32*)address;
-			//printf("waiting while data at address %08x and %08x is zero\n",address,value);
+			/* printf("waiting while data at address %08x and %08x is zero\n",address,value); */
 			while(!(data[0]&value));
-			
+
 			command_num++;
 			break;
 		case DELAY_10USEC_INDEX:
-			//Delay for Value * 10 uSeconds
-			//printf("Delaying for %d microseconds\n",eeprom_commands[command_num].value_index*10);
+			/* Delay for Value * 10 uSeconds */
+			/* printf("Delaying for %d microseconds\n",eeprom_commands[command_num].value_index*10); */
 			p_udelay((int)(eeprom_commands[command_num].value_index*10));
 			command_num++;
 			break;
@@ -165,12 +167,12 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			address=get_address_by_index(eeprom_commands[command_num].address_index);
 			value=get_value_by_index(eeprom_commands[command_num].value_index);
 			data=(u32*)address;
-			//printf("Setting data at address %08x to %08x\n",address,value);
+			/* printf("Setting data at address %08x to %08x\n",address,value); */
 			data[0]=value;
 			command_num++;
 			break;
 	}
-	
+
 	return command_num;
 }
 
@@ -181,21 +183,21 @@ static u32 get_address_by_index(unsigned char index)
 
 	return rom_addresses[index];
 }
-	
+
 static u32 get_value_by_index(unsigned char index)
 {
 	if(index>=MAXIMUM_ROM_VALUE_INDEX)
 		return ram_values[index-MAXIMUM_ROM_VALUE_INDEX];
 
 	return rom_values[index];
-}	
-	
+}
+
 int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2)
 {
 	int eeprom_found;
 	int ret = 0;
 	int oldbus;
-	
+
 	oldbus = i2c_get_bus_num();
 	i2c_set_bus_num(1);
 
@@ -206,16 +208,15 @@ int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eepro
 		{
 			printf("Read device ID error!\n");
 			return -1;
-		} 
-	} 
-	else 
+		}
+	}
+	else
 		printf("Error! Couldn't find EEPROM device\n");
-	
+
 	i2c_set_bus_num(oldbus);
 	return ret;
 }
 
-	
 int var_eeprom_write(uchar *ptr, u32 size, u32 offset)
 {
 	int ret = 0;
@@ -251,7 +252,7 @@ int var_eeprom_write(uchar *ptr, u32 size, u32 offset)
 	return ret;
 }
 
-/******************************************************************************
+/*
  * var_eeprom_params command intepreter.
  */
 static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -282,7 +283,6 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 	printf("Assembly: %s\n", (char *)var_eeprom_cfg.Assembly);
 	printf("Date of production: %s\n", (char *)var_eeprom_cfg.date);
 
-	
 	printf("SOM Configuration:\n");
 	for (i=0; i<8; i++){
 		if (i == var_eeprom_cfg.som_info) printf("*");
@@ -326,7 +326,7 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 	{
 		printf("Error writing Part Number to EEPROM!\n");
 		return -1;
-	} 
+	}
 
 	offset = (uchar *)&var_eeprom_cfg.Assembly[0] - (uchar *)&var_eeprom_cfg;
 	if (var_eeprom_write((uchar *)&var_eeprom_cfg.Assembly[0],
@@ -335,7 +335,7 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 	{
 		printf("Error writing Assembly to EEPROM!\n");
 		return -1;
-	} 
+	}
 
 	offset = (uchar *)&var_eeprom_cfg.date[0] - (uchar *)&var_eeprom_cfg;
 	if (var_eeprom_write((uchar *)&var_eeprom_cfg.date[0],
@@ -365,6 +365,3 @@ U_BOOT_CMD(
 	"",
 	""
 );
-	
-	
-	
