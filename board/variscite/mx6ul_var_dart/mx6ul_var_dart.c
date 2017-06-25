@@ -57,21 +57,21 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PUS_22K_UP  | PAD_CTL_SPEED_LOW |		\
 	PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
-#define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_PUE |     \
-	PAD_CTL_SPEED_HIGH   |                                  \
+#define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_PUE |	\
+	PAD_CTL_SPEED_HIGH   |					\
 	PAD_CTL_DSE_48ohm   | PAD_CTL_SRE_FAST)
 
-#define I2C_PAD_CTRL    (PAD_CTL_PKE | PAD_CTL_PUE |            \
-	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |               \
+#define I2C_PAD_CTRL    (PAD_CTL_PKE | PAD_CTL_PUE |		\
+	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm | PAD_CTL_HYS |			\
 	PAD_CTL_ODE)
 
-#define MDIO_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_PUE |     \
+#define MDIO_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_PUE |	\
 	PAD_CTL_DSE_48ohm   | PAD_CTL_SRE_FAST | PAD_CTL_ODE)
 
 #define ENET_CLK_PAD_CTRL  (PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST)
 
-#define ENET_RX_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |          \
+#define ENET_RX_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
 	PAD_CTL_SPEED_HIGH   | PAD_CTL_SRE_FAST)
 
 #define LCD_PAD_CTRL    (PAD_CTL_HYS | PAD_CTL_PUS_100K_UP | PAD_CTL_PUE | \
@@ -103,15 +103,14 @@ u32 get_cpu_speed_grade_hz(void)
 	val &= 0x3;
 
 	switch (val) {
-		case OCOTP_CFG3_SPEED_528MHZ:
-			return 528000000;
-		case OCOTP_CFG3_SPEED_696MHZ:
-			return 69600000;
+	case OCOTP_CFG3_SPEED_528MHZ:
+		return 528000000;
+	case OCOTP_CFG3_SPEED_696MHZ:
+		return 69600000;
 	}
+
 	return 0;
 }
-
-
 
 #ifdef CONFIG_SYS_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
@@ -147,10 +146,9 @@ static struct i2c_pads_info i2c_pad_info2 = {
 };
 
 #ifdef CONFIG_POWER
-#define I2C_PMIC       0
+#define I2C_PMIC	0
 int power_init_board(void)
 {
-
 	return 0;
 }
 
@@ -163,23 +161,24 @@ void ldo_mode_set(int ldo_bypass)
 #endif
 #endif
 
-int dram_init(void){
+int dram_init(void)
+{
 	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
 	unsigned int volatile * port2;
-	unsigned int volatile * ddr_cs0_end= (unsigned int*)DDR0_CS0_END;
+	unsigned int volatile * ddr_cs0_end = (unsigned int*) DDR0_CS0_END;
 
 	/* Set the sdram_size to the actually configured one */
-	sdram_size=((*ddr_cs0_end)-63)*32;
+	sdram_size = ((*ddr_cs0_end) - 63) * 32;
 	do {
 		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
 
-		*port2 = 0;				// write zero to start of second half of memory.
-		*port1 = 0x3f3f3f3f;	// write pattern to start of memory.
+		*port2 = 0;		/* write zero to start of second half of memory. */
+		*port1 = 0x3f3f3f3f;	/* write pattern to start of memory. */
 
-		if ((0x3f3f3f3f == *port2) && (sdram_size > 128))
-			sdram_size = sdram_size / 2;	// Next step devide size by half
+		if ((*port2 == 0x3f3f3f3f) && (sdram_size > 128))
+			sdram_size = sdram_size / 2;	/* Next step devide size by half */
 		else
-		   if (0 == *port2) break;		// Done actual size found.
+			if (*port2 == 0) break;		/* Done actual size found. */
 
 	} while (sdram_size > 128);
 
@@ -187,7 +186,6 @@ int dram_init(void){
 
 	return 0;
 }
-
 
 static iomux_v3_cfg_t const uart1_pads[] = {
 	MX6_PAD_UART1_TX_DATA__UART1_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -291,7 +289,7 @@ int mmc_get_env_devno(void)
 	int dev_no;
 	u32 bootsel;
 
-       bootsel = (soc_sbmr & 0x000000FF) >> 6;
+	bootsel = (soc_sbmr & 0x000000FF) >> 6;
 
 	/* If not boot from sd/mmc, use default value */
 	if (bootsel != 1)
@@ -311,7 +309,6 @@ int mmc_map_to_kernel_blk(int dev_no)
 int board_mmc_getcd(struct mmc *mmc)
 {
 	return 1;
-
 }
 
 int board_mmc_init(bd_t *bis)
@@ -598,7 +595,7 @@ int board_late_init(void)
 {
 	char *s;
 	char fdt_filename[FDT_FILENAME_MAX_LEN];
-	u32 imxtype,cpurev;
+	u32 imxtype, cpurev;
 
 	cpurev = get_cpu_rev();
 	imxtype = (cpurev & 0xFF000) >> 12;
@@ -610,18 +607,17 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	setenv("board_name", "MX6UL_VAR_DART");
 
-	if(sdram_size<512)
+	if (sdram_size < 512)
 		setenv("cma_size", "cma=64MB");
-	if(sdram_size<256)
-	{
-                setenv("cma_size", "cma=32MB");
+
+	if (sdram_size < 256) {
+		setenv("cma_size", "cma=32MB");
 		setenv("loadimagesize", "1A00000");
 		setenv("fdt_addr", "0x84000000");
 		setenv("loadaddr", "0x84600000");
 	}
 
-
-	s = getenv ("var_auto_fdt_file");
+	s = getenv("var_auto_fdt_file");
 	if (s[0] != 'Y') return 0;
 
 	var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
@@ -630,16 +626,16 @@ int board_late_init(void)
 	case SD1_BOOT:
 	case MMC1_BOOT:
 		setenv("boot_dev", "sd");
-		switch (var_eeprom_config_struct_v2.som_info &0x3){
-			case 0x00:
-			case 0x02:
-				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+		switch (var_eeprom_config_struct_v2.som_info & 0x3) {
+		case 0x00:
+		case 0x02:
+			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
 					imxtype == MXC_CPU_MX6ULL ?
 					"imx6ull-var-dart-sd_emmc.dtb" :
 					"imx6ul-var-dart-sd_emmc.dtb");
 			break;
-			case 0x01:
-				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+		case 0x01:
+			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
 					imxtype == MXC_CPU_MX6ULL ?
 					"imx6ull-var-dart-sd_nand.dtb" :
 					"imx6ul-var-dart-sd_nand.dtb");
@@ -650,12 +646,12 @@ int board_late_init(void)
 	case MMC2_BOOT:
 		setenv("boot_dev", "mmc");
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
-				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
 					imxtype == MXC_CPU_MX6ULL ?
 					"imx6ull-var-dart-emmc_wifi.dtb" :
 					"imx6ul-var-dart-emmc_wifi.dtb");
 		else
-				snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
+			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
 					imxtype == MXC_CPU_MX6ULL ?
 					"imx6ull-var-dart-sd_emmc.dtb" :
 					"imx6ul-var-dart-sd_emmc.dtb");
@@ -663,18 +659,18 @@ int board_late_init(void)
 	case NAND_BOOT:
 		setenv("boot_dev", "nand");
 		if (var_eeprom_config_struct_v2.som_info & 0x4)
-				snprintf(fdt_filename,FDT_FILENAME_MAX_LEN,"%s",
+			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN,"%s",
 					imxtype == MXC_CPU_MX6ULL ?
 					"imx6ull-var-dart-nand_wifi.dtb" :
 					"imx6ul-var-dart-nand_wifi.dtb");
 		else
-				snprintf(fdt_filename,FDT_FILENAME_MAX_LEN,"%s",
+			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN,"%s",
 					imxtype == MXC_CPU_MX6ULL ?
 					"imx6ull-var-dart-sd_nand.dtb" :
 					"imx6ul-var-dart-sd_nand.dtb");
 		break;
 	default:
-		fdt_filename[0]=0x00;
+		fdt_filename[0] = 0x00;
 		printf("Unsupported boot device!\n");
 		break;
 	}
@@ -684,15 +680,15 @@ int board_late_init(void)
 		setenv("wifi", "yes");
 
 	switch ((var_eeprom_config_struct_v2.som_info >> 3) & 0x3) {
-		case 0x0:
-			setenv("som_rev", "1");
-			break;
-		case 0x1:
-			setenv("som_rev", "2");
-			break;
-		default:
-			setenv("som_rev", "unknown");
-			break;
+	case 0x0:
+		setenv("som_rev", "1");
+		break;
+	case 0x1:
+		setenv("som_rev", "2");
+		break;
+	default:
+		setenv("som_rev", "unknown");
+		break;
 	}
 
 #endif
@@ -809,19 +805,17 @@ void p_udelay(int time)
 
 int var_get_boot_device(void)
 {
-
 	switch (spl_boot_device()) {
-		case BOOT_DEVICE_MMC1:
-			if (1== mmc_get_env_devno())
-				return BOOT_DEVICE_MMC2;
-			else
-				return BOOT_DEVICE_MMC1;
+	case BOOT_DEVICE_MMC1:
+		if (mmc_get_env_devno() == 1)
+			return BOOT_DEVICE_MMC2;
+		else
+			return BOOT_DEVICE_MMC1;
 	case BOOT_DEVICE_NAND:
-		return 	BOOT_DEVICE_NAND;
+		return BOOT_DEVICE_NAND;
 	default:
 		return BOOT_DEVICE_NONE;
 	}
-
 }
 
 static void spl_dram_init(void)
@@ -829,12 +823,13 @@ static void spl_dram_init(void)
 	mx6ul_dram_iocfg(mem_ddr.width, &mx6_ddr_ioregs, &mx6_grp_ioregs);
 	mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_ddr);
 }
+
 /*
  * Second phase ddr init. Use eeprom values.
  */
-static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
+static struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
 
-static int  spl_dram_init_v2(void)
+static int spl_dram_init_v2(void)
 {
 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
 	int ret;
@@ -847,7 +842,7 @@ static int  spl_dram_init_v2(void)
 	if (ret)
 		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM;
 
-	if(var_eeprom_config_struct_v2.variscite_magic!=0x32524156) //Test for VAR2 in the header.
+	if (var_eeprom_config_struct_v2.variscite_magic != 0x32524156) /* Test for VAR2 in the header. */
 		return SPL_DRAM_INIT_STATUS_ERROR_NO_EEPROM_STRUCT_DETECTED;
 
 	handle_eeprom_data(&var_eeprom_config_struct_v2);
@@ -862,18 +857,14 @@ void board_dram_init(void)
 	int spl_status;
 
 	/* Initialize DDR based on eeprom if exist */
-	spl_status=spl_dram_init_v2();
-	if(spl_status != SPL_DRAM_INIT_STATUS_OK) {
+	spl_status = spl_dram_init_v2();
+	if (spl_status != SPL_DRAM_INIT_STATUS_OK) {
 		spl_dram_init();
-		eeprom_revision=0;
+		eeprom_revision = 0;
 	} else {
-		eeprom_revision=2;
+		eeprom_revision = 2;
 	}
-
-//	spl_mx6qd_dram_setup_iomux_check_reset();
 }
-
-
 
 void board_init_f(ulong dummy)
 {
@@ -894,7 +885,6 @@ void board_init_f(ulong dummy)
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 	i2c_set_bus_num(1);
-
 
 	/* DDR initialization */
 	board_dram_init();
