@@ -178,9 +178,10 @@
 #define CONFIG_MXC_RDC /* Enable RDC to isolate the peripherals for A7 and M4 */
 
 #define UPDATE_M4_ENV \
+	"m4bootdata="__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0" \
 	"m4image=m4_qspi.bin\0" \
-	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)" ${m4image}\0" \
-	"m4boot=run loadm4image; bootaux "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0"
+	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} ${m4bootdata} ${m4image}\0" \
+	"m4boot=run loadm4image; dcache flush; bootaux ${m4bootdata}\0"
 #else
 #define UPDATE_M4_ENV ""
 #endif
@@ -298,6 +299,7 @@
 		"setenv splashimage 0x83100000\0" \
 	"splashdisable=setenv splashfile; setenv splashimage\0" \
 	"ip_dyn=yes\0" \
+	"use_m4=no\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
@@ -326,10 +328,18 @@
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
 			"if test $som_rev = EMMC; then " \
-				"setenv fdt_file imx7d-var-som-emmc.dtb; " \
+				"if test ${use_m4} = yes; then " \
+					"setenv fdt_file imx7d-var-som-emmc-m4.dtb; " \
+				"else " \
+					"setenv fdt_file imx7d-var-som-emmc.dtb; " \
+				"fi; " \
 			"fi; " \
 			"if test $som_rev = NAND; then " \
-				"setenv fdt_file imx7d-var-som-nand.dtb; " \
+				"if test ${use_m4} = yes; then " \
+					"setenv fdt_file imx7d-var-som-nand-m4.dtb; " \
+				"else " \
+					"setenv fdt_file imx7d-var-som-nand.dtb; " \
+				"fi; " \
 			"fi; " \
 			"if test $fdt_file = undefined; then " \
 				"echo WARNING: Could not determine dtb to use; " \
