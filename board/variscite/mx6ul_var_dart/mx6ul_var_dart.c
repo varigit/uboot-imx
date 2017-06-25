@@ -283,20 +283,7 @@ static void setup_iomux_uart(void)
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
 }
 
-static struct fsl_esdhc_cfg usdhc_cfg[2] = {
-	{USDHC1_BASE_ADDR, 0, 4},
-#if !defined(CONFIG_SYS_USE_NAND)
-	{USDHC2_BASE_ADDR, 0, 8},
-#endif
-};
-
-/* SPL boot from first device. Swap the device in case of SPL & eMMC */
-static struct fsl_esdhc_cfg usdhc_cfg_emmc[2] = {
-	{USDHC2_BASE_ADDR, 0, 8},
-#if !defined(CONFIG_SYS_USE_NAND)
-	{USDHC1_BASE_ADDR, 0, 4},
-#endif
-};
+static struct fsl_esdhc_cfg usdhc_cfg[2];
 
 int mmc_get_env_devno(void)
 {
@@ -329,32 +316,32 @@ int board_mmc_getcd(struct mmc *mmc)
 
 int board_mmc_init(bd_t *bis)
 {
+#ifndef CONFIG_SPL_BUILD
 	int i;
 	int err;
-#ifdef CONFIG_SPL_BUILD
-	int devno;
-#endif
 
 	/*
 	 * According to the board_mmc_init() the following map is done:
 	 * (U-boot device node)    (Physical Port)
-	 * mmc0                    USDHC1
-	 * mmc1                    USDHC2
+	 * mmc0                    USDHC1 (SD)
+	 * mmc1                    USDHC2 (eMMC)
 	 */
 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
 		switch (i) {
 		case 0:
 			imx_iomux_v3_setup_multiple_pads(
-				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+					usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+			usdhc_cfg[0].esdhc_base = USDHC1_BASE_ADDR;
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-			usdhc_cfg_emmc[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+			usdhc_cfg[0].max_bus_width = 4;
 			break;
 #if !defined(CONFIG_SYS_USE_NAND)
 		case 1:
 			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
+					usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
+			usdhc_cfg[1].esdhc_base = USDHC2_BASE_ADDR;
 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-			usdhc_cfg_emmc[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+			usdhc_cfg[1].max_bus_width = 8;
 			break;
 #endif
 		default:
@@ -362,22 +349,37 @@ int board_mmc_init(bd_t *bis)
 			return 0;
 		}
 
-#ifdef CONFIG_SPL_BUILD
-/* Swap the mmc device table in SPL/eMMC boot. SPL code limitation handle first device only.*/
-			devno = mmc_get_env_devno();
-			if (devno == 0)
-				err = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
-			else
-				err = fsl_esdhc_initialize(bis, &usdhc_cfg_emmc[i]);
-			if (err)
-				printf("Warning: failed to initialize mmc dev %d\n", i);
-#else
 		err = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
 		if (err)
-			printf("Warning: failed to initialize mmc dev %d\n", i);
-#endif
+			printf("Error: failed to initialize mmc dev %d\n", i);
 	}
 	return 0;
+#else
+	int devno = mmc_get_env_devno();
+	switch (devno) {
+	case 0:
+		imx_iomux_v3_setup_multiple_pads(
+				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+		usdhc_cfg[0].esdhc_base = USDHC1_BASE_ADDR;
+		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+		usdhc_cfg[0].max_bus_width = 4;
+		break;
+#if !defined(CONFIG_SYS_USE_NAND)
+	case 1:
+		imx_iomux_v3_setup_multiple_pads(
+				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
+		usdhc_cfg[0].esdhc_base = USDHC2_BASE_ADDR;
+		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+		usdhc_cfg[0].max_bus_width = 8;
+		break;
+#endif
+	default:
+		printf("Error: Unsupported mmc dev num %d\n", devno);
+		return -1;
+	}
+
+	return fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
+#endif
 }
 
 int check_mmc_autodetect(void)
