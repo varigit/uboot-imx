@@ -157,7 +157,6 @@
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
 #define NAND_BOOT_ENV_SETTINGS \
-	"fdt_file=imx6ul-var-dart-nand_wifi.dtb\0" \
 	"nandargs=setenv bootargs console=${console},${baudrate} " \
 		"ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs rw ${cma_size}\0" \
 	"nandboot=echo Booting from nand ...; " \
@@ -172,7 +171,6 @@
 
 
 #define MMC_BOOT_ENV_SETTINGS \
-	"fdt_file=imx6ul-var-dart-sd_emmc.dtb\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -190,7 +188,8 @@
 	"loadimagesize=6300000\0" \
 	"loadimage=mw.b ${loadaddr} 0 ${loadimagesize}; " \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadfdt=run findfdt; " \
+		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
@@ -213,12 +212,14 @@
 #ifdef CONFIG_SYS_BOOT_NAND
 #define BOOT_ENV_SETTINGS	NAND_BOOT_ENV_SETTINGS
 #define CONFIG_BOOTCOMMAND \
+	"run ramsize_check; " \
 	"run nandboot || " \
 	"run netboot"
 
 #else
 #define BOOT_ENV_SETTINGS	MMC_BOOT_ENV_SETTINGS
 #define CONFIG_BOOTCOMMAND \
+	"run ramsize_check; " \
 	"mmc dev ${mmcdev};" \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
 		"if run loadbootenv; then " \
@@ -246,14 +247,14 @@
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
+	"fdt_file=undefined\0" \
+	"fdt_addr=0x83000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"var_auto_fdt_file=Y\0" \
-	"fdt_addr=0x83000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"fixupfdt=" \
-		"if test ${som_rev} = 2 && test ${wifi} = yes && test ${boot_dev} != sd; then " \
+		"if test ${som_rev} = 5G && test ${wifi} = yes && test ${boot_dev} != sd; then " \
 			"fdt addr ${fdt_addr}; " \
 			"fdt rm /soc/aips-bus@02100000/usdhc@02190000 no-1-8-v; " \
 			"fdt set /regulators/regulator@1 status okay; " \
@@ -271,6 +272,7 @@
 		"fi; " \
 		"${get_cmd} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+			"run findfdt; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"run fixupfdt; " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
@@ -285,7 +287,70 @@
 			"bootz; " \
 		"fi;\0" \
 	"usbnet_devaddr=f8:dc:7a:00:00:02\0" \
-	"usbnet_hostaddr=f8:dc:7a:00:00:01\0"
+	"usbnet_hostaddr=f8:dc:7a:00:00:01\0" \
+	"ramsize_check="\
+		"if test $sdram_size -lt 256; then " \
+			"setenv cma_size cma=32MB; " \
+			"setenv loadimagesize 1A00000; " \
+			"setenv fdt_addr 0x84000000; " \
+			"setenv loadaddr 0x84600000; " \
+		"else " \
+			"if test $sdram_size -lt 512; then " \
+				"setenv cma_size cma=64MB; " \
+			"fi; " \
+		"fi;\0" \
+	"findfdt="\
+		"if test $fdt_file = undefined; then " \
+			"if test $boot_dev = sd; then " \
+				"if test $som_storage = emmc || test $som_storage = none; then " \
+					"if test $soc_type = MX6ULL; then " \
+						"setenv fdt_file imx6ull-var-dart-sd_emmc.dtb; " \
+					"else " \
+						"setenv fdt_file imx6ul-var-dart-sd_emmc.dtb; " \
+					"fi; " \
+				"fi; " \
+				"if test $som_storage = nand; then " \
+					"if test $soc_type = MX6ULL; then " \
+						"setenv fdt_file imx6ull-var-dart-sd_nand.dtb; " \
+					"else " \
+						"setenv fdt_file imx6ul-var-dart-sd_nand.dtb; " \
+					"fi; " \
+				"fi; " \
+			"fi; " \
+			"if test $boot_dev = emmc; then " \
+				"if test $wifi = yes; then " \
+					"if test $soc_type = MX6ULL; then " \
+						"setenv fdt_file imx6ull-var-dart-emmc_wifi.dtb; " \
+					"else " \
+						"setenv fdt_file imx6ul-var-dart-emmc_wifi.dtb; " \
+					"fi; " \
+				"else " \
+					"if test $soc_type = MX6ULL; then " \
+						"setenv fdt_file imx6ull-var-dart-sd_emmc.dtb; " \
+					"else " \
+						"setenv fdt_file imx6ul-var-dart-sd_emmc.dtb; " \
+					"fi; " \
+				"fi; " \
+			"fi; " \
+			"if test $boot_dev = nand; then " \
+				"if test $wifi = yes; then " \
+					"if test $soc_type = MX6ULL; then " \
+						"setenv fdt_file imx6ull-var-dart-nand_wifi.dtb; " \
+					"else " \
+						"setenv fdt_file imx6ul-var-dart-nand_wifi.dtb; " \
+					"fi; " \
+				"else " \
+					"if test $soc_type = MX6ULL; then " \
+						"setenv fdt_file imx6ull-var-dart-sd_nand.dtb; " \
+					"else " \
+						"setenv fdt_file imx6ul-var-dart-sd_nand.dtb; " \
+					"fi; " \
+				"fi; " \
+			"fi; " \
+			"if test $fdt_file = undefined; then " \
+				"echo WARNING: Could not determine dtb to use; " \
+			"fi; " \
+		"fi;\0"
 
 
 /* Miscellaneous configurable options */
