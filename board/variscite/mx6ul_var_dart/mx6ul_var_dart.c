@@ -590,15 +590,11 @@ static const struct boot_mode board_boot_modes[] = {
 #endif
 
 static 	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2;
-#define FDT_FILENAME_MAX_LEN	100
+#define SDRAM_SIZE_STR_LEN 5
 int board_late_init(void)
 {
-	char *s;
-	char fdt_filename[FDT_FILENAME_MAX_LEN];
+	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	u32 imxtype, cpurev;
-
-	cpurev = get_cpu_rev();
-	imxtype = (cpurev & 0xFF000) >> 12;
 
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
@@ -607,90 +603,67 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	setenv("board_name", "MX6UL_VAR_DART");
 
-	if (sdram_size < 512)
-		setenv("cma_size", "cma=64MB");
+	cpurev = get_cpu_rev();
+	imxtype = (cpurev & 0xFF000) >> 12;
 
-	if (sdram_size < 256) {
-		setenv("cma_size", "cma=32MB");
-		setenv("loadimagesize", "1A00000");
-		setenv("fdt_addr", "0x84000000");
-		setenv("loadaddr", "0x84600000");
-	}
+	if (imxtype == MXC_CPU_MX6ULL)
+		setenv("soc_type", "MX6ULL");
+	else
+		setenv("soc_type", "MX6UL");
 
-	s = getenv("var_auto_fdt_file");
-	if (s[0] != 'Y') return 0;
-
-	var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
+	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int) sdram_size);
+	setenv("sdram_size", sdram_size_str);
 
 	switch (get_boot_device()) {
 	case SD1_BOOT:
 	case MMC1_BOOT:
 		setenv("boot_dev", "sd");
-		switch (var_eeprom_config_struct_v2.som_info & 0x3) {
-		case 0x00:
-		case 0x02:
-			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
-					imxtype == MXC_CPU_MX6ULL ?
-					"imx6ull-var-dart-sd_emmc.dtb" :
-					"imx6ul-var-dart-sd_emmc.dtb");
-			break;
-		case 0x01:
-			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
-					imxtype == MXC_CPU_MX6ULL ?
-					"imx6ull-var-dart-sd_nand.dtb" :
-					"imx6ul-var-dart-sd_nand.dtb");
-			break;
-		}
 		break;
 	case SD2_BOOT:
 	case MMC2_BOOT:
-		setenv("boot_dev", "mmc");
-		if (var_eeprom_config_struct_v2.som_info & 0x4)
-			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
-					imxtype == MXC_CPU_MX6ULL ?
-					"imx6ull-var-dart-emmc_wifi.dtb" :
-					"imx6ul-var-dart-emmc_wifi.dtb");
-		else
-			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN, "%s",
-					imxtype == MXC_CPU_MX6ULL ?
-					"imx6ull-var-dart-sd_emmc.dtb" :
-					"imx6ul-var-dart-sd_emmc.dtb");
+		setenv("boot_dev", "emmc");
 		break;
 	case NAND_BOOT:
 		setenv("boot_dev", "nand");
-		if (var_eeprom_config_struct_v2.som_info & 0x4)
-			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN,"%s",
-					imxtype == MXC_CPU_MX6ULL ?
-					"imx6ull-var-dart-nand_wifi.dtb" :
-					"imx6ul-var-dart-nand_wifi.dtb");
-		else
-			snprintf(fdt_filename, FDT_FILENAME_MAX_LEN,"%s",
-					imxtype == MXC_CPU_MX6ULL ?
-					"imx6ull-var-dart-sd_nand.dtb" :
-					"imx6ul-var-dart-sd_nand.dtb");
 		break;
 	default:
-		fdt_filename[0] = 0x00;
-		printf("Unsupported boot device!\n");
+		setenv("boot_dev", "unknown");
 		break;
 	}
-	setenv("fdt_file", fdt_filename);
+
+	var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
 
 	if (var_eeprom_config_struct_v2.som_info & 0x4)
 		setenv("wifi", "yes");
+	else
+		setenv("wifi", "no");
 
 	switch ((var_eeprom_config_struct_v2.som_info >> 3) & 0x3) {
 	case 0x0:
-		setenv("som_rev", "1");
+		setenv("som_rev", "2.4G"); /* Rev 1.x */
 		break;
 	case 0x1:
-		setenv("som_rev", "2");
+		setenv("som_rev", "5G"); /* Rev 2.x */
 		break;
 	default:
 		setenv("som_rev", "unknown");
 		break;
 	}
 
+	switch (var_eeprom_config_struct_v2.som_info & 0x3) {
+	case 0x00:
+		setenv("som_storage", "none");
+		break;
+	case 0x01:
+		setenv("som_storage", "nand");
+		break;
+	case 0x02:
+		setenv("som_storage", "emmc");
+		break;
+	default:
+		setenv("som_storage", "unknown");
+		break;
+	}
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
