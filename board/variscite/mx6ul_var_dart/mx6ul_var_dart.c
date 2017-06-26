@@ -32,12 +32,19 @@
 #include <common.h>
 #include <fsl_esdhc.h>
 #include <i2c.h>
-#include <miiphy.h>
 #include <linux/sizes.h>
+#include <miiphy.h>
 #include <mmc.h>
 #include <netdev.h>
+#include <splash.h>
 #include <usb.h>
 #include <usb/ehci-fsl.h>
+
+#ifdef CONFIG_VIDEO_MXS
+#include <linux/fb.h>
+#include <mxsfb.h>
+#include "../drivers/video/mxcfb.h"
+#endif
 
 #include "mx6var_v2_eeprom.h"
 
@@ -301,6 +308,22 @@ int mmc_get_env_devno(void)
 	return dev_no;
 }
 
+static int check_env(char *var, char *val)
+{
+	char *read_val;
+	if (var == NULL || val == NULL)
+		return 0;
+
+	read_val = getenv(var);
+
+	if ((read_val != NULL) &&
+			(strcmp(read_val, val) == 0)) {
+		return 1;
+	}
+
+	return 0;
+}
+
 int mmc_map_to_kernel_blk(int dev_no)
 {
 	return dev_no;
@@ -379,23 +402,13 @@ int board_mmc_init(bd_t *bis)
 #endif
 }
 
-int check_mmc_autodetect(void)
-{
-	char *autodetect_str = getenv("mmcautodetect");
-
-	if ((autodetect_str != NULL) && (strcmp(autodetect_str, "yes") == 0))
-		return 1;
-
-	return 0;
-}
-
 void board_late_mmc_init(void)
 {
 	char cmd[32];
 	char mmcblk[32];
 	u32 dev_no = mmc_get_env_devno();
 
-	if (!check_mmc_autodetect())
+	if (!check_env("mmcautodetect", "yes"))
 		return;
 
 	setenv_ulong("mmcdev", dev_no);
@@ -408,6 +421,203 @@ void board_late_mmc_init(void)
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);
 }
+
+#ifdef CONFIG_VIDEO_MXS
+static iomux_v3_cfg_t const lcd_pads[] = {
+	MX6_PAD_LCD_CLK__LCDIF_CLK | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_ENABLE__LCDIF_ENABLE | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA02__LCDIF_DATA02 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA03__LCDIF_DATA03 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA04__LCDIF_DATA04 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA05__LCDIF_DATA05 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA06__LCDIF_DATA06 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA07__LCDIF_DATA07 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA10__LCDIF_DATA10 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA11__LCDIF_DATA11 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA12__LCDIF_DATA12 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA13__LCDIF_DATA13 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA14__LCDIF_DATA14 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA15__LCDIF_DATA15 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA18__LCDIF_DATA18 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA19__LCDIF_DATA19 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA20__LCDIF_DATA20 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA21__LCDIF_DATA21 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA22__LCDIF_DATA22 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+	MX6_PAD_LCD_DATA23__LCDIF_DATA23 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const pwm_pads[] = {
+	/* Use GPIO for Brightness adjustment, duty cycle = period */
+	MX6_PAD_LCD_DATA00__GPIO3_IO05 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+struct lcd_panel_info_t {
+	unsigned int lcdif_base_addr;
+	int depth;
+	void (*enable)(struct lcd_panel_info_t const *dev);
+	struct fb_videomode mode;
+};
+
+void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
+{
+	enable_lcdif_clock(dev->lcdif_base_addr);
+
+	imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
+
+	imx_iomux_v3_setup_multiple_pads(pwm_pads, ARRAY_SIZE(pwm_pads));
+
+	/* Set Brightness to high */
+	gpio_direction_output(IMX_GPIO_NR(3, 5) , 1);
+}
+
+#define MHZ2PS(f)       (1000000/(f))
+
+static struct lcd_panel_info_t const displays[] = {{
+	.lcdif_base_addr = LCDIF1_BASE_ADDR,
+	.depth = 24,
+	.enable	= do_enable_parallel_lcd,
+	.mode = {
+		.name           = "VAR-WVGA-LCD",
+		.xres           = 800,
+		.yres           = 480,
+		.pixclock       = MHZ2PS(30),
+		.left_margin    = 40,
+		.right_margin   = 40,
+		.upper_margin   = 29,
+		.lower_margin   = 13,
+		.hsync_len      = 48,
+		.vsync_len      = 3,
+		.sync           = FB_SYNC_CLK_LAT_FALL,
+		.vmode          = FB_VMODE_NONINTERLACED
+	}
+}};
+
+int board_video_skip(void)
+{
+	int i;
+	int ret;
+	char const *panel = getenv("panel");
+	if (!panel) {
+		panel = displays[0].mode.name;
+		printf("No panel detected: default to %s\n", panel);
+		i = 0;
+	} else {
+		for (i = 0; i < ARRAY_SIZE(displays); i++) {
+			if (!strcmp(panel, displays[i].mode.name))
+				break;
+		}
+	}
+	if (i < ARRAY_SIZE(displays)) {
+		ret = mxs_lcd_panel_setup(displays[i].mode, displays[i].depth,
+				    displays[i].lcdif_base_addr);
+		if (!ret) {
+			if (displays[i].enable)
+				displays[i].enable(displays+i);
+			printf("Display: %s (%ux%u)\n",
+			       displays[i].mode.name,
+			       displays[i].mode.xres,
+			       displays[i].mode.yres);
+		} else
+			printf("LCD %s cannot be configured: %d\n",
+			       displays[i].mode.name, ret);
+	} else {
+		printf("unsupported panel %s\n", panel);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+#endif /* CONFIG_VIDEO_MXS */
+
+#ifdef CONFIG_SPLASH_SCREEN
+static void set_splashsource_to_boot_rootfs(void)
+{
+	if (!check_env("splashsourceauto", "yes"))
+		return;
+
+#ifdef CONFIG_SYS_BOOT_NAND
+	setenv("splashsource", "nand");
+#else
+	if (mmc_get_env_devno() == 0)
+		setenv("splashsource", "sd");
+	else if (mmc_get_env_devno() == 1)
+		setenv("splashsource", "emmc");
+#endif
+}
+
+#ifdef CONFIG_SYS_BOOT_NAND
+int splash_load_from_ubifs(void)
+{
+	char *mtdpart = "rootfs";
+	char *ubivolume = "ubi0:rootfs";
+	char *splash_file;
+	char *env_splashimage_value;
+	char cmd[64];
+	int ret;
+
+	env_splashimage_value = getenv("splashimage");
+	if (env_splashimage_value == NULL) {
+		return -ENOENT;
+	}
+
+	splash_file = getenv("splashfile");
+	if (!splash_file)
+		splash_file = "splash.bmp";
+
+	sprintf(cmd, "ubi part %s", mtdpart);
+	ret = run_command(cmd, 0);
+	if (ret)
+		return ret;
+
+	sprintf(cmd, "ubifsmount %s", ubivolume);
+	ret = run_command(cmd, 0);
+	if (ret)
+		return ret;
+
+	sprintf(cmd, "ubifsload %s %s", env_splashimage_value, splash_file);
+	ret = run_command(cmd, 0);
+	if (ret)
+		printf("Error loading splash file %s\n", splash_file);
+
+	run_command("ubifsumount", 0);
+
+	return ret;
+}
+#endif
+
+int splash_screen_prepare(void)
+{
+	int ret=0;
+
+	set_splashsource_to_boot_rootfs();
+
+	if (check_env("splashsource", "nand")) {
+#ifdef CONFIG_SYS_BOOT_NAND
+		ret = splash_load_from_ubifs();
+#endif
+	} else {
+		struct splash_location var_splash_locations[] = {
+			{
+				.name = "sd",
+				.storage = SPLASH_STORAGE_MMC,
+				.flags = SPLASH_STORAGE_FS,
+				.devpart = "0:2",
+			},
+			{
+				.name = "emmc",
+				.storage = SPLASH_STORAGE_MMC,
+				.flags = SPLASH_STORAGE_FS,
+				.devpart = "1:2",
+			},
+		};
+
+		ret = splash_source_load(var_splash_locations,
+				ARRAY_SIZE(var_splash_locations));
+	}
+
+	return ret;
+}
+#endif /* CONFIG_SPLASH_SCREEN */
 
 #ifdef CONFIG_USB_EHCI_MX6
 #define USB_OTHERREGS_OFFSET	0x800

@@ -250,6 +250,12 @@
 	"fdt_addr=0x83000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"splashsourceauto=yes\0" \
+	"splashfile=/boot/splash.bmp\0" \
+	"splashimage=0x83100000\0" \
+	"splashenable=setenv splashfile /boot/splash.bmp; " \
+		"setenv splashimage 0x83100000\0" \
+	"splashdisable=setenv splashfile; setenv splashimage\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"fixupfdt=" \
@@ -479,6 +485,40 @@
 #endif
 
 #define CONFIG_NETCONSOLE
+
+/* Framebuffer */
+#define CONFIG_VIDEO
+#ifdef CONFIG_VIDEO
+#define CONFIG_CFB_CONSOLE
+#define CONFIG_VIDEO_MXS
+#define CONFIG_VIDEO_LOGO
+#define CONFIG_VIDEO_SW_CURSOR
+#define CONFIG_VGA_AS_SINGLE_DEVICE
+#define CONFIG_SYS_CONSOLE_IS_IN_ENV
+#define CONFIG_SPLASH_SCREEN
+#define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_CMD_BMP
+#define CONFIG_BMP_16BPP
+#define CONFIG_VIDEO_BMP_RLE8
+#define CONFIG_VIDEO_BMP_LOGO
+#endif
+
+/* SPLASH SCREEN Configs  */
+#ifdef CONFIG_SPLASH_SCREEN
+/* Framebuffer and LCD  */
+#define CONFIG_CFB_CONSOLE
+#define CONFIG_CMD_BMP
+#define CONFIG_SYS_CONSOLE_IS_IN_ENV
+#define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
+#endif
+
+#ifdef CONFIG_VIDEO
+#define CONFIG_VIDEO_MODE \
+	        "panel=VAR-WVGA-LCD\0"
+#else
+#define CONFIG_VIDEO_MODE ""
+#endif
 
 /* USB Configs */
 #define CONFIG_CMD_USB
