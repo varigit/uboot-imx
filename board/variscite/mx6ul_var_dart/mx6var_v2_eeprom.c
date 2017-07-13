@@ -258,8 +258,7 @@ int var_eeprom_write(uchar *ptr, u32 size, u32 offset)
 static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	var_eeprom_config_struct_v2_type var_eeprom_cfg;
-	int offset, i;
-	u8 som_info;
+	int offset;
 
 	if (argc !=5)
 	{
@@ -272,8 +271,7 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 	memcpy(&var_eeprom_cfg.Assembly[0], argv[2], sizeof(var_eeprom_cfg.Assembly));
 	memcpy(&var_eeprom_cfg.date[0], argv[3], sizeof(var_eeprom_cfg.date));
 
-	memcpy(&som_info, argv[4], sizeof(som_info));
-	var_eeprom_cfg.som_info = som_info - '0';
+	var_eeprom_cfg.som_info = (u8) simple_strtoul(argv[4], NULL, 16);
 
 	var_eeprom_cfg.part_number[sizeof(var_eeprom_cfg.part_number)-1] = (u8)0x00;
 	var_eeprom_cfg.Assembly[sizeof(var_eeprom_cfg.Assembly)-1] = (u8)0x00;
@@ -283,42 +281,37 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 	printf("Assembly: %s\n", (char *)var_eeprom_cfg.Assembly);
 	printf("Date of production: %s\n", (char *)var_eeprom_cfg.date);
 
-	printf("SOM Configuration:\n");
-	for (i=0; i<8; i++){
-		if (i == var_eeprom_cfg.som_info) printf("*");
-
-		printf("%d: ",i);
-		switch (i & 0x3) {
-			case 0x00:
-				printf("SDCARD-Only ");
-				break;
-			case 0x01:
-				printf("NAND ");
-				break;
-			case 0x02:
-				printf("eMMC ");
-				break;
-			case 0x03:
-				printf("Ilegal!!! ");
-				break;
-		}
-		if (i & 0x04)
-			printf("WIFI\n");
-		else
-			printf("\n");
-
-		switch ((i >> 3) & 0x3) {
-			case 0x0:
-				printf("SOM Rev 1\n");
-				break;
-			case 0x1:
-				printf("SOM Rev 2\n");
-				break;
-			default:
-				printf("SOM Rev unknown\n");
-				break;
-		}
+	printf("SOM Configuration: 0x%x: ",var_eeprom_cfg.som_info);
+	switch (var_eeprom_cfg.som_info & 0x3) {
+	case 0x00:
+		puts("SD card only");
+		break;
+	case 0x01:
+		puts("NAND");
+		break;
+	case 0x02:
+		puts("eMMC");
+		break;
+	case 0x03:
+		puts("Ilegal!");
+		break;
 	}
+
+	if (var_eeprom_cfg.som_info & 0x04)
+		puts(", WiFi");
+
+	switch ((var_eeprom_cfg.som_info >> 3) & 0x3) {
+	case 0x0:
+		puts(", SOM Rev 1\n");
+		break;
+	case 0x1:
+		puts(", SOM Rev 2 (5G)\n");
+		break;
+	default:
+		puts(", SOM Rev ilegal!\n");
+		break;
+	}
+
 	offset = (uchar *)&var_eeprom_cfg.part_number[0] - (uchar *)&var_eeprom_cfg;
 	if (var_eeprom_write((uchar *)&var_eeprom_cfg.part_number[0],
 				sizeof(var_eeprom_cfg.part_number),
