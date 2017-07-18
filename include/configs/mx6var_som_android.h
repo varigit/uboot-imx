@@ -15,7 +15,7 @@
 
 /* For NAND we don't support lock/unlock */
 #ifndef CONFIG_SYS_BOOT_NAND
-#define CONFIG_FASTBOOT_LOCK
+/*#define CONFIG_FASTBOOT_LOCK*/
 #endif
 
 #define FSL_FASTBOOT_FB_DEV "mmc"
