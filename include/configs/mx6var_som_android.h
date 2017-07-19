@@ -54,12 +54,18 @@
 #undef CONFIG_BOOTCOMMAND
 #undef BOOT_ENV_SETTINGS
 
+#define HW_ENV_SETTINGS \
+	"hwargs=" \
+		"setenv bootargs ${bootargs} " \
+			"androidboot.hardware=${hardware};\0"
 
 #define BOOT_ENV_SETTINGS \
 	"bootcmd=" \
+		"run hwargs; " \
 		"run videoargs; " \
 		"boota ${boota_dev}\0" \
 	"bootcmd_android_recovery=" \
+		"run hwargs; " \
 		"run videoargs; " \
 		"boota ${recovery_dev} recovery\0" \
 	"fastboot_dev=mmc1\0" \
@@ -69,6 +75,7 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
+	HW_ENV_SETTINGS \
 	VIDEO_ENV_SETTINGS \
 	"splashpos=m,m\0" \
 	"fdt_high=0xffffffff\0" \
@@ -79,7 +86,6 @@
 		"vmalloc=128M " \
 		"androidboot.console=ttymxc0 " \
 		"consoleblank=0 " \
-		"androidboot.hardware=freescale " \
 		"cma=448M " \
 		"firmware_class.path=/system/etc/firmware\0"
 

@@ -1413,6 +1413,13 @@ int board_late_init(void)
 		setenv("board_rev", "MX6DL");
 #endif
 
+#ifdef CONFIG_ANDROID_SUPPORT
+	if (is_dart_board())
+		setenv("hardware", "var-dart-mx6");
+	else
+		setenv("hardware", "var-som-mx6");
+#endif
+
 	return 0;
 }
 
