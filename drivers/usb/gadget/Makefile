@@ -31,6 +31,7 @@ obj-$(CONFIG_USB_FUNCTION_FASTBOOT) += f_fastboot.o
 obj-$(CONFIG_FASTBOOT_LOCK) += fastboot_lock_unlock.o
 obj-$(CONFIG_FSL_BOOTCTL) += bootctrl.o
 obj-$(CONFIG_BCB_SUPPORT) += command.o bcb.o
+obj-$(CONFIG_USB_FUNCTION_SDP) += f_sdp.o
 endif
 endif
 ifdef CONFIG_USB_ETHER
