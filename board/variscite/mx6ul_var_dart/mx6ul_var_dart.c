@@ -1064,12 +1064,14 @@ void board_init_f(ulong dummy)
 	/* setup GP timer */
 	timer_init();
 
-	/* UART clocks enabled and gd valid - init serial console */
-	preloader_console_init();
-
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 	i2c_set_bus_num(1);
+
+	mdelay(200);
+
+	/* UART clocks enabled and gd valid - init serial console */
+	preloader_console_init();
 
 	/* DDR initialization */
 	board_dram_init();
