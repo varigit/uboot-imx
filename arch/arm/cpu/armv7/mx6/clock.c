@@ -1321,6 +1321,51 @@ void enable_thermal_clk(void)
 	enable_pll3();
 }
 
+#ifdef CONFIG_MTD_NOR_FLASH
+void enable_eim_clk(unsigned char enable)
+{
+	u32 reg;
+
+	reg = __raw_readl(&imx_ccm->CCGR6);
+	if (enable)
+		reg |= MXC_CCM_CCGR6_EMI_SLOW_MASK;
+	else
+		reg &= ~MXC_CCM_CCGR6_EMI_SLOW_MASK;
+	__raw_writel(reg, &imx_ccm->CCGR6);
+}
+#endif
+
+#if defined(CONFIG_MXC_EPDC)
+#if defined(CONFIG_MX6ULL) || defined(CONFIG_MX6SLL)
+void enable_epdc_clock(void)
+{
+	u32 reg = 0;
+
+	/* disable the clock gate first */
+	clrbits_le32(&imx_ccm->CCGR3, MXC_CCM_CCGR3_EPDC_CLK_ENABLE_MASK);
+
+	/* PLL3_PFD2 */
+	reg = readl(&imx_ccm->chsccdr);
+	reg &= ~MXC_CCM_CHSCCDR_EPDC_PRE_CLK_SEL_MASK;
+	reg |= 5 << MXC_CCM_CHSCCDR_EPDC_PRE_CLK_SEL_OFFSET;
+	writel(reg, &imx_ccm->chsccdr);
+
+	reg = readl(&imx_ccm->chsccdr);
+	reg &= ~MXC_CCM_CHSCCDR_EPDC_PODF_MASK;
+	reg |= 7 << MXC_CCM_CHSCCDR_EPDC_PODF_OFFSET;
+	writel(reg, &imx_ccm->chsccdr);
+
+	reg = readl(&imx_ccm->chsccdr);
+	reg &= ~MXC_CCM_CHSCCDR_EPDC_CLK_SEL_MASK;
+	reg |= 0 <<MXC_CCM_CHSCCDR_EPDC_CLK_SEL_OFFSET;
+	writel(reg, &imx_ccm->chsccdr);
+
+	/* enable the clock gate */
+	setbits_le32(&imx_ccm->CCGR3, MXC_CCM_CCGR3_EPDC_CLK_ENABLE_MASK);
+}
+#endif
+#endif
+
 unsigned int mxc_get_clock(enum mxc_clock clk)
 {
 	switch (clk) {
@@ -1363,6 +1408,7 @@ unsigned int mxc_get_clock(enum mxc_clock clk)
 	return 0;
 }
 
+#ifndef CONFIG_SPL_BUILD
 /*
  * Dump some core clockes.
  */
@@ -1593,51 +1639,6 @@ void select_ldb_di_clock_source(enum ldb_di_clock clk)
 }
 #endif
 
-#ifdef CONFIG_MTD_NOR_FLASH
-void enable_eim_clk(unsigned char enable)
-{
-	u32 reg;
-
-	reg = __raw_readl(&imx_ccm->CCGR6);
-	if (enable)
-		reg |= MXC_CCM_CCGR6_EMI_SLOW_MASK;
-	else
-		reg &= ~MXC_CCM_CCGR6_EMI_SLOW_MASK;
-	__raw_writel(reg, &imx_ccm->CCGR6);
-}
-#endif
-
-#if defined(CONFIG_MXC_EPDC)
-#if defined(CONFIG_MX6ULL) || defined(CONFIG_MX6SLL)
-void enable_epdc_clock(void)
-{
-	u32 reg = 0;
-
-	/* disable the clock gate first */
-	clrbits_le32(&imx_ccm->CCGR3, MXC_CCM_CCGR3_EPDC_CLK_ENABLE_MASK);
-
-	/* PLL3_PFD2 */
-	reg = readl(&imx_ccm->chsccdr);
-	reg &= ~MXC_CCM_CHSCCDR_EPDC_PRE_CLK_SEL_MASK;
-	reg |= 5 << MXC_CCM_CHSCCDR_EPDC_PRE_CLK_SEL_OFFSET;
-	writel(reg, &imx_ccm->chsccdr);
-
-	reg = readl(&imx_ccm->chsccdr);
-	reg &= ~MXC_CCM_CHSCCDR_EPDC_PODF_MASK;
-	reg |= 7 << MXC_CCM_CHSCCDR_EPDC_PODF_OFFSET;
-	writel(reg, &imx_ccm->chsccdr);
-
-	reg = readl(&imx_ccm->chsccdr);
-	reg &= ~MXC_CCM_CHSCCDR_EPDC_CLK_SEL_MASK;
-	reg |= 0 <<MXC_CCM_CHSCCDR_EPDC_CLK_SEL_OFFSET;
-	writel(reg, &imx_ccm->chsccdr);
-
-	/* enable the clock gate */
-	setbits_le32(&imx_ccm->CCGR3, MXC_CCM_CCGR3_EPDC_CLK_ENABLE_MASK);
-}
-#endif
-#endif
-
 /***************************************************/
 
 U_BOOT_CMD(
@@ -1645,3 +1646,4 @@ U_BOOT_CMD(
 	"display clocks",
 	""
 );
+#endif
