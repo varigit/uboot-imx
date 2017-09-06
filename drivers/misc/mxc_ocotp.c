@@ -97,11 +97,10 @@ u32 fuse_bank_physical(int index)
 {
 	u32 phy_index;
 
-	if ((index == 0) || is_cpu_type(MXC_CPU_MX6SL) ||
-	    is_cpu_type(MXC_CPU_MX7D))
+	if ((index == 0) || is_mx6sl() || is_mx7())
 		phy_index = index;
-	else if (is_cpu_type(MXC_CPU_MX6UL) || is_cpu_type(MXC_CPU_MX6ULL)) {
-		if (is_cpu_type(MXC_CPU_MX6ULL) && index == 8)
+	else if (is_mx6ul() || is_mx6ull()) {
+		if (is_mx6ull() && index == 8)
 			index = 7;
 
 		if (index >= 6)
@@ -121,7 +120,7 @@ u32 fuse_bank_physical(int index)
 
 u32 fuse_word_physical(u32 bank, u32 word_index)
 {
-	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+	if (is_mx6ull()) {
 		if (bank == 8)
 			word_index = word_index + 4;
 	}
@@ -164,7 +163,7 @@ static int prepare_access(struct ocotp_regs **regs, u32 bank, u32 word,
 		return -EINVAL;
 	}
 
-	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+	if (is_mx6ull()) {
 		if ((bank == 7 || bank == 8) &&
 		    word >= ARRAY_SIZE((*regs)->bank[0].fuse_regs) >> 3) {
 			printf("mxc_ocotp %s(): Invalid argument on 6ULL\n", caller);
@@ -271,7 +270,7 @@ static void setup_direct_access(struct ocotp_regs *regs, u32 bank, u32 word,
 #else
 	u32 addr;
 	/* Bank 7 and Bank 8 only supports 4 words each */
-	if ((is_cpu_type(MXC_CPU_MX6ULL)) && (bank > 7)) {
+	if (is_mx6ull() && (bank > 7)) {
 		bank = bank - 1;
 		word += 4;
 	}

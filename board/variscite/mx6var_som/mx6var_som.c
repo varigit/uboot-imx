@@ -104,14 +104,14 @@ u32 get_cpu_speed_grade_hz(void)
 	switch (val) {
 	/* Valid for IMX6DQ */
 	case OCOTP_CFG3_SPEED_1P2GHZ:
-		if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+		if (is_mx6dq())
 			return 1200000000;
 	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
 	case OCOTP_CFG3_SPEED_1GHZ:
 		return 996000000;
 	/* Valid for IMX6DQ */
 	case OCOTP_CFG3_SPEED_850MHZ:
-		if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+		if (is_mx6dq())
 			return 852000000;
 	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
 	case OCOTP_CFG3_SPEED_800MHZ:
@@ -1370,9 +1370,9 @@ int board_late_init(void)
 	else
 		setenv("board_som", "SOM-MX6");
 
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+	if (is_mx6dq())
 		setenv("board_rev", "MX6Q");
-	else if (is_cpu_type(MXC_CPU_MX6DL) || is_cpu_type(MXC_CPU_MX6SOLO))
+	else if (is_mx6sdl())
 		setenv("board_rev", "MX6DL");
 #endif
 
@@ -1579,7 +1579,7 @@ static void audiocodec_reset(int rst)
  */
 static void spl_mx6qd_dram_setup_iomux_check_reset(void)
 {
-	if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {
+	if (is_mx6dq()) {
 		volatile struct mx6dq_iomux_ddr_regs *mx6dq_ddr_iomux;
 
 		mx6dq_ddr_iomux = (struct mx6dq_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;

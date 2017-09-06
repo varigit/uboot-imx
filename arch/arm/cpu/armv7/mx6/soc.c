@@ -284,7 +284,7 @@ static void clear_mmdc_ch_mask(void)
 	reg = readl(&mxc_ccm->ccdr);
 
 	/* Clear MMDC channel mask */
-	if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) || is_cpu_type(MXC_CPU_MX6SL))
+	if (is_mx6sx() || is_mx6ul() || is_mx6sl())
 		reg &= ~(MXC_CCM_CCDR_MMDC_CH1_HS_MASK);
 	else
 		reg &= ~(MXC_CCM_CCDR_MMDC_CH1_HS_MASK | MXC_CCM_CCDR_MMDC_CH0_HS_MASK);
@@ -505,7 +505,7 @@ int arch_cpu_init(void)
 #endif
 
 #if defined(CONFIG_MX6UL)
-	if (is_cpu_type(MXC_CPU_MX6ULL)) {
+	if (is_mx6ull()) {
 		/*
 		 * GPBIT[1:0] is suggested to set to 2'b11:
 		 * 2'b00 : always PUP100K
@@ -772,8 +772,7 @@ void s_init(void)
 	u32 mask528;
 	u32 reg, periph1, periph2;
 
-	if (is_cpu_type(MXC_CPU_MX6SX) || is_cpu_type(MXC_CPU_MX6UL) ||
-	    is_cpu_type(MXC_CPU_MX6ULL))
+	if (is_mx6sx() || is_mx6ul() || is_mx6ull())
 		return;
 
 	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
@@ -834,7 +833,7 @@ void set_wdog_reset(struct wdog_regs *wdog)
 void reset_misc(void)
 {    
 #ifdef CONFIG_VIDEO_MXS
-    if (is_cpu_type(MXC_CPU_MX6UL))
+    if (is_mx6ul())
         lcdif_power_down();
 #endif
 }

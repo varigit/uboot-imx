@@ -886,7 +886,7 @@ int board_late_init(void)
 int checkboard(void)
 {
 	printf("Board: Variscite DART %s %d MHz\n",
-		is_cpu_type(MXC_CPU_MX6UL) ? "MX6UL" : "MX6ULL",
+		is_mx6ul() ? "MX6UL" : "MX6ULL",
 		get_cpu_speed_grade_hz() / 1000000);
 
 	return 0;

@@ -228,7 +228,7 @@ void imx_iomux_set_gpr_register(int group, int start_bit,
 #if defined(CONFIG_MX6QDL)
 #define IOMUX_PADS(x) (MX6Q_##x), (MX6DL_##x)
 #define SETUP_IOMUX_PAD(def)					\
-if (is_cpu_type(MXC_CPU_MX6Q)) {				\
+if (is_mx6dq() || is_mx6dqp()) {				\
 	imx_iomux_v3_setup_pad(MX6Q_##def);			\
 } else {							\
 	imx_iomux_v3_setup_pad(MX6DL_##def);			\
