@@ -104,14 +104,14 @@ u32 get_cpu_speed_grade_hz(void)
 	switch (val) {
 	/* Valid for IMX6DQ */
 	case OCOTP_CFG3_SPEED_1P2GHZ:
-		if (is_mx6dq())
+		if (is_mx6dq() || is_mx6dqp())
 			return 1200000000;
 	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
 	case OCOTP_CFG3_SPEED_1GHZ:
 		return 996000000;
 	/* Valid for IMX6DQ */
 	case OCOTP_CFG3_SPEED_850MHZ:
-		if (is_mx6dq())
+		if (is_mx6dq() || is_mx6dqp())
 			return 852000000;
 	/* Valid for IMX6SX/IMX6SDL/IMX6DQ */
 	case OCOTP_CFG3_SPEED_800MHZ:
@@ -1227,6 +1227,44 @@ void ldo_mode_set(int ldo_bypass)
 }
 #endif
 
+static int pfuze_mode_init(struct pmic *p, u32 mode)
+{
+	unsigned char offset, i, switch_num;
+	u32 id;
+	int ret;
+
+	pmic_reg_read(p, PFUZE100_DEVICEID, &id);
+	id = id & 0xf;
+
+	if (id == 0) {
+		switch_num = 6;
+		offset = PFUZE100_SW1CMODE;
+	} else if (id == 1) {
+		switch_num = 4;
+		offset = PFUZE100_SW2MODE;
+	} else {
+		printf("Not supported, id=%d\n", id);
+		return -EINVAL;
+	}
+
+	ret = pmic_reg_write(p, PFUZE100_SW1ABMODE, mode);
+	if (ret < 0) {
+		printf("Set SW1AB mode error!\n");
+		return ret;
+	}
+
+	for (i = 0; i < switch_num - 1; i++) {
+		ret = pmic_reg_write(p, offset + i * SWITCH_SIZE, mode);
+		if (ret < 0) {
+			printf("Set switch 0x%x mode error!\n",
+			       offset + i * SWITCH_SIZE);
+			return ret;
+		}
+	}
+
+	return ret;
+}
+
 int power_init_board(void)
 {
 	if (!is_som_solo()) {
@@ -1333,6 +1371,9 @@ int power_init_board(void)
 #endif
 			};
 
+			if (is_mx6dqp())
+				pfuze_mode_init(pfuze, APS_APS);
+
 			retval = pmic_write_vals(pfuze, pmic_arr, ARRAY_SIZE(pmic_arr));
 		}
 
@@ -1370,7 +1411,9 @@ int board_late_init(void)
 	else
 		setenv("board_som", "SOM-MX6");
 
-	if (is_mx6dq())
+	if (is_mx6dqp())
+		setenv("board_rev", "MX6QP");
+	else if (is_mx6dq())
 		setenv("board_rev", "MX6Q");
 	else if (is_mx6sdl())
 		setenv("board_rev", "MX6DL");
@@ -1384,6 +1427,12 @@ int checkboard(void)
 	puts("Board: Variscite VAR-SOM-MX6 ");
 
 	switch (get_cpu_type()) {
+	case MXC_CPU_MX6QP:
+		puts("QuadPlus");
+		break;
+	case MXC_CPU_MX6DP:
+		puts("DualPlus");
+		break;
 	case MXC_CPU_MX6Q:
 		puts("Quad");
 		if (is_cpu_pop_packaged())
@@ -1518,7 +1567,11 @@ static void ccgr_init(void)
 	writel(0x0FFFC000, &ccm->CCGR2);
 	writel(0x3FF00000, &ccm->CCGR3);
 	writel(0x00FFF300, &ccm->CCGR4);
-	writel(0x0F0000C3, &ccm->CCGR5);
+	if (is_mx6dqp()) {
+		writel(0x0F0000F3, &ccm->CCGR5);
+	} else {
+		writel(0x0F0000C3, &ccm->CCGR5);
+	}
 	writel(0x000003FF, &ccm->CCGR6);
 }
 
@@ -1528,9 +1581,15 @@ static void gpr_init(void)
 
 	/* enable AXI cache for VDOA/VPU/IPU */
 	writel(0xF00000CF, &iomux->gpr[4]);
-	/* set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
-	writel(0x007F007F, &iomux->gpr[6]);
-	writel(0x007F007F, &iomux->gpr[7]);
+	if (is_mx6dqp()) {
+		/* set IPU AXI-id1 Qos=0x1 AXI-id0/2/3 Qos=0x7	*/
+		writel(0x77177717, &iomux->gpr[6]);
+		writel(0x77177717, &iomux->gpr[7]);
+	} else {
+		/* set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
+		writel(0x007F007F, &iomux->gpr[6]);
+		writel(0x007F007F, &iomux->gpr[7]);
+	}
 }
 
 static int power_init_pmic_sw2(void)
@@ -1579,7 +1638,7 @@ static void audiocodec_reset(int rst)
  */
 static void spl_mx6qd_dram_setup_iomux_check_reset(void)
 {
-	if (is_mx6dq()) {
+	if (is_mx6dq() || is_mx6dqp()) {
 		volatile struct mx6dq_iomux_ddr_regs *mx6dq_ddr_iomux;
 
 		mx6dq_ddr_iomux = (struct mx6dq_iomux_ddr_regs *) MX6DQ_IOM_DDR_BASE;

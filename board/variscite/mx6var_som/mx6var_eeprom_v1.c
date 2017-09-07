@@ -313,7 +313,7 @@ int var_eeprom_v1_dram_init(void)
 
 	if (is_mx6sdl())
 		var_eeprom_v1_mx6sdl_dram_setup_iomux(&(var_eeprom_v1_cfg.pinmux_group));
-	else if (is_mx6dq())
+	else if (is_mx6dq() || is_mx6dqp())
 		var_eeprom_v1_mx6dq_dram_setup_iomux(&(var_eeprom_v1_cfg.pinmux_group));
 
 	var_eeprom_v1_handle_write_opcodes(var_eeprom_v1_cfg.write_opcodes);
