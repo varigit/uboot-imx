@@ -1179,8 +1179,8 @@ void ldo_mode_set(int ldo_bypass)
 		struct pmic *p = pfuze;
 
 		struct pmic_write_values ldo_mode_arr[] = {
-			/* Set SW2 or SW1AB to 1.325V */
-			{is_mx6dqp() ? PFUZE100_SW2VOL : PFUZE100_SW1ABVOL, SW1x_NORMAL_MASK, SW1x_1_325V},
+			/* Set SW1AB to 1.325V */
+			{PFUZE100_SW1ABVOL, SW1x_NORMAL_MASK, SW1x_1_325V},
 			/* Set SW1C to 1.325V */
 			{PFUZE100_SW1CVOL, SW1x_NORMAL_MASK, SW1x_1_325V}
 		};
@@ -1286,36 +1286,6 @@ int power_init_board(void)
 
 			retval = pmic_write_vals(pfuze, dart_pmic_arr, ARRAY_SIZE(dart_pmic_arr));
 
-		} else if (is_mx6dqp()) {
-			struct pmic_write_values pmic_arr[] = {
-				/* Set SW1C standby volage to 1.075V */
-				{PFUZE100_SW1CSTBY, SW1x_STBY_MASK, SW1x_1_075V},
-
-				/* Set SW1C/VDDARM step ramp up time from 16us to 4us/25mV */
-				{PFUZE100_SW1CCONF, SW1xCONF_DVSSPEED_MASK, SW1xCONF_DVSSPEED_4US},
-
-				/* Set SW2 standby voltage to 0.875V */
-				{PFUZE100_SW2STBY, SW1x_STBY_MASK, SW1x_0_875V},
-
-				/* Set SW2/VDDARM step ramp up time from 16us to 4us/25mV */
-				{PFUZE100_SW2CONF, SW1xCONF_DVSSPEED_MASK, SW1xCONF_DVSSPEED_4US},
-
-				/* Set Gigbit Ethernet voltage */
-				{PFUZE100_SW4VOL, SWx_NORMAL_MASK, SWx_LR_1_200V},
-
-				/* Increase VGEN5 from 2.8 to 3V */
-				{PFUZE100_VGEN5VOL, LDO_VOL_MASK, LDOB_3_00V},
-
-				/* Set VGEN3 to 2.5V */
-				{PFUZE100_VGEN3VOL, LDO_VOL_MASK, LDOB_2_50V},
-
-				/* Set VGEN3CTL = low power in standby */
-				{PFUZE100_VGEN3VOL, (LDO_MODE_MASK | LDO_EXT_MODE_MASK), \
-					((LDO_MODE_ON << LDO_MODE_SHIFT) | LDO_EXT_MODE_ON_LPM << LDO_EXT_MODE_SHIFT)}
-			};
-
-			pfuze_mode_init(pfuze, APS_APS);
-			retval = pmic_write_vals(pfuze, pmic_arr, ARRAY_SIZE(pmic_arr));
 		} else {
 
 			struct pmic_write_values pmic_arr[] = {
@@ -1367,6 +1337,9 @@ int power_init_board(void)
 					((LDO_MODE_ON << LDO_MODE_SHIFT) | LDO_EXT_MODE_ON_LPM << LDO_EXT_MODE_SHIFT)}
 #endif
 			};
+
+			if (is_mx6dqp())
+				pfuze_mode_init(pfuze, APS_APS);
 
 			retval = pmic_write_vals(pfuze, pmic_arr, ARRAY_SIZE(pmic_arr));
 		}
