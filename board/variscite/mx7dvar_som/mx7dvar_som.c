@@ -424,18 +424,27 @@ int splash_screen_prepare(void)
 		ret = splash_load_from_ubifs();
 #endif
 	} else {
+		char sd_devpart_str[5];
+		char emmc_devpart_str[5];
+		u32 sd_part, emmc_part;
+
+		sd_part = emmc_part = getenv_ulong("mmcrootpart", 10, 0);
+
+		sprintf(sd_devpart_str, "0:%d", sd_part);
+		sprintf(emmc_devpart_str, "1:%d", emmc_part);
+
 		struct splash_location var_splash_locations[] = {
 			{
 				.name = "sd",
 				.storage = SPLASH_STORAGE_MMC,
 				.flags = SPLASH_STORAGE_FS,
-				.devpart = "0:2",
+				.devpart = sd_devpart_str,
 			},
 			{
 				.name = "emmc",
 				.storage = SPLASH_STORAGE_MMC,
 				.flags = SPLASH_STORAGE_FS,
-				.devpart = "1:2",
+				.devpart = emmc_devpart_str,
 			},
 		};
 
@@ -536,7 +545,6 @@ int board_mmc_init(bd_t *bis)
 void board_late_mmc_init(void)
 {
 	char cmd[32];
-	char mmcblk[32];
 	u32 dev_no = mmc_get_env_devno();
 
 	if (!check_env("mmcautodetect", "yes"))
@@ -545,9 +553,7 @@ void board_late_mmc_init(void)
 	setenv_ulong("mmcdev", dev_no);
 
 	/* Set mmcblk env */
-	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
-		mmc_map_to_kernel_blk(dev_no));
-	setenv("mmcroot", mmcblk);
+	setenv_ulong("mmcblk", mmc_map_to_kernel_blk(dev_no));
 
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);

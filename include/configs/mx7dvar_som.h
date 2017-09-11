@@ -180,7 +180,7 @@
 #else /* CONFIG_SYS_BOOT_NAND */
 #define M4_ENV_SETTINGS \
 	"m4image=m4_qspi.bin\0" \
-	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} ${m4bootdata} ${m4image}\0"
+	"loadm4image=load mmc ${mmcdev}:${mmcbootpart} ${m4bootdata} ${bootdir}/${m4image}\0"
 #endif /* CONFIG_SYS_BOOT_NAND */
 #else
 #define M4_ENV_SETTINGS ""
@@ -220,17 +220,21 @@
 #define MMC_BOOT_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+	"mmcblk=0\0" \
 	"mmcautodetect=yes\0" \
+	"mmcbootpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+	"mmcrootpart=2\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=${mmcroot}\0" \
+		"root=/dev/mmcblk${mmcblk}p${mmcrootpart} rootwait rw\0 " \
 	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+	"loadimage=load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${image}\0" \
 	"loadfdt=run findfdt; " \
-		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+		"echo fdt_file=${fdt_file}; " \
+		"load mmc ${mmcdev}:${mmcbootpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
@@ -292,8 +296,6 @@
 	"initrd_high=0xffffffff\0" \
 	"fdt_file=undefined\0" \
 	"fdt_addr=0x83000000\0" \
-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"splashsourceauto=yes\0" \
 	"splashfile=/boot/splash.bmp\0" \
 	"splashimage=0x83100000\0" \
@@ -317,6 +319,7 @@
 		"${get_cmd} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"run findfdt; " \
+			"echo fdt_file=${fdt_file}; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
@@ -452,7 +455,6 @@
 #endif
 #define CONFIG_SYS_MMC_ENV_DEV		0	/* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
-#define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
 
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ

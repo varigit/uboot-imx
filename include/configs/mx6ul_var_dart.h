@@ -172,24 +172,27 @@
 
 #define MMC_BOOT_ENV_SETTINGS \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"mmcblk=0\0" \
 	"mmcautodetect=yes\0" \
+	"mmcbootpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+	"mmcrootpart=2\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=${mmcroot} ${cma_size}\0" \
+		"root=/dev/mmcblk${mmcblk}p${mmcrootpart} rootwait rw " \
+		"${cma_size}\0" \
 	"loadbootenv=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootenv}\0" \
+		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${bootenv}\0" \
 	"importbootenv=echo Importing bootenv from mmc ...; " \
 		"env import -t ${loadaddr} ${filesize}\0" \
 	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimagesize=6300000\0" \
 	"loadimage=mw.b ${loadaddr} 0 ${loadimagesize}; " \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${image}\0" \
 	"loadfdt=run findfdt; " \
-		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+		"echo fdt_file=${fdt_file}; " \
+		"load mmc ${mmcdev}:${mmcbootpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
@@ -279,6 +282,7 @@
 		"${get_cmd} ${image}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"run findfdt; " \
+			"echo fdt_file=${fdt_file}; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"run fixupfdt; " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
@@ -405,7 +409,6 @@
 
 #define CONFIG_SYS_MMC_ENV_DEV		0   	/* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
-#define CONFIG_MMCROOT				"/dev/mmcblk0p2"  /* USDHC1 */
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_ENV_IS_IN_MMC

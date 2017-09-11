@@ -53,7 +53,6 @@
 
 #define CONFIG_MXC_UART_BASE		UART1_BASE
 #define CONFIG_CONSOLE_DEV		"ttymxc0"
-#define CONFIG_MMCROOT			"/dev/mmcblk0p2"
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
@@ -151,6 +150,12 @@
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
+#ifdef CONFIG_SYS_BOOT_NAND
+#define CONFIG_SYS_MMC_ROOT_PART	1
+#else
+#define CONFIG_SYS_MMC_ROOT_PART	2
+#endif
+
 #define MMC_BOOT_ENV_SETTINGS \
 	"bootenv=uEnv.txt\0" \
 	"script=boot.scr\0" \
@@ -158,24 +163,27 @@
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"mmcblk=0\0" \
 	"mmcautodetect=yes\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} root=${mmcroot}; " \
-		"run videoargs\0" \
+	"mmcbootpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
+	"mmcrootpart=" __stringify(CONFIG_SYS_MMC_ROOT_PART) "\0" \
+	"mmcargs=setenv bootargs console=${console},${baudrate} " \
+		"root=/dev/mmcblk${mmcblk}p${mmcrootpart} rootwait rw\0 " \
 	"loadbootenv=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootenv};\0" \
+		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${bootenv};\0" \
 	"importbootenv=echo Importing bootenv from mmc ...; " \
 		"env import -t ${loadaddr} ${filesize}\0" \
 	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
-	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
+	"loaduimage=load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${uimage}\0" \
 	"loadfdt=run findfdt; " \
-		"fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+		"echo fdt_file=${fdt_file}; " \
+		"load mmc ${mmcdev}:${mmcbootpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
+		"run videoargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
@@ -192,32 +200,7 @@
 		"fi;\0"
 
 
-#define NAND_BOOT_ENV_SETTINGS \
-	"bootargs_nand=setenv bootargs console=${console},${baudrate} ubi.mtd=3 " \
-		"root=ubi0:rootfs rootfstype=ubifs\0" \
-	"bootargs_emmc=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/mmcblk0p1 rootwait rw\0" \
-	"rootfs_device=nand\0" \
-	"bootcmd=" \
-		"if test ${rootfs_device} != emmc; then " \
-			"run bootargs_nand; " \
-		"else " \
-			"run bootargs_emmc; " \
-		"fi; " \
-		"run videoargs; " \
-		"run optargs; " \
-		"nand read ${loadaddr} 0x400000 0x800000; " \
-		"nand read ${fdt_addr} 0x3e0000 0x20000; " \
-		"bootm ${loadaddr} - ${fdt_addr}\0" \
-	"mtdids=" MTDIDS_DEFAULT "\0" \
-	"mtdparts=" MTDPARTS_DEFAULT "\0"
-
-
-#ifdef CONFIG_SYS_BOOT_NAND
-#define BOOT_ENV_SETTINGS	NAND_BOOT_ENV_SETTINGS
-#else
-#define BOOT_ENV_SETTINGS	MMC_BOOT_ENV_SETTINGS
-#define CONFIG_BOOTCOMMAND \
+#define MMC_BOOTCMD \
 	"mmc dev ${mmcdev};" \
 	"if mmc rescan; then " \
 		"if run loadbootenv; then " \
@@ -232,7 +215,41 @@
 				"run netboot; " \
 			"fi; " \
 		"fi; " \
-	"else run netboot; fi"
+	"else run netboot; fi;"
+
+#ifdef CONFIG_SYS_BOOT_NAND
+#define NAND_BOOT_ENV_SETTINGS \
+	"nandargs=setenv bootargs console=${console},${baudrate} ubi.mtd=3 " \
+		"root=ubi0:rootfs rootfstype=ubifs\0" \
+	"rootfs_device=nand\0" \
+	"boot_device=nand\0" \
+	"nandboot=nand read ${loadaddr} 0x400000 0x800000; " \
+		"nand read ${fdt_addr} 0x3e0000 0x20000; " \
+		"bootm ${loadaddr} - ${fdt_addr};\0" \
+	"bootcmd=" \
+		"if test ${rootfs_device} != emmc; then " \
+			"run nandargs; " \
+			"run videoargs; " \
+			"run optargs; " \
+			"echo booting from nand ...; " \
+			"run nandboot; " \
+		"else " \
+			"if test ${boot_device} != emmc; then " \
+				"run mmcargs; " \
+				"run videoargs; " \
+				"run optargs; " \
+				"echo booting from nand (rootfs on emmc)...; " \
+				"run nandboot; " \
+			"else " \
+				"setenv mmcdev 1; " \
+				MMC_BOOTCMD \
+			"fi; " \
+		"fi;\0" \
+	"mtdids=" MTDIDS_DEFAULT "\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0"
+#else
+#define NAND_BOOT_ENV_SETTINGS ""
+#define CONFIG_BOOTCOMMAND	MMC_BOOTCMD
 #endif
 
 #define OPT_ENV_SETTINGS \
@@ -253,7 +270,8 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	MFG_ENV_SETTINGS \
-	BOOT_ENV_SETTINGS \
+	MMC_BOOT_ENV_SETTINGS \
+	NAND_BOOT_ENV_SETTINGS \
 	VIDEO_ENV_SETTINGS \
 	OPT_ENV_SETTINGS \
 	"fdt_file=undefined\0" \
@@ -281,6 +299,7 @@
 		"${get_cmd} ${uimage}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"run findfdt; " \
+			"echo fdt_file=${fdt_file}; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"bootm ${loadaddr} - ${fdt_addr}; " \
 			"else " \
