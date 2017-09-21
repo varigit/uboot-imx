@@ -177,13 +177,16 @@
 #ifdef CONFIG_CMD_BOOTAUX
 #define CONFIG_MXC_RDC /* Enable RDC to isolate the peripherals for A7 and M4 */
 
-#define UPDATE_M4_ENV \
-	"m4bootdata="__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0" \
+#ifdef CONFIG_SYS_BOOT_NAND
+#define M4_ENV_SETTINGS \
+	"loadm4image=nand read ${m4bootdata} 0x200000 0x8000\0"
+#else /* CONFIG_SYS_BOOT_NAND */
+#define M4_ENV_SETTINGS \
 	"m4image=m4_qspi.bin\0" \
-	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} ${m4bootdata} ${m4image}\0" \
-	"m4boot=run loadm4image; dcache flush; bootaux ${m4bootdata}\0"
+	"loadm4image=fatload mmc ${mmcdev}:${mmcpart} ${m4bootdata} ${m4image}\0"
+#endif /* CONFIG_SYS_BOOT_NAND */
 #else
-#define UPDATE_M4_ENV ""
+#define M4_ENV_SETTINGS ""
 #endif
 
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
@@ -252,6 +255,7 @@
 	"nandargs=setenv bootargs console=${console},${baudrate} ubi.mtd=4 " \
 		"root=ubi0:rootfs rootfstype=ubifs rw\0" \
 	"bootcmd=run nandargs; "\
+		"if test ${use_m4} = yes; then run m4boot; fi; " \
 		"nand read ${loadaddr} 0x600000 0x7e0000;" \
 		"nand read ${fdt_addr} 0xde0000 0x20000;" \
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
@@ -265,6 +269,7 @@
 #define BOOT_ENV_SETTINGS       MMC_BOOT_ENV_SETTINGS
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev};" \
+	"if test ${use_m4} = yes; then run m4boot; fi; " \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
 		"if run loadbootscript; then " \
 			"run bootscript; " \
@@ -281,7 +286,7 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
-	UPDATE_M4_ENV \
+	M4_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
 	CONFIG_VIDEO_MODE \
 	"console=ttymxc0\0" \
@@ -300,6 +305,8 @@
 	"splashdisable=setenv splashfile; setenv splashimage\0" \
 	"ip_dyn=yes\0" \
 	"use_m4=no\0" \
+	"m4bootdata="__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0" \
+	"m4boot=if run loadm4image; then dcache flush; bootaux ${m4bootdata}; fi\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
