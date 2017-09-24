@@ -14,6 +14,7 @@
 #include <asm/spl.h>
 #include <spl.h>
 #include <asm/imx-common/hab.h>
+#include <asm/imx-common/boot_mode.h>
 #include <g_dnl.h>
 
 #if defined(CONFIG_MX6)
@@ -94,6 +95,27 @@ u32 spl_boot_device(void)
 	return BOOT_DEVICE_NONE;
 }
 
+#elif defined(CONFIG_MX7)
+/* Translate iMX7 boot device to the SPL boot device enumeration */
+u32 spl_boot_device(void)
+{
+	enum boot_device boot_device_spl = get_boot_device();
+
+	switch (boot_device_spl) {
+	case SD1_BOOT:
+	case MMC1_BOOT:
+		return BOOT_DEVICE_MMC1;
+	case SD2_BOOT:
+	case MMC2_BOOT:
+		return BOOT_DEVICE_MMC2;
+	case SPI_NOR_BOOT:
+		return BOOT_DEVICE_SPI;
+	default:
+		return BOOT_DEVICE_NONE;
+	}
+}
+#endif /* CONFIG_MX6 || CONFIG_MX7 */
+
 #ifdef CONFIG_SPL_USB_GADGET_SUPPORT
 int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 {
@@ -101,7 +123,6 @@ int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 
 	return 0;
 }
-#endif
 #endif
 
 #if defined(CONFIG_SPL_MMC_SUPPORT)
