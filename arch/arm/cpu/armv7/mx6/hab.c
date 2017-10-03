@@ -247,9 +247,9 @@ uint32_t authenticate_image(uint32_t ddr_start, uint32_t image_size)
 					 * exist, so we ignore them.
 					 */
 					writel(1, MX6DQ_PU_IROM_MMU_EN_VAR);
-				} else (is_mx6sdl()) {
+				} else if (is_mx6sdl()) {
 					writel(1, MX6DLS_PU_IROM_MMU_EN_VAR);
-				} else if ((is_mx6sl()) {
+				} else if (is_mx6sl()) {
 					writel(1, MX6SL_PU_IROM_MMU_EN_VAR);
 				}
 			}
