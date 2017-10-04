@@ -23,18 +23,25 @@
  *    which consists of a 4K header in front of us that contains the IVT, DCD
  *    and some padding thus 'our' max size is really 0x00908000 - 0x00918000
  *    or 64KB
+ *  - The first version of the IMX6UL rev.1.2 Boot ROM uses more OCRAM space,
+ *    and 'our' max size in that case is 0x00909000 - 0x00918000 or 60KB
  */
 #define CONFIG_SYS_THUMB_BUILD
 #define CONFIG_SPL_LDSCRIPT	"arch/arm/mach-omap2/u-boot-spl.lds"
+#if defined(CONFIG_MX6UL)
+#define CONFIG_SPL_TEXT_BASE		0x00909000
+#define CONFIG_SPL_MAX_SIZE		0xF000
+#else
 #define CONFIG_SPL_TEXT_BASE		0x00908000
 #define CONFIG_SPL_MAX_SIZE		0x10000
+#endif
 #define CONFIG_SPL_STACK		0x0091FFB8
 /*
- * Pad SPL to 68KB (4KB header + 64KB max size). This allows to write the
+ * Pad SPL to (4KB header + SPL max size). This allows to write the
  * SPL/U-Boot combination generated with u-boot-with-spl.imx directly to a
  * boot media (given that boot media specific offset is configured properly).
  */
-#define CONFIG_SPL_PAD_TO		0x11000
+#define CONFIG_SPL_PAD_TO		(0x1000 + CONFIG_SPL_MAX_SIZE)
 
 /* NAND support */
 #if defined(CONFIG_SPL_NAND_SUPPORT)
