@@ -23,11 +23,18 @@
  *    which consists of a 4K header in front of us that contains the IVT, DCD
  *    and some padding thus 'our' max size is really 0x00908000 - 0x00918000
  *    or 64KB
+ *  - The first version of the IMX6UL rev.1.2 Boot ROM uses more OCRAM space,
+ *    and 'our' max size in that case is 0x00909000 - 0x00918000 or 60KB
  */
 #define CONFIG_SYS_THUMB_BUILD
 #define CONFIG_SPL_LDSCRIPT	"arch/arm/cpu/armv7/omap-common/u-boot-spl.lds"
+#if defined(CONFIG_MX6UL)
+#define CONFIG_SPL_TEXT_BASE		0x00909000
+#define CONFIG_SPL_MAX_SIZE		0xF000
+#else
 #define CONFIG_SPL_TEXT_BASE		0x00908000
 #define CONFIG_SPL_MAX_SIZE		0x10000
+#endif
 #define CONFIG_SPL_STACK		0x0091FFB8
 #define CONFIG_SPL_LIBCOMMON_SUPPORT
 #define CONFIG_SPL_LIBGENERIC_SUPPORT
