@@ -163,7 +163,6 @@
 		"run optargs; " \
 		"nand read ${loadaddr} 0x600000 0x7e0000; " \
 		"nand read ${fdt_addr} 0xde0000 0x20000; " \
-		"run fixupfdt; " \
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0"
@@ -194,7 +193,6 @@
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
-				"run fixupfdt; " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
@@ -258,12 +256,6 @@
 	"splashdisable=setenv splashfile; setenv splashimage\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"fixupfdt=" \
-		"if test ${som_rev} = 5G && test ${wifi} = yes && test ${boot_dev} != sd; then " \
-			"fdt addr ${fdt_addr}; " \
-			"fdt rm /soc/aips-bus@02100000/usdhc@02190000 no-1-8-v; " \
-			"fdt set /regulators/regulator@1 status okay; " \
-		"fi;\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
@@ -279,7 +271,6 @@
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"run findfdt; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"run fixupfdt; " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
@@ -325,9 +316,17 @@
 			"if test $boot_dev = emmc; then " \
 				"if test $wifi = yes; then " \
 					"if test $soc_type = MX6ULL; then " \
-						"setenv fdt_file imx6ull-var-dart-emmc_wifi.dtb; " \
+						"if test $som_rev = 5G; then " \
+							"setenv fdt_file imx6ull-var-dart-5g-emmc_wifi.dtb; " \
+						"else " \
+							"setenv fdt_file imx6ull-var-dart-emmc_wifi.dtb; " \
+						"fi; " \
 					"else " \
-						"setenv fdt_file imx6ul-var-dart-emmc_wifi.dtb; " \
+						"if test $som_rev = 5G; then " \
+							"setenv fdt_file imx6ul-var-dart-5g-emmc_wifi.dtb; " \
+						"else " \
+							"setenv fdt_file imx6ul-var-dart-emmc_wifi.dtb; " \
+						"fi; " \
 					"fi; " \
 				"else " \
 					"if test $soc_type = MX6ULL; then " \
@@ -340,9 +339,17 @@
 			"if test $boot_dev = nand; then " \
 				"if test $wifi = yes; then " \
 					"if test $soc_type = MX6ULL; then " \
-						"setenv fdt_file imx6ull-var-dart-nand_wifi.dtb; " \
+						"if test $som_rev = 5G; then " \
+							"setenv fdt_file imx6ull-var-dart-5g-nand_wifi.dtb; " \
+						"else " \
+							"setenv fdt_file imx6ull-var-dart-nand_wifi.dtb; " \
+						"fi; " \
 					"else " \
-						"setenv fdt_file imx6ul-var-dart-nand_wifi.dtb; " \
+						"if test $som_rev = 5G; then " \
+							"setenv fdt_file imx6ul-var-dart-5g-nand_wifi.dtb; " \
+						"else " \
+							"setenv fdt_file imx6ul-var-dart-nand_wifi.dtb; " \
+						"fi; " \
 					"fi; " \
 				"else " \
 					"if test $soc_type = MX6ULL; then " \
