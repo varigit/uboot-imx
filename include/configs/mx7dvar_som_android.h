@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2015 Freescale Semiconductor, Inc.
  * Copyright (C) 2016 Variscite Ltd.
@@ -17,18 +16,13 @@
 
 /* For NAND we don't support lock/unlock */
 #ifndef CONFIG_SYS_BOOT_NAND
-#define CONFIG_FASTBOOT_LOCK
+/*#define CONFIG_FASTBOOT_LOCK*/
 #endif
 
 #define FSL_FASTBOOT_FB_DEV "mmc"
 #define FSL_FASTBOOT_DATA_PART_NUM 4
 #define FSL_FASTBOOT_FB_PART_NUM 11
 #define FSL_FASTBOOT_PR_DATA_PART_NUM 12
-
-#define CONFIG_FSL_CAAM_KB
-#define CONFIG_CMD_FSL_CAAM_KB
-#define CONFIG_SHA1
-#define CONFIG_SHA256
 
 #define CONFIG_FSL_FASTBOOT
 #define CONFIG_ANDROID_RECOVERY
@@ -66,6 +60,13 @@
 	"splashpos=m,m\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"bootargs=" \
+		"console=ttymxc0,115200 " \
+		"init=/init " \
+		"androidboot.console=ttymxc0 " \
+		"androidboot.hardware=var-som-mx7 " \
+		"consoleblank=0 " \
+		"firmware_class.path=/system/etc/firmware\0"
 
 
 #define CONFIG_USB_FASTBOOT_BUF_ADDR	CONFIG_SYS_LOAD_ADDR

@@ -34,6 +34,14 @@ void set_wdog_reset(struct wdog_regs *wdog);
 int arch_auxiliary_core_up(u32 core_id, u32 boot_private_data);
 int arch_auxiliary_core_check_up(u32 core_id);
 
+#define is_mx6dqp() (is_cpu_type(MXC_CPU_MX6QP) || is_cpu_type(MXC_CPU_MX6DP))
+#define is_mx6dq() (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D))
+#define is_mx6sdl() (is_cpu_type(MXC_CPU_MX6SOLO) || is_cpu_type(MXC_CPU_MX6DL))
+#define is_mx6sx() (is_cpu_type(MXC_CPU_MX6SX))
+#define is_mx6sl() (is_cpu_type(MXC_CPU_MX6SL))
+#define is_mx6ul() (is_cpu_type(MXC_CPU_MX6UL))
+#define is_mx6ull() (is_cpu_type(MXC_CPU_MX6ULL))
+
 /*
  * Initializes on-chip ethernet controllers.
  * to override, implement board_eth_init()

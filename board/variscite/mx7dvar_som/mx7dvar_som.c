@@ -841,7 +841,7 @@ static void setenv_dev(char *var)
 #ifdef CONFIG_FASTBOOT_STORAGE_MMC
 	sprintf(str, "mmc%d", mmc_get_env_devno());
 	setenv(var, str);
-#elif
+#else
 	printf("unsupported boot device\n");
 #endif
 }
@@ -889,6 +889,22 @@ void board_recovery_setup(void)
 
 	printf("setup env for recovery...\n");
 	setenv("bootcmd", "run bootcmd_android_recovery");
+}
+
+void setup_recovery_env(void)
+{
+	board_recovery_setup();
+}
+
+/* export to lib_arm/board.c */
+void check_recovery_mode(void)
+{
+	if (check_recovery_cmd_file()) {
+		puts("Fastboot: Recovery command file found!\n");
+		setup_recovery_env();
+	} else {
+		puts("Fastboot: Normal\n");
+	}
 }
 #endif /*CONFIG_ANDROID_RECOVERY*/
 

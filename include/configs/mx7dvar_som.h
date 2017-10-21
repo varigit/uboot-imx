@@ -107,7 +107,7 @@
 #define CONFIG_FEC_MXC_MDIO_BASE	ENET_IPS_BASE_ADDR
 
 /* Framebuffer */
-#define CONFIG_VIDEO
+#undef CONFIG_VIDEO
 #ifdef CONFIG_VIDEO
 #define	CONFIG_CFB_CONSOLE
 #define	CONFIG_VIDEO_MXS
@@ -123,7 +123,6 @@
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
 
-#define CONFIG_SPLASH_SCREEN
 /* SPLASH SCREEN Configs  */
 #ifdef CONFIG_SPLASH_SCREEN
 /* Framebuffer and LCD  */
