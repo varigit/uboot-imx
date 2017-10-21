@@ -46,6 +46,13 @@
 #include "../drivers/video/mxcfb.h"
 #endif
 
+#ifdef CONFIG_FSL_FASTBOOT
+#include <fsl_fastboot.h>
+#ifdef CONFIG_ANDROID_RECOVERY
+#include <recovery.h>
+#endif
+#endif /*CONFIG_FSL_FASTBOOT*/
+
 #include "mx6var_v2_eeprom.h"
 
 int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2);
@@ -623,15 +630,8 @@ int splash_screen_prepare(void)
 #define USB_OTHERREGS_OFFSET	0x800
 #define UCTRL_PWR_POL		(1 << 9)
 
-static iomux_v3_cfg_t const usb_otg_pads[] = {
-	MX6_PAD_GPIO1_IO00__ANATOP_OTG1_ID | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-/* At default the 3v3 enables the MIC2026 for VBUS power */
 static void setup_usb(void)
 {
-	imx_iomux_v3_setup_multiple_pads(usb_otg_pads,
-					 ARRAY_SIZE(usb_otg_pads));
 }
 
 int board_usb_phy_mode(int port)
@@ -1149,3 +1149,88 @@ void board_init_f(ulong dummy)
 	board_init_r(NULL, 0);
 }
 #endif
+
+#ifdef CONFIG_FSL_FASTBOOT
+
+static void setenv_dev(char *var)
+{
+	char str[8];
+
+	if (!check_env("dev_autodetect", "yes"))
+		return;
+
+#ifdef CONFIG_FASTBOOT_STORAGE_MMC
+	sprintf(str, "mmc%d", mmc_get_env_devno());
+	setenv(var, str);
+#else
+	printf("unsupported boot device\n");
+#endif
+}
+
+void board_fastboot_setup(void)
+{
+	setenv_dev("fastboot_dev");
+	setenv_dev("boota_dev");
+}
+
+#ifdef CONFIG_ANDROID_RECOVERY
+
+/* Use back key for recovery key */
+#define GPIO_BACK_KEY IMX_GPIO_NR(1, 0)
+#define KEY_PAD_CTRL 0x17059
+static iomux_v3_cfg_t const recovery_key_pads[] = {
+	MX6_PAD_GPIO1_IO00__GPIO1_IO00 | MUX_PAD_CTRL(KEY_PAD_CTRL),
+};
+
+int check_recovery_cmd_file(void)
+{
+	int button_pressed = 0;
+	int recovery_mode = 0;
+
+#ifdef CONFIG_BCB_SUPPORT
+	recovery_mode = recovery_check_and_clean_command();
+#endif
+
+	/* Check Recovery Combo Button press or not. */
+	imx_iomux_v3_setup_multiple_pads(recovery_key_pads,
+		ARRAY_SIZE(recovery_key_pads));
+
+	gpio_direction_input(GPIO_BACK_KEY);
+
+	/* there's no HW pullup, let the KEY_PAD_CTRL take effect */
+	mdelay(200);
+
+	if (gpio_get_value(GPIO_BACK_KEY) == 0) { /* BACK key is low assert */
+		button_pressed = 1;
+		printf("Recovery key pressed\n");
+	}
+
+	return recovery_mode || button_pressed;
+}
+
+void board_recovery_setup(void)
+{
+	setenv_dev("recovery_dev");
+
+	printf("setup env for recovery...\n");
+	setenv("bootcmd", "run bootcmd_android_recovery");
+}
+
+void setup_recovery_env(void)
+{
+	board_recovery_setup();
+}
+
+/* export to lib_arm/board.c */
+void check_recovery_mode(void)
+{
+	if (check_recovery_cmd_file()) {
+		puts("Fastboot: Recovery command file found!\n");
+		setup_recovery_env();
+	} else {
+		puts("Fastboot: Normal\n");
+	}
+}
+#endif /*CONFIG_ANDROID_RECOVERY*/
+
+#endif /*CONFIG_FSL_FASTBOOT*/

@@ -37,16 +37,10 @@
 #define CONFIG_REVISION_TAG
 
 /* Boot options */
-#if (defined(CONFIG_MX6SX) || defined(CONFIG_MX6SL) || defined(CONFIG_MX6UL))
-#define CONFIG_LOADADDR		0x82000000
+#define CONFIG_SYS_BOOTM_LEN	0x1000000
+#define CONFIG_LOADADDR		0x80800000
 #ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE	0x87800000
-#endif
-#else
-#define CONFIG_LOADADDR		0x12000000
-#ifndef CONFIG_SYS_TEXT_BASE
-#define CONFIG_SYS_TEXT_BASE	0x17800000
-#endif
 #endif
 
 #ifndef CONFIG_BOOTDELAY
@@ -110,7 +104,7 @@
 #define CONFIG_DISPLAY_BOARDINFO
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(16 * SZ_1M)
+#define CONFIG_SYS_MALLOC_LEN		(32 * SZ_1M)
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_LATE_INIT
@@ -497,7 +491,7 @@
 #define CONFIG_NETCONSOLE
 
 /* Framebuffer */
-#define CONFIG_VIDEO
+#undef CONFIG_VIDEO
 #ifdef CONFIG_VIDEO
 #define CONFIG_CFB_CONSOLE
 #define CONFIG_VIDEO_MXS
@@ -549,8 +543,11 @@
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_DUALSPEED
 
-#define CONFIG_USB_ETHER
-#define CONFIG_USB_ETH_CDC
+/* Uncomment for USB Ethernet Gadget support */
+/*
+ * #define CONFIG_USB_ETHER
+ * #define CONFIG_USB_ETH_CDC
+ */
 
 #define CONFIG_USB_GADGET
 #define CONFIG_CMD_USB_MASS_STORAGE
@@ -558,8 +555,8 @@
 #define CONFIG_USBDOWNLOAD_GADGET
 #define CONFIG_USB_GADGET_VBUS_DRAW     2
 
-#define CONFIG_G_DNL_VENDOR_NUM         0x0525
-#define CONFIG_G_DNL_PRODUCT_NUM        0xa4a5
+#define CONFIG_G_DNL_VENDOR_NUM         0x18d1
+#define CONFIG_G_DNL_PRODUCT_NUM        0x0d02
 #define CONFIG_G_DNL_MANUFACTURER       "Variscite"
 #endif /* CONFIG_CMD_USB */
 
@@ -591,5 +588,9 @@
 #endif
 
 #define CONFIG_IMX_THERMAL
+
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "mx6ul_var_dart_android.h"
+#endif
 
 #endif
