@@ -94,8 +94,16 @@ DECLARE_GLOBAL_DATA_PTR;
  * defines a 2-bit SPEED_GRADING
  */
 #define OCOTP_CFG3_SPEED_SHIFT	16
-#define OCOTP_CFG3_SPEED_528MHZ 1
-#define OCOTP_CFG3_SPEED_696MHZ 2
+
+/* For i.MX6UL/i.MX6ULL */
+#define OCOTP_CFG3_SPEED_528MHZ	1
+
+/* For i.MX6UL */
+#define OCOTP_CFG3_SPEED_696MHZ	2
+
+/* For i.MX6ULL */
+#define OCOTP_CFG3_SPEED_792MHZ	2
+#define OCOTP_CFG3_SPEED_900MHZ	3
 
 u32 get_cpu_speed_grade_hz(void)
 {
@@ -109,11 +117,17 @@ u32 get_cpu_speed_grade_hz(void)
 	val >>= OCOTP_CFG3_SPEED_SHIFT;
 	val &= 0x3;
 
-	switch (val) {
-	case OCOTP_CFG3_SPEED_528MHZ:
+	if (val == OCOTP_CFG3_SPEED_528MHZ)
 		return 528000000;
-	case OCOTP_CFG3_SPEED_696MHZ:
-		return 696000000;
+
+	if (is_mx6ul()) {
+		if (val == OCOTP_CFG3_SPEED_696MHZ)
+			return 696000000;
+	} else if (is_mx6ull()) {
+		if (val == OCOTP_CFG3_SPEED_792MHZ)
+			return 792000000;
+		else if (val == OCOTP_CFG3_SPEED_900MHZ)
+			return 900000000;
 	}
 
 	return 0;
