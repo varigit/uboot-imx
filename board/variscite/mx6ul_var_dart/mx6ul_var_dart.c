@@ -113,7 +113,7 @@ u32 get_cpu_speed_grade_hz(void)
 	case OCOTP_CFG3_SPEED_528MHZ:
 		return 528000000;
 	case OCOTP_CFG3_SPEED_696MHZ:
-		return 69600000;
+		return 696000000;
 	}
 
 	return 0;
