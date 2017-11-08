@@ -96,6 +96,8 @@ U_BOOT_CMD(
 	"<interface> <dev[:part]> addr blk# cnt"
 );
 
+int fastboot_flash_find_index(const char *name);
+
 int bcb_rw_block(bool bread, char **ppblock,
 		uint *pblksize, char *pblock_write, uint offset, uint size)
 {

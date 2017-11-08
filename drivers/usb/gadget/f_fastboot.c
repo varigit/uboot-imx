@@ -942,6 +942,9 @@ bool bootloader_gpt_overlay(void)
 		ANDROID_BOOTLOADER_OFFSET < ANDROID_GPT_END);
 }
 
+int fastboot_tx_write_str(const char *buffer);
+int write_backup_gpt_partitions(struct blk_desc *dev_desc, void *buf);
+
 static void process_flash_mmc(const char *cmdbuf)
 {
 	if (download_bytes) {
