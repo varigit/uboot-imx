@@ -1538,42 +1538,8 @@ unsigned int fastboot_flash_get_ptn_count(void)
 }
 
 #ifdef CONFIG_FSL_FASTBOOT
-void board_fastboot_setup(void)
+void add_soc_type_into_env(void)
 {
-#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
-	static char boot_dev_part[32];
-	u32 dev_no;
-#endif
-	switch (get_boot_device()) {
-#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
-	case SD1_BOOT:
-	case SD2_BOOT:
-	case SD3_BOOT:
-	case SD4_BOOT:
-	case MMC1_BOOT:
-	case MMC2_BOOT:
-	case MMC3_BOOT:
-	case MMC4_BOOT:
-		dev_no = mmc_get_env_dev();
-		sprintf(boot_dev_part,"mmc%d",dev_no);
-		if (!env_get("fastboot_dev"))
-			env_set("fastboot_dev", boot_dev_part);
-		sprintf(boot_dev_part, "boota mmc%d", dev_no);
-		if (!env_get("bootcmd"))
-			env_set("bootcmd", boot_dev_part);
-		break;
-	case USB_BOOT:
-		printf("Detect USB boot. Will enter fastboot mode!\n");
-		if (!env_get("bootcmd"))
-			env_set("bootcmd", "fastboot 0");
-		break;
-#endif /*CONFIG_FASTBOOT_STORAGE_MMC*/
-	default:
-		if (!env_get("bootcmd"))
-			printf("unsupported boot devices\n");
-		break;
-	}
-
 	/* add soc type into bootargs */
 	if (is_mx6dqp()) {
 		if (!env_get("soc_type"))
@@ -1614,8 +1580,47 @@ void board_fastboot_setup(void)
 	}
 }
 
+__weak void board_fastboot_setup(void)
+{
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	static char boot_dev_part[32];
+	u32 dev_no;
+#endif
+	switch (get_boot_device()) {
+#if defined(CONFIG_FASTBOOT_STORAGE_MMC)
+	case SD1_BOOT:
+	case SD2_BOOT:
+	case SD3_BOOT:
+	case SD4_BOOT:
+	case MMC1_BOOT:
+	case MMC2_BOOT:
+	case MMC3_BOOT:
+	case MMC4_BOOT:
+		dev_no = mmc_get_env_dev();
+		sprintf(boot_dev_part,"mmc%d",dev_no);
+		if (!env_get("fastboot_dev"))
+			env_set("fastboot_dev", boot_dev_part);
+		sprintf(boot_dev_part, "boota mmc%d", dev_no);
+		if (!env_get("bootcmd"))
+			env_set("bootcmd", boot_dev_part);
+		break;
+	case USB_BOOT:
+		printf("Detect USB boot. Will enter fastboot mode!\n");
+		if (!env_get("bootcmd"))
+			env_set("bootcmd", "fastboot 0");
+		break;
+#endif /*CONFIG_FASTBOOT_STORAGE_MMC*/
+	default:
+		if (!env_get("bootcmd"))
+			printf("unsupported boot devices\n");
+		break;
+	}
+
+	add_soc_type_into_env();
+}
+
 #ifdef CONFIG_ANDROID_RECOVERY
-void board_recovery_setup(void)
+__weak void board_recovery_setup(void)
 {
 /* boot from current mmc with avb verify */
 #ifdef CONFIG_AVB_SUPPORT
