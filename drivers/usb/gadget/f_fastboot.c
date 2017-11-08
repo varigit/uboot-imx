@@ -1714,7 +1714,37 @@ unsigned int fastboot_flash_get_ptn_count(void)
 }
 
 #ifdef CONFIG_FSL_FASTBOOT
-void board_fastboot_setup(void)
+void add_soc_type_into_env(void)
+{
+	/* add soc type into bootargs */
+	if (is_mx6dqp()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx6qp");
+	} else if (is_mx6dq()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx6q");
+	} else if (is_mx6sdl()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx6dl");
+	} else if (is_mx6sx()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx6sx");
+	} else if (is_mx6sl()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx6sl");
+	} else if (is_mx6ul()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx6ul");
+	} else if (is_mx7()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx7d");
+	} else if (is_mx7ulp()) {
+		if (!getenv("soc_type"))
+			setenv("soc_type", "imx7ulp");
+	}
+}
+
+__weak void board_fastboot_setup(void)
 {
 #if defined(CONFIG_FASTBOOT_STORAGE_MMC)
 	static char boot_dev_part[32];
@@ -1756,36 +1786,11 @@ void board_fastboot_setup(void)
 		break;
 	}
 
-	/* add soc type into bootargs */
-	if (is_mx6dqp()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx6qp");
-	} else if (is_mx6dq()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx6q");
-	} else if (is_mx6sdl()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx6dl");
-	} else if (is_mx6sx()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx6sx");
-	} else if (is_mx6sl()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx6sl");
-	} else if (is_mx6ul()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx6ul");
-	} else if (is_mx7()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx7d");
-	} else if (is_mx7ulp()) {
-		if (!getenv("soc_type"))
-			setenv("soc_type", "imx7ulp");
-	}
+	add_soc_type_into_env();
 }
 
 #ifdef CONFIG_ANDROID_RECOVERY
-void board_recovery_setup(void)
+__weak void board_recovery_setup(void)
 {
 #if defined(CONFIG_FASTBOOT_STORAGE_MMC)
 	static char boot_dev_part[32];
