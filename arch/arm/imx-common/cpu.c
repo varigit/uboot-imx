@@ -17,7 +17,6 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/arch/crm_regs.h>
 #include <imx_thermal.h>
-#include <ipu_pixfmt.h>
 #include <thermal.h>
 #include <sata.h>
 
@@ -300,10 +299,6 @@ void arch_preboot_os(void)
 #endif
 #if defined(CONFIG_LDO_BYPASS_CHECK)
 	ldo_mode_set(check_ldo_bypass());
-#endif
-#if defined(CONFIG_VIDEO_IPUV3)
-	/* disable video before launching O/S */
-	ipuv3_fb_shutdown();
 #endif
 #ifdef CONFIG_VIDEO_GIS
 	/* Entry for GIS */
