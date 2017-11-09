@@ -60,7 +60,7 @@
 
 /* Secure boot (HAB) support */
 #ifdef CONFIG_SECURE_BOOT
-#define CONFIG_CSF_SIZE			0x4000
+#define CONFIG_CSF_SIZE			0x2000
 #endif
 
 #ifdef CONFIG_IMX_OPTEE
