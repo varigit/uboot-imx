@@ -110,7 +110,7 @@ defined(CONFIG_MX6DL)) && !defined(CONFIG_MX6S)
 
 /* Secure boot (HAB) support */
 #ifdef CONFIG_SECURE_BOOT
-#define CONFIG_CSF_SIZE			0x4000
+#define CONFIG_CSF_SIZE			0x2000
 #if !defined(CONFIG_MX6ULL) && !defined(CONFIG_MX6SLL) && !defined(CONFIG_MX6SL)
 #define CONFIG_CMD_DEKBLOB
 #endif
