@@ -372,6 +372,8 @@ dtb-$(CONFIG_MX7) += imx7-colibri.dtb \
 		imx7d-sdb-gpmi-weim.dtb \
 		imx7d-sdb-qspi.dtb \
 		imx7d-sdb-reva.dtb \
+		imx7d-var-som-emmc.dtb \
+		imx7d-var-som-nand.dtb \
 		imx7d-12x12-lpddr3-arm2.dtb \
 		imx7d-12x12-lpddr3-arm2-ecspi.dtb \
 		imx7d-12x12-lpddr3-arm2-qspi.dtb \
