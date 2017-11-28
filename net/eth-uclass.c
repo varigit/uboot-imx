@@ -501,8 +501,10 @@ static int eth_post_probe(struct udevice *dev)
 	priv->state = ETH_STATE_INIT;
 
 	/* Check if the device has a MAC address in ROM */
-	if (eth_get_ops(dev)->read_rom_hwaddr)
+	if (eth_get_ops(dev)->read_rom_hwaddr) {
 		eth_get_ops(dev)->read_rom_hwaddr(dev);
+		printf("\n%s MAC address in ROM is %pM", dev->name, pdata->enetaddr);
+	}
 
 	eth_getenv_enetaddr_by_index("eth", dev->seq, env_enetaddr);
 	if (!is_zero_ethaddr(env_enetaddr)) {
@@ -510,10 +512,11 @@ static int eth_post_probe(struct udevice *dev)
 		    memcmp(pdata->enetaddr, env_enetaddr, ARP_HLEN)) {
 			printf("\nWarning: %s MAC addresses don't match:\n",
 			       dev->name);
-			printf("Address in ROM is          %pM\n",
-			       pdata->enetaddr);
-			printf("Address in environment is  %pM\n",
+			printf("Address in environment is               %pM\n",
 			       env_enetaddr);
+		} else {
+			if (eth_get_ops(dev)->read_rom_hwaddr)
+				puts("\n");
 		}
 
 		/* Override the ROM MAC address */
