@@ -246,10 +246,8 @@ int splash_screen_prepare(void)
 			ARRAY_SIZE(var_splash_locations));
 
 	/* Turn on backlight */
-	if (lvds_enabled) {
-		gpio_request(VAR_SOM_BACKLIGHT_EN, "Display Backlight Enable");
+	if (lvds_enabled)
 		gpio_set_value(VAR_SOM_BACKLIGHT_EN, 1);
-	}
 
 	return ret;
 }
@@ -1054,11 +1052,6 @@ int board_ehci_power(int port, int on)
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
-#if defined(CONFIG_VIDEO_IPUV3)
-	setup_display();
-#elif defined(CONFIG_VIDEO_HDMI)
-	setup_hdmi();
-#endif
 #ifdef CONFIG_SYS_I2C_MXC
 	setup_local_i2c();
 #endif
@@ -1071,6 +1064,12 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+#if defined(CONFIG_VIDEO_IPUV3)
+	setup_display();
+#elif defined(CONFIG_VIDEO_HDMI)
+	setup_hdmi();
+#endif
+
 #ifdef CONFIG_USB_EHCI_MX6
 #ifndef CONFIG_DM_USB
 	setup_usb();
