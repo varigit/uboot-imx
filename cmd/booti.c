@@ -77,6 +77,16 @@ static int booti_start(struct bootm_info *bmi)
 	if (ret || IS_ENABLED(CONFIG_SANDBOX))
 		return 1;
 
+#ifdef CONFIG_IMX_HAB
+	extern int authenticate_image(
+		uint32_t ddr_start, uint32_t raw_image_size);
+	if (authenticate_image(ld, image_size) != 0) {
+		printf("Authenticate Image Fail, Please check\n");
+		return 1;
+	}
+
+#endif
+
 	/* Handle BOOTM_STATE_LOADOS */
 	if (relocated_addr != ld) {
 		printf("Moving Image from 0x%lx to 0x%lx, end=%lx\n", ld,
