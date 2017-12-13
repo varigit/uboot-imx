@@ -367,6 +367,7 @@
 #define CONFIG_NETCONSOLE
 
 /* Framebuffer */
+#ifndef CONFIG_SPL_BUILD
 #ifdef CONFIG_VIDEO
 #define CONFIG_VIDEO_MXS
 #define CONFIG_VIDEO_LOGO
@@ -377,6 +378,7 @@
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IMX_VIDEO_SKIP
+#endif
 #endif
 
 /* SPLASH SCREEN Configs  */
