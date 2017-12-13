@@ -8,6 +8,7 @@
 
 #include "mx6var_v2_eeprom.h"
 
+#ifdef CONFIG_SPL_BUILD
 static u32 get_address_by_index(unsigned char index);
 static u32 get_value_by_index(unsigned char index);
 static int handle_one_command(struct eeprom_command_type *eeprom_commands,int command_num);
@@ -180,36 +181,7 @@ static u32 get_value_by_index(unsigned char index)
 
 	return rom_values[index];
 }
-
-static inline bool var_eeprom_v2_is_valid(const struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2)
-{
-	return (VARISCITE_MAGIC_V2 == var_eeprom_config_struct_v2->variscite_magic);
-}
-
-int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2)
-{
-	i2c_set_bus_num(1);
-
-	if (i2c_probe(VARISCITE_MX6_EEPROM_CHIP)) {
-		printf("Error! Couldn't find EEPROM device\n");
-		return -1;
-	}
-
-	if (i2c_read(VARISCITE_MX6_EEPROM_CHIP, 0, 1,
-				(u8 *) var_eeprom_config_struct_v2,
-				sizeof(struct var_eeprom_config_struct_v2_type))) {
-		printf("Error reading data from EEPROM\n");
-		return -1;
-	}
-
-	if (!var_eeprom_v2_is_valid(var_eeprom_config_struct_v2)) {
-		printf("Error: Data on EEPROM is invalid\n");
-		return -1;
-	}
-
-	return 0;
-}
-
+#else
 int var_eeprom_write(uchar *ptr, u32 size, u32 offset)
 {
 	int ret = 0;
@@ -348,3 +320,33 @@ U_BOOT_CMD(
 	"",
 	""
 );
+#endif
+
+static inline bool var_eeprom_v2_is_valid(const struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2)
+{
+	return (VARISCITE_MAGIC_V2 == var_eeprom_config_struct_v2->variscite_magic);
+}
+
+int var_eeprom_v2_read_struct(struct var_eeprom_config_struct_v2_type *var_eeprom_config_struct_v2)
+{
+	i2c_set_bus_num(1);
+
+	if (i2c_probe(VARISCITE_MX6_EEPROM_CHIP)) {
+		printf("Error! Couldn't find EEPROM device\n");
+		return -1;
+	}
+
+	if (i2c_read(VARISCITE_MX6_EEPROM_CHIP, 0, 1,
+				(u8 *) var_eeprom_config_struct_v2,
+				sizeof(struct var_eeprom_config_struct_v2_type))) {
+		printf("Error reading data from EEPROM\n");
+		return -1;
+	}
+
+	if (!var_eeprom_v2_is_valid(var_eeprom_config_struct_v2)) {
+		printf("Error: Data on EEPROM is invalid\n");
+		return -1;
+	}
+
+	return 0;
+}
