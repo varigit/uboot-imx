@@ -32,26 +32,18 @@ static const u32 rom_values[] =
 		#include "values.inc"
 	};
 
-static u32 ram_addresses[MAXIMUM_RAM_ADDRESSES] __attribute__ ((section ("sram")));
-static u32 ram_values[MAXIMUM_RAM_VALUES] __attribute__ ((section ("sram")));
+static u32 ram_addresses[MAXIMUM_RAM_ADDRESSES] __attribute__ ((section ("sram"))) = {0};
+static u32 ram_values[MAXIMUM_RAM_VALUES] __attribute__ ((section ("sram"))) = {0};
 
 void load_custom_data(u32 *custom_addresses_values)
 {
-	int i;
+	int i, j=0;
 
-	for(i=0;i<MAXIMUM_RAM_ADDRESSES;i++)
-	{
-		ram_addresses[i]=0;
-		ram_values[i]=0;
-	}
-
-	int j=0;
 	for(i=0;i<32;i++)
 	{
 		if(custom_addresses_values[i]==0)
 			break;
-		ram_addresses[j]=custom_addresses_values[i];
-		j++;
+		ram_addresses[i]=custom_addresses_values[i];
 	}
 
 	i++;
@@ -112,7 +104,6 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			/* printf("waiting while data at address %08x is not equal %08x\n",address,value); */
 			while(data[0]!=value);
 
-			command_num++;
 			break;
 		case WHILE_EQUAL_INDEX:
 			command_num++;
@@ -122,7 +113,6 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			/* printf("waiting while data at address %08x is equal %08x\n",address,value); */
 			while(data[0]==value);
 
-			command_num++;
 			break;
 		case WHILE_AND_INDEX:
 			command_num++;
@@ -132,7 +122,6 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			/* printf("waiting while data at address %08x and %08x is not zero\n",address,value); */
 			while(data[0]&value);
 
-			command_num++;
 			break;
 		case WHILE_NOT_AND_INDEX:
 			command_num++;
@@ -142,16 +131,14 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			/* printf("waiting while data at address %08x and %08x is zero\n",address,value); */
 			while(!(data[0]&value));
 
-			command_num++;
 			break;
 		case DELAY_10USEC_INDEX:
 			/* Delay for Value * 10 uSeconds */
 			/* printf("Delaying for %d microseconds\n",eeprom_commands[command_num].value_index*10); */
 			udelay((int)(eeprom_commands[command_num].value_index*10));
-			command_num++;
 			break;
 		case LAST_COMMAND_INDEX:
-			command_num=0;
+			command_num=-1;
 			break;
 		default:
 			address=get_address_by_index(eeprom_commands[command_num].address_index);
@@ -159,11 +146,10 @@ static int handle_one_command(struct eeprom_command_type *eeprom_commands,int co
 			data=(u32*)address;
 			/* printf("Setting data at address %08x to %08x\n",address,value); */
 			data[0]=value;
-			command_num++;
 			break;
 	}
 
-	return command_num;
+	return ++command_num;
 }
 
 static u32 get_address_by_index(unsigned char index)
