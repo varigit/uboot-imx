@@ -33,7 +33,7 @@
 #include "../drivers/video/mxcfb.h"
 #endif
 
-#include "mx6var_v2_eeprom.h"
+#include "mx6var_eeprom_v2.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -671,7 +671,7 @@ static const struct boot_mode board_boot_modes[] = {
 int board_late_init(void)
 {
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
-	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2 = {0};
+	struct var_eeprom_v2_cfg var_eeprom_v2_cfg = {0};
 	u32 imxtype, cpurev;
 
 #ifdef CONFIG_CMD_BMODE
@@ -713,14 +713,15 @@ int board_late_init(void)
 		break;
 	}
 
-	var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2);
+	if (var_eeprom_v2_read_struct(&var_eeprom_v2_cfg))
+		puts("Warning: Can't read SOM configuration from EEPROM\n");
 
-	if (var_eeprom_config_struct_v2.som_info & 0x4)
+	if (var_eeprom_v2_cfg.som_info & 0x4)
 		setenv("wifi", "yes");
 	else
 		setenv("wifi", "no");
 
-	switch ((var_eeprom_config_struct_v2.som_info >> 3) & 0x3) {
+	switch ((var_eeprom_v2_cfg.som_info >> 3) & 0x3) {
 	case 0x0:
 		setenv("som_rev", "2.4G"); /* Rev 1.x */
 		break;
@@ -732,7 +733,7 @@ int board_late_init(void)
 		break;
 	}
 
-	switch (var_eeprom_config_struct_v2.som_info & 0x3) {
+	switch (var_eeprom_v2_cfg.som_info & 0x3) {
 	case 0x00:
 		setenv("som_storage", "none");
 		break;
@@ -845,59 +846,20 @@ static void legacy_dram_init(void)
 	mx6_dram_cfg(&ddr_sysinfo, &mx6_mmcd_calib, &mem_ddr);
 }
 
-/*
- * Null terminate the info strings, in case the info was never written to EEPROM and it contains garbage
- */
-static void var_eeprom_v2_null_term_strings(struct var_eeprom_config_struct_v2_type *p_var_eeprom_config_struct_v2)
-{
-	p_var_eeprom_config_struct_v2->part_number[sizeof(p_var_eeprom_config_struct_v2->part_number) - 1] = (u8)0;
-	p_var_eeprom_config_struct_v2->Assembly[sizeof(p_var_eeprom_config_struct_v2->Assembly) - 1] = (u8)0;
-	p_var_eeprom_config_struct_v2->date[sizeof(p_var_eeprom_config_struct_v2->date) - 1] = (u8)0;
-}
-
-static void print_info_from_eeprom(const struct var_eeprom_config_struct_v2_type *p_var_eeprom_config_struct_v2)
-{
-	printf("\nPart number: %s\n", (char *)p_var_eeprom_config_struct_v2->part_number);
-	printf("Assembly: %s\n", (char *)p_var_eeprom_config_struct_v2->Assembly);
-	printf("Date of production: %s\n", (char *)p_var_eeprom_config_struct_v2->date);
-
-	puts("DART-6UL");
-	if (((p_var_eeprom_config_struct_v2->som_info >> 3) & 0x3) == 1)
-		puts("-5G");
-	puts(" configuration: ");
-	switch(p_var_eeprom_config_struct_v2->som_info & 0x3) {
-	case 0x00:
-		puts("SD card Only ");
-		break;
-	case 0x01:
-		puts("NAND ");
-		break;
-	case 0x02:
-		puts("eMMC ");
-		break;
-	case 0x03:
-		puts("Ilegal !!! ");
-		break;
-	}
-	if (p_var_eeprom_config_struct_v2->som_info & 0x04)
-		puts("WiFi");
-	puts("\n");
-}
-
 void spl_dram_init(void)
 {
-	struct var_eeprom_config_struct_v2_type var_eeprom_config_struct_v2 = {0};
+	struct var_eeprom_v2_cfg var_eeprom_v2_cfg = {0};
 
-	if (var_eeprom_v2_read_struct(&var_eeprom_config_struct_v2)) {
+	if (var_eeprom_v2_read_struct(&var_eeprom_v2_cfg)) {
 		legacy_dram_init();
 		puts("DDR LEGACY configuration\n");
 		return;
 	}
 
-	handle_eeprom_data(&var_eeprom_config_struct_v2);
+	var_eeprom_v2_dram_init(&var_eeprom_v2_cfg);
 
-	var_eeprom_v2_null_term_strings(&var_eeprom_config_struct_v2);
-	print_info_from_eeprom(&var_eeprom_config_struct_v2);
+	var_eeprom_v2_print_production_info(&var_eeprom_v2_cfg);
+	var_eeprom_v2_print_som_info(&var_eeprom_v2_cfg);
 }
 
 void board_init_f(ulong dummy)
