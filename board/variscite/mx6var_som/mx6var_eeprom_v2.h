@@ -43,7 +43,7 @@ struct __attribute__((packed)) var_eeprom_v2_cfg
 {
 	u32 variscite_magic; /* == HEX("VAR2")? */
 	u8 part_number[16];
-	u8 Assembly[16];
+	u8 assembly[16];
 	u8 date[12];
 	/* Contains addresses and values not present in .inc files */
 	u32 custom_addresses_values[32];

@@ -34,7 +34,7 @@ struct var_eeprom_v1_cfg_header
 {
 	u32 variscite_magic; /* == HEX("VARI")?*/
 	u8 part_number[16];
-	u8 Assembly[16];
+	u8 assembly[16];
 	u8 date[16];
 	u8 version;
 	u8 reserved[7];

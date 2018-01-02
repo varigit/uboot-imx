@@ -30,7 +30,7 @@ static inline bool var_eeprom_v2_is_valid(const struct var_eeprom_v2_cfg *p_var_
 	return (VARISCITE_MAGIC_V2 == p_var_eeprom_v2_cfg->variscite_magic);
 }
 
-static int var_eeprom_v2_read_struct(struct var_eeprom_v2_cfg *var_eeprom_v2_cfg)
+static int var_eeprom_v2_read_struct(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
 {
 	i2c_set_bus_num(VAR_DART_EEPROM_I2C_BUS);
 	if (i2c_probe(VAR_DART_EEPROM_I2C_ADDR)) {
@@ -39,13 +39,13 @@ static int var_eeprom_v2_read_struct(struct var_eeprom_v2_cfg *var_eeprom_v2_cfg
 	}
 
 	if (i2c_read(VAR_DART_EEPROM_I2C_ADDR, 0, 1,
-				(u8 *) var_eeprom_v2_cfg,
+				(u8 *) p_var_eeprom_v2_cfg,
 				sizeof(struct var_eeprom_v2_cfg))) {
 		eeprom_v2_debug("\nError reading data from EEPROM\n");
 		return -1;
 	}
 
-	if (!var_eeprom_v2_is_valid(var_eeprom_v2_cfg)) {
+	if (!var_eeprom_v2_is_valid(p_var_eeprom_v2_cfg)) {
 		eeprom_v2_debug("\nError: Data on EEPROM is invalid\n");
 		return -1;
 	}
@@ -182,21 +182,19 @@ static inline u32 var_eeprom_v2_get_ram_size(struct var_eeprom_v2_cfg *p_var_eep
 	return p_var_eeprom_v2_cfg->dram_size * 128;
 }
 
-/*
- * Null terminate the info strings, in case the info was never written to EEPROM and it contains garbage
- */
-static void var_eeprom_v2_null_term_strings(struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
+static void var_eeprom_v2_print_production_info(const struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
 {
-	p_var_eeprom_v2_cfg->part_number[sizeof(p_var_eeprom_v2_cfg->part_number)-1] = (u8)0;
-	p_var_eeprom_v2_cfg->Assembly[sizeof(p_var_eeprom_v2_cfg->Assembly)-1] = (u8)0;
-	p_var_eeprom_v2_cfg->date[sizeof(p_var_eeprom_v2_cfg->date)-1] = (u8)0;
-}
+	printf("\nPart number: %.*s\n",
+			sizeof(p_var_eeprom_v2_cfg->part_number) - 1,
+			(char *) p_var_eeprom_v2_cfg->part_number);
 
-static void var_eeprom_v2_print_info(const struct var_eeprom_v2_cfg *p_var_eeprom_v2_cfg)
-{
-	printf("\nPart number: %s\n", (char *)p_var_eeprom_v2_cfg->part_number);
-	printf("Assembly: %s\n", (char *)p_var_eeprom_v2_cfg->Assembly);
-	printf("Date of production: %s\n", (char *)p_var_eeprom_v2_cfg->date);
+	printf("Assembly: %.*s\n",
+			sizeof(p_var_eeprom_v2_cfg->assembly) - 1,
+			(char *) p_var_eeprom_v2_cfg->assembly);
+
+	printf("Date of production: %.*s\n",
+			sizeof(p_var_eeprom_v2_cfg->date) - 1,
+			(char *) p_var_eeprom_v2_cfg->date);
 }
 
 void var_eeprom_v2_dram_init(void)
@@ -252,8 +250,7 @@ void var_eeprom_v2_dram_init(void)
 
 	if (is_eeprom_valid) {
 		var_set_ram_size(var_eeprom_v2_get_ram_size(&var_eeprom_v2_cfg));
-		var_eeprom_v2_null_term_strings(&var_eeprom_v2_cfg);
-		var_eeprom_v2_print_info(&var_eeprom_v2_cfg);
+		var_eeprom_v2_print_production_info(&var_eeprom_v2_cfg);
 	} else {
 		var_set_ram_size(1024);
 		printf("\nDDR LEGACY configuration\n");
