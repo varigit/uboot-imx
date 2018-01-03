@@ -400,6 +400,7 @@ void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq_in_khz)
 	pcc_clock_enable(PER_CLK_LCDIF, true);
 }
 
+#ifndef CONFIG_SPL_BUILD
 /*
  * Dump some core clockes.
  */
@@ -440,3 +441,4 @@ U_BOOT_CMD(
 	"display clocks",
 	""
 );
+#endif
