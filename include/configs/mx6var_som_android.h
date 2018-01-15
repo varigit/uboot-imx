@@ -7,9 +7,9 @@
 
 #include "mx_var_som_android_common.h"
 
-#define CONFIG_FASTBOOT_LOCK
+/*#define CONFIG_FASTBOOT_LOCK*/ /*Unlock for dev Devices*/
 #define FSL_FASTBOOT_FB_DEV "mmc"
-#define FASTBOOT_ENCRYPT_LOCK
+/*#define FASTBOOT_ENCRYPT_LOCK*/ /*Don't encrypt fastboot lock state*/
 #define CONFIG_FSL_CAAM_KB
 #define CONFIG_CMD_FSL_CAAM_KB
 #define CONFIG_SHA1
