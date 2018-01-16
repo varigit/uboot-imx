@@ -115,7 +115,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 	} else if (bootdev == MMC1_BOOT || bootdev == MMC2_BOOT ||
 		bootdev == MMC3_BOOT || bootdev == MMC4_BOOT) {
 		sprintf(newbootargs,
-			" androidboot.storage_type=emmc");
+			" androidboot.storage_type=emmc gpt");
 	} else if (bootdev == NAND_BOOT) {
 		sprintf(newbootargs,
 			" androidboot.storage_type=nand");
