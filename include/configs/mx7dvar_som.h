@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015-2016 Freescale Semiconductor, Inc.
- * Copyright (C) 2016-2017 Variscite Ltd.
+ * Copyright (C) 2016-2018 Variscite Ltd.
  *
  * Author: Eran Matityahu <eran.m@variscite.com>
  *
@@ -11,6 +11,10 @@
 
 #ifndef __MX7D_VAR_SOM_CONFIG_H
 #define __MX7D_VAR_SOM_CONFIG_H
+
+#ifdef CONFIG_SPL
+#include "imx7_spl.h"
+#endif
 
 #include "mx7_common.h"
 
@@ -25,7 +29,6 @@
 #define CONFIG_SILENT_CONSOLE
 
 /* Networtk */
-#ifdef CONFIG_DM_ETH
 #define CONFIG_FEC_MXC
 #define CONFIG_MII
 #define CONFIG_FEC_XCV_TYPE		RGMII
@@ -53,9 +56,9 @@
 #endif
 
 #define CONFIG_FEC_MXC_MDIO_BASE	ENET_IPS_BASE_ADDR
-#endif
 
 /* Framebuffer */
+#ifndef CONFIG_SPL_BUILD
 #ifdef CONFIG_VIDEO
 #define	CONFIG_VIDEO_MXS
 #define	CONFIG_VIDEO_LOGO
@@ -66,6 +69,7 @@
 #define	CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IMX_VIDEO_SKIP
+#endif
 #endif
 
 /* SPLASH SCREEN Configs  */
@@ -81,8 +85,21 @@
 #undef CONFIG_BOOTM_RTEMS
 
 /* I2C configs */
+#ifndef CONFIG_DM_I2C
+#define CONFIG_SYS_I2C
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
+#endif
 #define CONFIG_SYS_I2C_MXC
 #define CONFIG_SYS_I2C_SPEED		100000
+
+/* PMIC */
+#ifndef CONFIG_DM_PMIC
+#define CONFIG_POWER
+#define CONFIG_POWER_I2C
+#define CONFIG_POWER_PFUZE3000
+#define CONFIG_POWER_PFUZE3000_I2C_ADDR	0x08
+#endif
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
@@ -289,6 +306,7 @@
 #ifdef CONFIG_NAND_BOOT
 #define CONFIG_NAND_MXS
 #define CONFIG_ENV_IS_IN_NAND
+#define CONFIG_SYS_NAND_U_BOOT_OFFS	0x200000
 #else
 #define CONFIG_ENV_IS_IN_MMC
 #endif
@@ -362,6 +380,11 @@
 #define CONFIG_FAT_WRITE
 
 /* USB Configs */
+#ifndef CONFIG_DM_USB
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
+#define CONFIG_MXC_USB_FLAGS   0
+#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+#endif
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
 #define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)

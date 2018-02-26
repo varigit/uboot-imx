@@ -17,6 +17,8 @@ $ make mx7dvar_som_nand_defconfig		# For booting from NAND flash
 $ make mx7dvar_som_SECURE_BOOT_defconfig	# For booting from SD card/eMMC with secure boot support
 $ make mx7dvar_som_nand_SECURE_BOOT_defconfig	# For booting from NAND flash with secure boot support
 $ make mx7dvar_som_android_defconfig		# For booting from SD card/eMMC (Android)
+$ make mx7dvar_som_no_spl_defconfig		# For booting from SD card/eMMC without SPL (for reference only)
+$ make mx7dvar_som_nand_no_spl_defconfig	# For booting from NAND flash without SPL (for reference only)
 
 $ make
 
@@ -24,9 +26,13 @@ $ make
 Flashing U-Boot to an SD card
 -----------------------------
 
-- After the 'make' command completes, flash the generated U-Boot
-binary into the SD card:
+- After the 'make' command completes, flash the generated SPL & U-Boot
+binaries into the SD card:
 
+$ sudo dd if=SPL of=/dev/sdX bs=1K seek=1; sync
+$ sudo dd if=u-boot.img of=/dev/sdX bs=1K seek=69; sync
+
+Alternatively, when building U-Boot without SPL (for reference only):
 $ sudo dd if=u-boot.imx of=/dev/sdX bs=1K seek=1; sync
 
 (replace /dev/sdX with your correct device node)
