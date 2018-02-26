@@ -378,6 +378,7 @@
 #endif
 
 /* Framebuffer */
+#ifndef CONFIG_SPL_BUILD
 #ifdef CONFIG_VIDEO
 #define CONFIG_VIDEO_IPUV3
 #define CONFIG_VIDEO_BMP_RLE8
@@ -399,6 +400,7 @@
 #elif defined(CONFIG_VIDEO_HDMI)
 #define CONFIG_IMX_HDMI
 #define CONFIG_CMD_HDMIDETECT
+#endif
 #endif
 
 #define PMIC_I2C_BUS		1
