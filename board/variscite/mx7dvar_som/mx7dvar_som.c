@@ -859,69 +859,94 @@ void board_recovery_setup(void)
 
 #ifdef CONFIG_SPL_BUILD
 #include <spl.h>
-#include <asm/arch-mx7/mx7-ddr.h>
 
-static struct ddrc spl_ddrc_regs_val = {
-	.mstr		= 0x01040001,
-	.rfshtmg	= 0x00400046,
-	.init0		= 0x00020083,
-	.init1		= 0x00690000,
-	.init3		= 0x09300004,
-	.init4		= 0x04080000,
-	.init5		= 0x00100004,
-	.rankctl	= 0x0000033F,
-	.dramtmg0	= 0x09081109,
-	.dramtmg1	= 0x0007020D,
-	.dramtmg2	= 0x03040407,
-	.dramtmg3	= 0x00002006,
-	.dramtmg4	= 0x04020205,
-	.dramtmg5	= 0x03030202,
-	.dramtmg8	= 0x00000803,
-	.zqctl0		= 0x00800020,
-	.dfitmg0	= 0x02098204,
-	.dfitmg1	= 0x00030303,
-	.dfiupd0	= 0x80400003,
-	.dfiupd1	= 0x00100020,
-	.dfiupd2	= 0x80100004,
-	.addrmap0	= 0x00000016,
-	.addrmap1	= 0x00080808,
-	.addrmap4	= 0x00000F0F,
-	.addrmap5	= 0x07070707,
-	.addrmap6	= 0x0F070707,
-	.odtcfg		= 0x06000604,
-	.odtmap		= 0x00000001,
-};
+#define CHECK_BITS_SET	0x80000000
+#define END_OF_TABLE	0x00000000
 
-static struct ddrc_mp spl_ddrc_mp_val = {
-	.pctrl_0	= 0x00000001,
-};
+static u32 default_dcd_table[] = {
+	0x30340004, 0x4F400005,	/* Enable OCRAM EPDC */
+	/* Clear then set bit30 to ensure exit from DDR retention */
+	0x30360388, 0x40000000,
+	0x30360384, 0x40000000,
 
-static struct ddr_phy spl_ddr_phy_regs_val = {
-	.phy_con0	= 0x17420F40,
-	.phy_con1	= 0x10210100,
-	.phy_con4	= 0x00060807,
-	.offset_lp_con0	= 0x0000000F,
-	.offset_rd_con0	= 0x08080808,
-	.offset_wr_con0	= 0x08080808,
-	.cmd_sdll_con0	= 0x00000010,
-	.drvds_con0	= 0x00000D6E,
-	.mdll_con0	= 0x1010007E,
-};
+	0x30391000, 0x00000002,	/* deassert presetn */
+	/* ddrc */
+	0x307a0000, 0x01040001,	/* mstr */
+	0x307a01a0, 0x80400003,	/* dfiupd0 */
+	0x307a01a4, 0x00100020,	/* dfiupd1 */
+	0x307a01a8, 0x80100004,	/* dfiupd2 */
+	0x307a0064, 0x00400046,	/* rfshtmg */
+	0x307a0490, 0x00000001,	/* pctrl_0 */
+	0x307a00d0, 0x00020083,	/* init0 */
+	0x307a00d4, 0x00690000,	/* init1 */
+	0x307a00dc, 0x09300004,	/* init3 */
+	0x307a00e0, 0x04080000,	/* init4 */
+	0x307a00e4, 0x00100004,	/* init5 */
+	0x307a00f4, 0x0000033f,	/* rankctl */
+	0x307a0100, 0x09081109,	/* dramtmg0 */
+	0x307a0104, 0x0007020d,	/* dramtmg1 */
+	0x307a0108, 0x03040407,	/* dramtmg2 */
+	0x307a010c, 0x00002006,	/* dramtmg3 */
+	0x307a0110, 0x04020205,	/* dramtmg4 */
+	0x307a0114, 0x03030202,	/* dramtmg5 */
+	0x307a0120, 0x00000803,	/* dramtmg8 */
+	0x307a0180, 0x00800020,	/* zqctl0 */
+	0x307a0190, 0x02098204,	/* dfitmg0 */
+	0x307a0194, 0x00030303,	/* dfitmg1 */
+	0x307a0200, 0x00000016,	/* addrmap0 */
+	0x307a0204, 0x00080808,	/* addrmap1 */
+	0x307a0210, 0x00000f0f,	/* addrmap4 */
+	0x307a0214, 0x07070707,	/* addrmap5 */
+	0x307a0218, 0x0F070707,	/* addrmap6 */
+	0x307a0240, 0x06000604,	/* odtcfg */
+	0x307a0244, 0x00000001,	/* odtmap */
 
-struct mx7_calibration spl_calib_param = {
-	.num_val	= 5,
-	.values		= {
-		0x0E407304,
-		0x0E447304,
-		0x0E447306,
-		0x0E447304,
-		0x0E407304,
-	},
+	0x30391000, 0x00000000,	/* deassert presetn */
+
+	/* ddr_phy */
+	0x30790000, 0x17420f40,	/* phy_con0 */
+	0x30790004, 0x10210100,	/* phy_con1 */
+	0x30790010, 0x00060807,	/* phy_con4 */
+	0x307900b0, 0x1010007e,	/* mdll_con0 */
+	0x3079009c, 0x00000d6e,	/* drvds_con0 */
+	0x30790020, 0x08080808,	/* offset_rd_con0 */
+	0x30790030, 0x08080808,	/* offset_wr_con0 */
+	0x30790050, 0x01000010,	/* cmd_sdll_con0 (OFFSETD_CON0) */
+	0x30790050, 0x00000010,	/* cmd_sdll_con0 (OFFSETD_CON0) */
+	0x307900c0, 0x0e407304,	/* zq_con0 */
+	0x307900c0, 0x0e447304,	/* zq_con0 */
+	0x307900c0, 0x0e447306,	/* zq_con0 */
+	CHECK_BITS_SET, 0x307900c4, 0x1,
+	0x307900c0, 0x0e447304,	/* zq_con0 */
+	0x307900c0, 0x0e407304,	/* zq_con0 */
+
+	0x30384130, 0x00000000,	/* Disable Clock */
+	0x30340020, 0x00000178,	/* IOMUX_GRP_GRP8 - Start input to PHY */
+	0x30384130, 0x00000002,	/* Enable Clock */
+	0x30790018, 0x0000000f,	/* ddr_phy lp_con0 */
+
+	CHECK_BITS_SET, 0x307a0004, 0x1,
 };
 
 static inline void check_bits_set(u32 reg, u32 mask)
 {
 	while ((readl(reg) & mask) != mask);
+}
+
+static void ddr_init(u32 *table, int size)
+{
+	int i;
+
+	for (i = 0; i < size; i += 2) {
+		if (table[i] == CHECK_BITS_SET) {
+			++i;
+			check_bits_set(table[i], table[i + 1]);
+		} else if (table[i] == END_OF_TABLE) {
+			break;
+		} else {
+			writel(table[i + 1], table[i]);
+		}
+	}
 }
 
 static void set_ddr_freq_to_400mhz(void)
@@ -959,10 +984,7 @@ static void spl_dram_init(void)
 	 */
 	set_ddr_freq_to_400mhz();
 
-	mx7_dram_cfg(&spl_ddrc_regs_val,
-			&spl_ddrc_mp_val,
-			&spl_ddr_phy_regs_val,
-			&spl_calib_param);
+	ddr_init(default_dcd_table, ARRAY_SIZE(default_dcd_table));
 }
 
 void board_init_f(ulong dummy)
