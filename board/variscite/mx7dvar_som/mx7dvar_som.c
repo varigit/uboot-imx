@@ -45,6 +45,10 @@
 #endif
 #endif /*CONFIG_FSL_FASTBOOT*/
 
+#ifdef CONFIG_SYS_I2C
+#include "mx7dvar_eeprom.h"
+#endif
+
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -126,9 +130,52 @@ struct i2c_pads_info i2c_pad_info3 = {
 };
 #endif
 
+#ifdef CONFIG_SYS_I2C
+static int var_eeprom_get_ram_size(void)
+{
+	u16 read_eeprom_magic;
+	u8  read_ram_size;
+
+	i2c_set_bus_num(EEPROM_I2C_BUS);
+	if (i2c_probe(EEPROM_I2C_ADDR)) {
+		eeprom_debug("\nError: Couldn't find EEPROM device\n");
+		return -1;
+	}
+
+	if ((i2c_read(EEPROM_I2C_ADDR,
+			offsetof(struct var_eeprom_cfg, eeprom_magic),
+			1,
+			(u8 *) &read_eeprom_magic,
+			sizeof(read_eeprom_magic))) ||
+	   (i2c_read(EEPROM_I2C_ADDR,
+			offsetof(struct var_eeprom_cfg, dram_size),
+			1,
+			(u8 *) &read_ram_size,
+			sizeof(read_ram_size))))
+	{
+		eeprom_debug("\nError reading data from EEPROM\n");
+		return -1;
+	}
+
+	if (EEPROM_MAGIC != read_eeprom_magic) {
+		eeprom_debug("\nError: Data on EEPROM is invalid\n");
+		return -1;
+	}
+
+	return (read_ram_size * SZ_128M);
+}
+#endif
+
 int dram_init(void)
 {
-	gd->ram_size = get_ram_size((void *)PHYS_SDRAM, PHYS_SDRAM_SIZE);
+#ifdef CONFIG_SYS_I2C
+	int eeprom_ram_size = var_eeprom_get_ram_size();
+
+	if (eeprom_ram_size > 0)
+		gd->ram_size = eeprom_ram_size;
+	else
+#endif
+		gd->ram_size = get_ram_size((void *)PHYS_SDRAM, PHYS_SDRAM_SIZE);
 
 	return 0;
 }
@@ -933,6 +980,79 @@ static inline void check_bits_set(u32 reg, u32 mask)
 	while ((readl(reg) & mask) != mask);
 }
 
+static inline bool var_eeprom_is_valid(const struct var_eeprom_cfg *p_var_eeprom_cfg)
+{
+	return (EEPROM_MAGIC == p_var_eeprom_cfg->eeprom_magic);
+}
+
+static int var_eeprom_read_struct(struct var_eeprom_cfg *p_var_eeprom_cfg)
+{
+	i2c_set_bus_num(EEPROM_I2C_BUS);
+	if (i2c_probe(EEPROM_I2C_ADDR)) {
+		eeprom_debug("\nError: Couldn't find EEPROM device\n");
+		return -1;
+	}
+
+	if (i2c_read(EEPROM_I2C_ADDR, 0, 1,
+				(u8 *) p_var_eeprom_cfg,
+				sizeof(struct var_eeprom_cfg))) {
+		eeprom_debug("\nError reading data from EEPROM\n");
+		return -1;
+	}
+
+	if (!var_eeprom_is_valid(p_var_eeprom_cfg)) {
+		eeprom_debug("\nError: Data on EEPROM is invalid\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static void var_eeprom_print_legacy_production_info(const struct var_eeprom_cfg *p_var_eeprom_cfg)
+{
+	/*
+	 * Legacy EEPROM data layout:
+	 * u32 reserved;
+	 * u8 part_number[16];
+	 * u8 assembly[16];
+	 * u8 date[9];	YYYYMMMDD
+	 */
+	printf("\nPart number: %.*s\n",
+			16,
+			((char *) p_var_eeprom_cfg) + 4);
+
+	printf("Assembly: %.*s\n",
+			16,
+			((char *) p_var_eeprom_cfg) + 4 + 16);
+
+	printf("Date of production: %.*s %.*s %.*s\n",
+			4, /* YYYY */
+			((char *) p_var_eeprom_cfg) + 4 + 16 + 16,
+			3, /* MMM */
+			((char *) p_var_eeprom_cfg) + 4 + 16 + 16 + 4,
+			2, /* DD */
+			((char *) p_var_eeprom_cfg) + 4 + 16 + 16 + 4 + 3);
+}
+
+static void var_eeprom_print_production_info(const struct var_eeprom_cfg *p_var_eeprom_cfg)
+{
+	printf("\nPart number: VSM-MX7-%.*s\n",
+			sizeof(p_var_eeprom_cfg->part_number),
+			(char *) p_var_eeprom_cfg->part_number);
+
+	printf("Assembly: AS%.*s\n",
+			sizeof(p_var_eeprom_cfg->assembly),
+			(char *) p_var_eeprom_cfg->assembly);
+
+	printf("Date of production: %.*s %.*s %.*s\n",
+			4, /* YYYY */
+			(char *) p_var_eeprom_cfg->date,
+			3, /* MMM */
+			((char *) p_var_eeprom_cfg->date) + 4,
+			2, /* DD */
+			((char *) p_var_eeprom_cfg->date) + 4 + 3);
+}
+
 static void ddr_init(u32 *table, int size)
 {
 	int i;
@@ -940,10 +1060,12 @@ static void ddr_init(u32 *table, int size)
 	for (i = 0; i < size; i += 2) {
 		if (table[i] == CHECK_BITS_SET) {
 			++i;
+			eeprom_debug("check_bits_set(0x%x, 0x%x);\n", table[i], table[i + 1]);
 			check_bits_set(table[i], table[i + 1]);
 		} else if (table[i] == END_OF_TABLE) {
 			break;
 		} else {
+			eeprom_debug("writel(0x%x, 0x%x);\n", table[i + 1], table[i]);
 			writel(table[i + 1], table[i]);
 		}
 	}
@@ -977,6 +1099,9 @@ static void set_ddr_freq_to_400mhz(void)
 
 static void spl_dram_init(void)
 {
+	struct var_eeprom_cfg var_eeprom_cfg = {0};
+	int is_eeprom_valid = !(var_eeprom_read_struct(&var_eeprom_cfg));
+
 	/*
 	 * Since the i.MX7D DDR controller doesn't
 	 * support real calibration like the i.MX6,
@@ -984,7 +1109,16 @@ static void spl_dram_init(void)
 	 */
 	set_ddr_freq_to_400mhz();
 
-	ddr_init(default_dcd_table, ARRAY_SIZE(default_dcd_table));
+	if (is_eeprom_valid) {
+		var_eeprom_print_production_info(&var_eeprom_cfg);
+
+		ddr_init(var_eeprom_cfg.dcd_table, ARRAY_SIZE(var_eeprom_cfg.dcd_table));
+	} else {
+		printf("\nUsing default DDR configuration");
+		var_eeprom_print_legacy_production_info(&var_eeprom_cfg);
+
+		ddr_init(default_dcd_table, ARRAY_SIZE(default_dcd_table));
+	}
 }
 
 void board_init_f(ulong dummy)
