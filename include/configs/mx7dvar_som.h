@@ -68,7 +68,6 @@
 #define CONFIG_IMX_VIDEO_SKIP
 #endif
 
-#define CONFIG_SPLASH_SCREEN
 /* SPLASH SCREEN Configs  */
 #ifdef CONFIG_SPLASH_SCREEN
 /* Framebuffer and LCD  */
