@@ -12,7 +12,6 @@
  */
 
 #include <common.h>
-#include <command.h>
 #include <i2c.h>
 #include "mx6var_eeprom_v1.h"
 
@@ -30,93 +29,6 @@ static void var_eeprom_v1_print_production_info(const struct var_eeprom_v1_cfg *
 			sizeof(p_var_eeprom_v1_cfg->header.date) - 1,
 			(char *) p_var_eeprom_v1_cfg->header.date);
 }
-
-static int var_eeprom_write(uchar *ptr, u32 size, u32 eeprom_i2c_addr, u32 offset)
-{
-	int ret = 0;
-	u32 size_written;
-	u32 size_to_write;
-	u32 P0_select_page_EEPROM;
-	u32 chip;
-	u32 addr;
-
-	/* Write to EEPROM device */
-	size_written = 0;
-	size_to_write = size;
-	while ((ret == 0) && (size_written < size_to_write)) {
-		P0_select_page_EEPROM = (offset > 0xFF);
-		chip = eeprom_i2c_addr + P0_select_page_EEPROM;
-		addr = (offset & 0xFF);
-		ret = i2c_write(chip, addr, 1, ptr, VAR_EEPROM_WRITE_MAX_SIZE);
-
-		/* Wait for EEPROM write operation to complete (No ACK) */
-		mdelay(11);
-
-		size_written += VAR_EEPROM_WRITE_MAX_SIZE;
-		offset += VAR_EEPROM_WRITE_MAX_SIZE;
-		ptr += VAR_EEPROM_WRITE_MAX_SIZE;
-	}
-
-	return ret;
-}
-
-static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-	struct var_eeprom_v1_cfg var_eeprom_v1_cfg;
-	int offset;
-
-	if (argc != 4)
-		return -1;
-
-	i2c_set_bus_num(VAR_EEPROM_I2C_BUS);
-	if (i2c_probe(VAR_EEPROM_I2C_ADDR)) {
-		printf("Error: Couldn't find EEPROM device\n");
-		return -1;
-	}
-
-	memset(&var_eeprom_v1_cfg.header, 0, sizeof(var_eeprom_v1_cfg.header));
-
-	strncpy((char *) var_eeprom_v1_cfg.header.part_number, argv[1], sizeof(var_eeprom_v1_cfg.header.part_number) - 1);
-	strncpy((char *) var_eeprom_v1_cfg.header.assembly, argv[2], sizeof(var_eeprom_v1_cfg.header.assembly) - 1);
-	strncpy((char *) var_eeprom_v1_cfg.header.date, argv[3], sizeof(var_eeprom_v1_cfg.header.date) - 1);
-
-	var_eeprom_v1_print_production_info(&var_eeprom_v1_cfg);
-
-	offset = (uchar *) var_eeprom_v1_cfg.header.part_number - (uchar *) &var_eeprom_v1_cfg;
-	if (var_eeprom_write((uchar *) var_eeprom_v1_cfg.header.part_number,
-				sizeof(var_eeprom_v1_cfg.header.part_number),
-				VAR_EEPROM_I2C_ADDR,
-				offset))
-		goto err;
-
-	offset = (uchar *) var_eeprom_v1_cfg.header.assembly - (uchar *) &var_eeprom_v1_cfg;
-	if (var_eeprom_write((uchar *) var_eeprom_v1_cfg.header.assembly,
-				sizeof(var_eeprom_v1_cfg.header.assembly),
-				VAR_EEPROM_I2C_ADDR,
-				offset))
-		goto err;
-
-	offset = (uchar *) var_eeprom_v1_cfg.header.date - (uchar *) &var_eeprom_v1_cfg;
-	if (var_eeprom_write((uchar *) var_eeprom_v1_cfg.header.date,
-				sizeof(var_eeprom_v1_cfg.header.date),
-				VAR_EEPROM_I2C_ADDR,
-				offset))
-		goto err;
-
-	printf("EEPROM updated successfully\n");
-
-	return 0;
-
-err:
-	printf("Error writing to EEPROM!\n");
-	return -1;
-}
-
-U_BOOT_CMD(
-	vareeprom,	5,	1,	do_var_eeprom_params,
-	"For internal use only",
-	"- Do not use"
-);
 
 #ifdef CONFIG_SPL_BUILD
 #include <asm/arch/mx6-ddr.h>
@@ -325,4 +237,93 @@ int var_eeprom_v1_dram_init(void)
 
 	return 0;
 }
-#endif /* CONFIG_SPL_BUILD */
+#else
+#include <command.h>
+
+static int var_eeprom_write(uchar *ptr, u32 size, u32 eeprom_i2c_addr, u32 offset)
+{
+	int ret = 0;
+	u32 size_written;
+	u32 size_to_write;
+	u32 P0_select_page_EEPROM;
+	u32 chip;
+	u32 addr;
+
+	/* Write to EEPROM device */
+	size_written = 0;
+	size_to_write = size;
+	while ((ret == 0) && (size_written < size_to_write)) {
+		P0_select_page_EEPROM = (offset > 0xFF);
+		chip = eeprom_i2c_addr + P0_select_page_EEPROM;
+		addr = (offset & 0xFF);
+		ret = i2c_write(chip, addr, 1, ptr, VAR_EEPROM_WRITE_MAX_SIZE);
+
+		/* Wait for EEPROM write operation to complete (No ACK) */
+		mdelay(11);
+
+		size_written += VAR_EEPROM_WRITE_MAX_SIZE;
+		offset += VAR_EEPROM_WRITE_MAX_SIZE;
+		ptr += VAR_EEPROM_WRITE_MAX_SIZE;
+	}
+
+	return ret;
+}
+
+static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	struct var_eeprom_v1_cfg var_eeprom_v1_cfg;
+	int offset;
+
+	if (argc != 4)
+		return -1;
+
+	i2c_set_bus_num(VAR_EEPROM_I2C_BUS);
+	if (i2c_probe(VAR_EEPROM_I2C_ADDR)) {
+		printf("Error: Couldn't find EEPROM device\n");
+		return -1;
+	}
+
+	memset(&var_eeprom_v1_cfg.header, 0, sizeof(var_eeprom_v1_cfg.header));
+
+	strncpy((char *) var_eeprom_v1_cfg.header.part_number, argv[1], sizeof(var_eeprom_v1_cfg.header.part_number) - 1);
+	strncpy((char *) var_eeprom_v1_cfg.header.assembly, argv[2], sizeof(var_eeprom_v1_cfg.header.assembly) - 1);
+	strncpy((char *) var_eeprom_v1_cfg.header.date, argv[3], sizeof(var_eeprom_v1_cfg.header.date) - 1);
+
+	var_eeprom_v1_print_production_info(&var_eeprom_v1_cfg);
+
+	offset = (uchar *) var_eeprom_v1_cfg.header.part_number - (uchar *) &var_eeprom_v1_cfg;
+	if (var_eeprom_write((uchar *) var_eeprom_v1_cfg.header.part_number,
+				sizeof(var_eeprom_v1_cfg.header.part_number),
+				VAR_EEPROM_I2C_ADDR,
+				offset))
+		goto err;
+
+	offset = (uchar *) var_eeprom_v1_cfg.header.assembly - (uchar *) &var_eeprom_v1_cfg;
+	if (var_eeprom_write((uchar *) var_eeprom_v1_cfg.header.assembly,
+				sizeof(var_eeprom_v1_cfg.header.assembly),
+				VAR_EEPROM_I2C_ADDR,
+				offset))
+		goto err;
+
+	offset = (uchar *) var_eeprom_v1_cfg.header.date - (uchar *) &var_eeprom_v1_cfg;
+	if (var_eeprom_write((uchar *) var_eeprom_v1_cfg.header.date,
+				sizeof(var_eeprom_v1_cfg.header.date),
+				VAR_EEPROM_I2C_ADDR,
+				offset))
+		goto err;
+
+	printf("EEPROM updated successfully\n");
+
+	return 0;
+
+err:
+	printf("Error writing to EEPROM!\n");
+	return -1;
+}
+
+U_BOOT_CMD(
+	vareeprom,	5,	1,	do_var_eeprom_params,
+	"For internal use only",
+	"- Do not use"
+);
+#endif
