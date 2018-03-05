@@ -914,7 +914,7 @@ static void setup_display(void)
 		| (IOMUXC_GPR3_MUX_SRC_IPU1_DI0 << IOMUXC_GPR3_LVDS1_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
 }
-#elif defined(CONFIG_VIDEO_HDMI)
+#elif defined(CONFIG_IMX_HDMI)
 static void setup_hdmi(void)
 {
 	/* Turn off standard backlight: pin as input pull down */
@@ -1066,7 +1066,7 @@ int board_init(void)
 {
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
-#elif defined(CONFIG_VIDEO_HDMI)
+#elif defined(CONFIG_IMX_HDMI)
 	setup_hdmi();
 #endif
 
