@@ -117,26 +117,6 @@
 #define M4_ENV_SETTINGS ""
 #endif
 
-#ifdef CONFIG_NAND_BOOT
-#define MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),1m(misc),-(rootfs) "
-#else
-#define MFG_NAND_PARTITION ""
-#endif
-
-#define CONFIG_MFG_ENV_SETTINGS \
-	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
-		"rdinit=/linuxrc " \
-		"g_mass_storage.stall=0 g_mass_storage.removable=1 " \
-		"g_mass_storage.idVendor=0x066F g_mass_storage.idProduct=0x37FF "\
-		"g_mass_storage.iSerialNumber=\"\" "\
-		MFG_NAND_PARTITION \
-		"clk_ignore_unused "\
-		"\0" \
-	"initrd_addr=0x83800000\0" \
-	"initrd_high=0xffffffff\0" \
-	"bootcmd_mfg=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
-
-
 #define CONFIG_DFU_ENV_SETTINGS \
 	"dfu_alt_info=image raw 0 0x800000;"\
 		"u-boot raw 0 0x4000;"\
@@ -214,7 +194,6 @@
 
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
 	M4_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
 	"console=ttymxc0\0" \
