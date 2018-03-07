@@ -309,16 +309,16 @@
 
 /*
  * Partitions layout for NAND is:
- *     mtd0: 3M       (u-boot)
- *     mtd1: 1M       (reserved)
+ *     mtd0: 2M       (spl)
+ *     mtd1: 2M       (u-boot)
  *     mtd2: 2M       (u-boot environment)
  *     mtd3: 8M       (kernel)
  *     mtd4: left     (rootfs)
  */
 /* Default mtd partition table */
 #define MTDPARTS_DEFAULT	"mtdparts=nandflash-0:"\
-					"3m(u-boot),"\
-					"1m(reserved),"\
+					"2m(spl),"\
+					"2m(u-boot),"\
 					"2m(u-boot_env),"\
 					"8m(kernel),"\
 					"-(rootfs)"     /* ubifs */
