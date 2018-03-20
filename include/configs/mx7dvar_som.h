@@ -126,6 +126,7 @@
 
 #define MMC_BOOT_ENV_SETTINGS \
 	CONFIG_DFU_ENV_SETTINGS \
+	"bootenv=uEnv.txt\0" \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
@@ -135,6 +136,10 @@
 	"mmcrootpart=2\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcrootpart} rootwait rw\0 " \
+	"loadbootenv=" \
+		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${bootenv}\0" \
+	"importbootenv=echo Importing environment from mmc ...; " \
+		"env import -t ${loadaddr} ${filesize}\0" \
 	"loadbootscript=" \
 		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
@@ -180,6 +185,9 @@
 	"mmc dev ${mmcdev};" \
 	"if test ${use_m4} = yes; then run m4boot; fi; " \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
+		"if run loadbootenv; then " \
+			"run importbootenv; " \
+		"fi; " \
 		"if run loadbootscript; then " \
 			"run bootscript; " \
 		"else " \
