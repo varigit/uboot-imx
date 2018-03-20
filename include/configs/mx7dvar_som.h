@@ -150,6 +150,7 @@
 		"load mmc ${mmcdev}:${mmcbootpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
+		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
 				"bootz ${loadaddr} - ${fdt_addr}; " \
@@ -168,7 +169,8 @@
 #define NAND_BOOT_ENV_SETTINGS \
 	"nandargs=setenv bootargs console=${console},${baudrate} ubi.mtd=4 " \
 		"root=ubi0:rootfs rootfstype=ubifs rw\0" \
-	"bootcmd=run nandargs; "\
+	"bootcmd=run nandargs; " \
+		"run optargs; " \
 		"if test ${use_m4} = yes; then run m4boot; fi; " \
 		"nand read ${loadaddr} 0x600000 0x7e0000;" \
 		"nand read ${fdt_addr} 0xde0000 0x20000;" \
@@ -200,10 +202,13 @@
 	"else run netboot; fi"
 #endif
 
+#define OPT_ENV_SETTINGS \
+	"optargs=setenv bootargs ${bootargs} ${kernelargs}\0"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	M4_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
+	OPT_ENV_SETTINGS \
 	"console=ttymxc0\0" \
 	"boot_fdt=try\0" \
 	"fdt_high=0xffffffff\0" \
@@ -226,6 +231,7 @@
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
+		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
