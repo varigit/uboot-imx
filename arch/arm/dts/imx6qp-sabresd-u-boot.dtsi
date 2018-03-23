@@ -4,3 +4,7 @@
  */
 
 #include "imx6qdl-sabresd-u-boot.dtsi"
+
+&phy {
+	/delete-property/ qca,clk-out-frequency;
+};

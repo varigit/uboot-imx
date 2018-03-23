@@ -6,9 +6,6 @@
 #include "imx6qdl-u-boot.dtsi"
 
 / {
-	aliases {
-		mmc1 = &usdhc3;
-	};
 	wdt-reboot {
 		compatible = "wdt-reboot";
 		wdt = <&wdog2>;
@@ -26,4 +23,12 @@
 
 &wdog2 {
 	bootph-pre-ram;
+};
+
+&phy {
+	vddio: vddio-regulator {
+		regulator-name = "VDDIO";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
 };
