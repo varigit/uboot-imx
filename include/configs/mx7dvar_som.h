@@ -26,8 +26,6 @@
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(32 * SZ_1M)
 
-#define CONFIG_SILENT_CONSOLE
-
 /* Networtk */
 #define CONFIG_FEC_MXC
 #define CONFIG_MII
