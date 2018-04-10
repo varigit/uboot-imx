@@ -532,9 +532,12 @@ static void check_emmc(void)
 	err = !mmc;
 	if (!err) {
 		/* Silence mmc_init since SOMs can be with or without eMMC */
-		gd->flags |= GD_FLG_SILENT;
+		int is_silent = (gd->flags & GD_FLG_SILENT);
+		if (!is_silent)
+			gd->flags |= GD_FLG_SILENT;
 		err = mmc_init(mmc);
-		gd->flags &= ~GD_FLG_SILENT;
+		if (!is_silent)
+			gd->flags &= ~GD_FLG_SILENT;
 	}
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
