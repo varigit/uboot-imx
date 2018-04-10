@@ -347,6 +347,23 @@ void board_late_mmc_init(void)
 	run_command(cmd, 0);
 }
 
+static void print_emmc_size(void)
+{
+	struct mmc *mmc;
+	int err;
+
+	mmc = find_mmc_device(1);
+	err = !mmc;
+	if (!err)
+		err = mmc_init(mmc);
+
+	if (err)
+		return;
+
+	puts("eMMC:  ");
+	print_size(mmc->capacity, "\n");
+}
+
 #ifdef CONFIG_VIDEO_MXS
 static iomux_v3_cfg_t const lcd_pads[] = {
 	MX6_PAD_LCD_CLK__LCDIF_CLK | MUX_PAD_CTRL(LCD_PAD_CTRL),
@@ -682,6 +699,12 @@ int board_late_init(void)
 	board_late_mmc_init();
 #endif
 
+	if (var_eeprom_v2_read_struct(&var_eeprom_v2_cfg))
+		puts("Warning: Can't read SOM configuration from EEPROM\n");
+
+	if ((var_eeprom_v2_cfg.som_info & 0x3) == 0x2)
+		print_emmc_size();
+
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	setenv("board_name", "MX6UL_VAR_DART");
 
@@ -712,9 +735,6 @@ int board_late_init(void)
 		setenv("boot_dev", "unknown");
 		break;
 	}
-
-	if (var_eeprom_v2_read_struct(&var_eeprom_v2_cfg))
-		puts("Warning: Can't read SOM configuration from EEPROM\n");
 
 	if (var_eeprom_v2_cfg.som_info & 0x4)
 		setenv("wifi", "yes");
