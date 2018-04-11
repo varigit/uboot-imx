@@ -313,7 +313,7 @@
 #define CONFIG_ENV_SIZE			SZ_8K
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #define CONFIG_ENV_OFFSET		0x400000
-#define CONFIG_ENV_SIZE			0x200000
+#define CONFIG_ENV_SIZE			SZ_128K
 #endif
 
 #define CONFIG_CMD_BMODE
