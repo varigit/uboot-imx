@@ -350,8 +350,7 @@
 #define CONFIG_ENV_SIZE			SZ_8K
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #define CONFIG_ENV_OFFSET		(4 << 20)
-#define CONFIG_ENV_SECT_SIZE		(128 << 10)
-#define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
+#define CONFIG_ENV_SIZE			SZ_128K
 #endif
 
 #ifdef CONFIG_NAND_MXS
