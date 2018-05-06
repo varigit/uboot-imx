@@ -32,6 +32,8 @@
 #include <usb.h>
 #include <dwc3-uboot.h>
 
+#include "eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define QSPI_PAD_CTRL	(PAD_CTL_DSE2 | PAD_CTL_HYS)
@@ -110,23 +112,41 @@ int ft_board_setup(void *blob, bd_t *bd)
 #endif
 
 #ifdef CONFIG_FEC_MXC
-static iomux_v3_cfg_t const fec1_pads[] = {
+static iomux_v3_cfg_t const fec_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO08__GPIO1_IO8 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
+static int setup_mac(void)
+{
+	int ret;
+	unsigned char enetaddr[6];
+
+	ret = eth_getenv_enetaddr("ethaddr", enetaddr);
+	if (ret)
+		return 0;
+
+	ret = var_eeprom_read_mac(enetaddr);
+	if (ret)
+		return ret;
+
+	if (!is_valid_ethaddr(enetaddr))
+		return -1;
+
+	return eth_setenv_enetaddr("ethaddr", enetaddr);
+}
+
 static void setup_iomux_fec(void)
 {
-	imx_iomux_v3_setup_multiple_pads(fec1_pads,
-					 ARRAY_SIZE(fec1_pads));
+	imx_iomux_v3_setup_multiple_pads(fec_pads, ARRAY_SIZE(fec_pads));
 
 	/* Power-up ethernet PHY */
-	gpio_request(IMX_GPIO_NR(1, 8), "fec1_phy_pwr");
+	gpio_request(IMX_GPIO_NR(1, 8), "fec_phy_pwr");
 	gpio_direction_output(IMX_GPIO_NR(1, 8), 1);
 	mdelay(10);
 
 	/* Reset ethernet PHY */
-	gpio_request(IMX_GPIO_NR(1, 9), "fec1_phy_rst");
+	gpio_request(IMX_GPIO_NR(1, 9), "fec_phy_rst");
 	gpio_direction_output(IMX_GPIO_NR(1, 9), 0);
 	mdelay(10);
 	gpio_direction_output(IMX_GPIO_NR(1, 9), 1);
@@ -137,8 +157,7 @@ static int setup_fec(void)
 	setup_iomux_fec();
 
 	/* Use 125M anatop REF_CLK1 for ENET1, not from external */
-	clrsetbits_le32(IOMUXC_GPR1,
-			BIT(13) | BIT(17), 0);
+	clrsetbits_le32(IOMUXC_GPR1, BIT(13) | BIT(17), 0);
 
 	return set_clk_enet(ENET_125MHz);
 }
@@ -158,6 +177,8 @@ int board_phy_config(struct phy_device *phydev)
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
+
+	setup_mac();
 
 	return 0;
 }
