@@ -21,7 +21,7 @@
 #include "fsl-imx8mq.dtsi"
 
 / {
-	model = "Variscite DART-MX8M SD+EMMC";
+	model = "Variscite DART-MX8M";
 	compatible = "fsl,imx8mq-evk", "fsl,imx8mq";
 
 	chosen {
