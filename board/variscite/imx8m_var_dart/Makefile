@@ -4,7 +4,7 @@
 # SPDX-License-Identifier:      GPL-2.0+
 #
 
-obj-y += imx8m_var_dart.o
+obj-y += imx8m_var_dart.o eeprom.o
 
 obj-$(CONFIG_POWER_PFUZE100) += ../../freescale/common/pfuze.o
 
