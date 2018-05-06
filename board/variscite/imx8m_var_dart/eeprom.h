@@ -11,7 +11,12 @@
 
 #define VAR_EEPROM_I2C_BUS	0
 #define VAR_EEPROM_I2C_ADDR	0x52
-#define VAR_EEPROM_ADDR_LEN	1
+
+/* Bits of "features" field in the eeprom structure below */
+#define VAR_EEPROM_F_WIFI 	(1 << 0)
+#define VAR_EEPROM_F_ETH 	(1 << 1)
+#define VAR_EEPROM_F_AUDIO 	(1 << 2)
+#define VAR_EEPROM_F_LVDS	(1 << 3)
 
 #ifdef EEPROM_DEBUG
 #define eeprom_debug(M, ...) printf("EEPROM_DEBUG: " M, ##__VA_ARGS__)
