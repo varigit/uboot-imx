@@ -346,6 +346,11 @@ static int check_mmc_autodetect(void)
 	return 0;
 }
 
+int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no;
+}
+
 static void var_board_late_mmc_env_init(void)
 {
 	char cmd[32];
