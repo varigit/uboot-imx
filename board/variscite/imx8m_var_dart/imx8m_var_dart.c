@@ -333,6 +333,8 @@ static void setup_hdmi(void)
 
 int board_init(void)
 {
+	var_eeprom_print_info();
+
 #ifdef CONFIG_FSL_QSPI
 	board_qspi_init();
 #endif
