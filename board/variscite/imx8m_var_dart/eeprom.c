@@ -133,6 +133,9 @@ void var_eeprom_print_info(void)
 			2, /* DD */
 			((char *)e.date) + 4 + 3);
 
+	printf("Serial Number: %02x:%02x:%02x:%02x:%02x:%02x\n",
+		e.mac[0], e.mac[1], e.mac[2], e.mac[3], e.mac[4], e.mac[5]);
+
 	switch (e.sr) {
 	case 0:
 		printf("SOM revision: 1.1\n\n");
