@@ -187,6 +187,15 @@ static int get_aligned_image_size(struct spl_load_info *info, int data_size,
 	return ALIGN(data_size, spl_get_bl_len(info));
 }
 
+#if defined(CONFIG_DUAL_BOOTLOADER) && defined(CONFIG_IMX_TRUSTY_OS)
+__weak int get_tee_load(ulong *load)
+{
+	/* default return ok */
+	return 0;
+}
+
+#endif
+
 /**
  * load_simple_fit(): load the image described in a certain FIT node
  * @info:	points to information about the device to load data from
@@ -239,6 +248,21 @@ static int load_simple_fit(struct spl_load_info *info, ulong fit_offset,
 		}
 		load_addr = image_info->load_addr;
 	}
+
+#if defined(CONFIG_DUAL_BOOTLOADER) && defined(CONFIG_IMX_TRUSTY_OS)
+	char *desc = NULL;
+
+	if (fit_get_desc(fit, node, &desc)) {
+		printf("can't found node description!\n");
+		return -ENOENT;
+	} else if (!strncmp(desc, "TEE firmware",
+				strlen("TEE firmware"))) {
+		if (get_tee_load(&load_addr)) {
+			printf("Failed to get TEE load address!\n");
+			return -ENOENT;
+		}
+	}
+#endif
 
 	if (!fit_image_get_data_position(fit, node, &offset)) {
 		external_data = true;
