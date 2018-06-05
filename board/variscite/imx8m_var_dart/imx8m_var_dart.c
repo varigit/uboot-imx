@@ -31,6 +31,7 @@
 #include "../../freescale/common/pfuze.h"
 #include <usb.h>
 #include <dwc3-uboot.h>
+#include <splash.h>
 
 #include "eeprom.h"
 
@@ -357,12 +358,12 @@ int board_mmc_get_env_dev(int devno)
 	return devno;
 }
 
-static int check_mmc_autodetect(void)
+static int check_env(char *var, char *val)
 {
-	char *autodetect_str = getenv("mmcautodetect");
+	char *env_val = getenv(var);
 
-	if ((autodetect_str != NULL) &&
-		(strcmp(autodetect_str, "yes") == 0)) {
+	if ((env_val != NULL) &&
+		(strcmp(env_val, val) == 0)) {
 		return 1;
 	}
 
@@ -380,7 +381,7 @@ static void var_board_late_mmc_env_init(void)
 	char mmcblk[32];
 	u32 dev_no = mmc_get_env_dev();
 
-	if (!check_mmc_autodetect())
+	if (!check_env("mmcautodetect", "yes"))
 		return;
 
 	setenv_ulong("mmcdev", dev_no);
@@ -463,3 +464,49 @@ size_t display_count = ARRAY_SIZE(displays);
 
 #endif /* CONFIG_VIDEO_IMXDCSS */
 
+#ifdef CONFIG_SPLASH_SCREEN
+
+static void splash_set_source(void)
+{
+	if (!check_env("splashsourceauto", "yes"))
+		return;
+
+	if (mmc_get_env_dev() == 0)
+		setenv("splashsource", "emmc");
+	else if (mmc_get_env_dev() == 1)
+		setenv("splashsource", "sd");
+}
+
+int splash_screen_prepare(void)
+{
+	char sd_devpart[5];
+	char emmc_devpart[5];
+	u32 sd_part, emmc_part;
+
+	sd_part = emmc_part = getenv_ulong("mmcpart", 10, 0);
+
+	sprintf(sd_devpart, "1:%d", sd_part);
+	sprintf(emmc_devpart, "0:%d", emmc_part);
+
+	struct splash_location splash_locations[] = {
+		{
+			.name = "sd",
+			.storage = SPLASH_STORAGE_MMC,
+			.flags = SPLASH_STORAGE_FS,
+			.devpart = sd_devpart,
+		},
+		{
+			.name = "emmc",
+			.storage = SPLASH_STORAGE_MMC,
+			.flags = SPLASH_STORAGE_FS,
+			.devpart = emmc_devpart,
+		}
+	};
+
+	splash_set_source();
+
+	return splash_source_load(splash_locations,
+			ARRAY_SIZE(splash_locations));
+
+}
+#endif /* CONFIG_SPLASH_SCREEN */

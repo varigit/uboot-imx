@@ -154,7 +154,13 @@
 			"fi; " \
 		"else " \
 			"booti; " \
-		"fi;\0"
+		"fi;\0" \
+	"splashsourceauto=yes\0" \
+	"splashfile=/boot/splash.bmp\0" \
+	"splashimage=0x43100000\0" \
+	"splashenable=setenv splashfile /boot/splash.bmp; " \
+		"setenv splashimage 0x43100000\0" \
+	"splashdisable=setenv splashfile; setenv splashimage\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
@@ -298,12 +304,19 @@
 #define CONFIG_VIDEO_IMXDCSS
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
-#define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IMX_VIDEO_SKIP
 #endif
+
+/* Splash Screen  */
+#ifdef CONFIG_SPLASH_SCREEN
+#define CONFIG_CMD_BMP
+#define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
+#endif
+
 
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8m_var_dart_android.h"
