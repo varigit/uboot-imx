@@ -113,11 +113,12 @@
 	"fdt_file=imx8m-var-dart.dtb\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
+	"video=HDMI-A-1:1920x1080-32@60\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
-	"mmcargs=setenv bootargs console=${console} root=${mmcroot}\0 " \
+	"mmcargs=setenv bootargs console=${console} root=${mmcroot} video=${video}\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
@@ -136,7 +137,7 @@
 			"echo wait for boot; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console} " \
-		"root=/dev/nfs " \
+		"root=/dev/nfs video=${video} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs;  " \
