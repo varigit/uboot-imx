@@ -158,7 +158,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 			" androidboot.storage_type=emmc gpt");
 	} else if (bootdev == NAND_BOOT) {
 		sprintf(newbootargs,
-			" androidboot.storage_type=nand");
+			" androidboot.storage_type=emmc gpt");
 	} else
 		printf("boot device type is incorrect.\n");
 	strncat(commandline, newbootargs, sizeof(commandline) - strlen(commandline));
