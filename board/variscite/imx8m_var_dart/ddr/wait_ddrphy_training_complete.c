@@ -89,7 +89,7 @@ void wait_ddrphy_training_complete(void)
 			ddr_printf("Training PASS\n");
 			break;
 		} else if (mail == 0xff) {
-			ddr_printf("Training FAILED\n");
+			printf("Training FAILED\n");
 			break;
 		}
 	}
