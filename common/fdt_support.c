@@ -291,8 +291,22 @@ int fdt_chosen(void *fdt)
 
 	str = getenv("bootargs");
 	if (str) {
-		err = fdt_setprop(fdt, nodeoffset, "bootargs", str,
-				  strlen(str) + 1);
+
+		int len = 0;
+		char* add_bootargs = NULL;
+		char commandline[2048] = {0};
+
+		strcpy(commandline, str);
+
+		add_bootargs = fdt_getprop(fdt, nodeoffset, "add_bootargs", &len);
+		if (add_bootargs) {
+			printf("found additional dts bootargs: %s\n", add_bootargs);
+			strcat(commandline, " ");
+			strcat(commandline, add_bootargs);
+		}
+
+		err = fdt_setprop(fdt, nodeoffset, "bootargs", commandline,
+				  strlen(commandline) + 1);
 		if (err < 0) {
 			printf("WARNING: could not set bootargs %s.\n",
 			       fdt_strerror(err));
