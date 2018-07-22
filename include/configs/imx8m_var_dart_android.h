@@ -50,5 +50,14 @@
 	"splashpos=m,m\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
+	"bootargs=" \
+		"console=ttymxc0,115200 " \
+		"earlycon=imxuart,0x30860000,115200 " \
+		"init=/init " \
+		"androidboot.console=ttymxc0 " \
+		"consoleblank=0 " \
+		"androidboot.hardware=freescale " \
+		"cma=1536M " \
+		"firmware_class.path=/vendor/firmware\0"
 
 #endif /* __MX8M_VAR_DART_ANDROID_H */
