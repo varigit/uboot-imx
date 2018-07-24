@@ -293,7 +293,7 @@ int fdt_chosen(void *fdt)
 	if (str) {
 
 		int len = 0;
-		char* add_bootargs = NULL;
+		const char *add_bootargs = NULL;
 		char commandline[2048] = {0};
 
 		strcpy(commandline, str);
