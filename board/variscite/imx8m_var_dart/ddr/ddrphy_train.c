@@ -56,7 +56,7 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c0800e8,0x0);
 	reg32_write(0x3c480090,0xab);
 	reg32_write(0x3c0800e8,0x0);
-	reg32_write(0x3c080158,0x7);
+	reg32_write(0x3c080158,0x3);
 	reg32_write(0x3c480158,0xa);
 	reg32_write(0x3c040134,0xe00);
 	reg32_write(0x3c040534,0xe00);
@@ -156,6 +156,7 @@ void ddr_cfg_phy(void) {
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54008,0x131f);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54009,0xc8);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5400b,0x2);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5400d,0x100);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54012,0x310);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54019,0x2dd4);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401a,0x31);

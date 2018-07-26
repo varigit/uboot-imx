@@ -237,6 +237,8 @@ void ddr_init(void)
 
 	/* enable port 0 */
 	reg32_write(DDRC_PCTRL_0(0), 0x00000001);
-	tmp = reg32_read(DDRC_CRCPARSTAT(0));
-	reg32_write(DDRC_RFSHCTL3(0), 0x00000000);
+
+	/* enable DDR auto-refresh mode */
+	tmp = reg32_read(DDRC_RFSHCTL3(0)) & ~0x1;
+	reg32_write(DDRC_RFSHCTL3(0), tmp);
 }
