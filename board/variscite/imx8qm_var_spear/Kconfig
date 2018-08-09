@@ -1,0 +1,12 @@
+if TARGET_IMX8QM_VAR_SPEAR
+
+config SYS_BOARD
+	default "imx8qm_var_spear"
+
+config SYS_VENDOR
+	default "variscite"
+
+config SYS_CONFIG_NAME
+	default "imx8qm_var_spear"
+
+endif
