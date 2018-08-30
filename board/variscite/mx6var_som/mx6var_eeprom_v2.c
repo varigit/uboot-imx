@@ -17,6 +17,7 @@
  */
 
 #ifdef CONFIG_SPL_BUILD
+#include <asm/io.h>
 #include <common.h>
 #include <i2c.h>
 #include "mx6var_eeprom_v2.h"
@@ -228,6 +229,10 @@ void var_eeprom_v2_dram_init(void)
 	u32 custom_addresses[MAX_CUSTOM_ADDRESSES]={0};
 	u32 custom_values[MAX_CUSTOM_VALUES]={0};
 
+	u32 ram_size = is_eeprom_valid ?
+		       var_eeprom_v2_get_ram_size(&var_eeprom_v2_cfg) :
+		       1024;
+
 	/*
 	 * The MX6Q_MMDC_LPDDR2_register_programming_aid_v0_Micron_InterL_commands
 	 * revision is incorrect.
@@ -244,18 +249,31 @@ void var_eeprom_v2_dram_init(void)
 			var_eeprom_v2_cfg.custom_addresses_values:
 			mt128x64mx32_Step3_RamValues);
 
+	if (ram_size == 2048) {
+		/* Set DDR clock to 400MHz */
+		writel(0x00060324, 0x020c4018);
+		/* AHB_ROOT_CLK change divide ratio from 4 to 3 for ENET */
+		writel(0x00018900, 0x020c4014);
+	}
+
 	handle_commands(is_eeprom_data_correct ?
 			var_eeprom_v2_cfg.commands :
 			(struct eeprom_command *) mt128x64mx32_Step3_commands,
 			common_addresses, common_values, custom_addresses, custom_values);
 
+	if (ram_size == 2048) {
+		/* Enable AXI cache for VDOA/VPU/IPU */
+		writel(0xF00000CF, 0x020e0010);
+		/* Set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
+		writel(0x007F007F, 0x020e0018);
+		writel(0x007F007F, 0x020e001c);
+	}
 
+	var_set_ram_size(ram_size);
 	if (is_eeprom_valid) {
-		var_set_ram_size(var_eeprom_v2_get_ram_size(&var_eeprom_v2_cfg));
 		var_eeprom_v2_null_term_strings(&var_eeprom_v2_cfg);
 		var_eeprom_v2_print_info(&var_eeprom_v2_cfg);
 	} else {
-		var_set_ram_size(1024);
 		printf("\nDDR LEGACY configuration\n");
 	}
 }
