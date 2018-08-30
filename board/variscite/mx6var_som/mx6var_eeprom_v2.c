@@ -247,7 +247,7 @@ void var_eeprom_v2_dram_init(void)
 			var_eeprom_v2_cfg.custom_addresses_values:
 			mt128x64mx32_Step3_RamValues);
 
-	if (ram_size == 2048) {
+	if (!is_eeprom_data_correct || ram_size == 2048) {
 		/* Set DDR clock to 400MHz */
 		writel(0x00060324, 0x020c4018);
 		/* AHB_ROOT_CLK change divide ratio from 4 to 3 for ENET */
@@ -259,7 +259,7 @@ void var_eeprom_v2_dram_init(void)
 			(struct eeprom_command *) mt128x64mx32_Step3_commands,
 			common_addresses, common_values, custom_addresses, custom_values);
 
-	if (ram_size == 2048) {
+	if (!is_eeprom_data_correct || ram_size == 2048) {
 		/* Enable AXI cache for VDOA/VPU/IPU */
 		writel(0xF00000CF, 0x020e0010);
 		/* Set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
