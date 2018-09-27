@@ -52,7 +52,7 @@ struct __attribute__((packed)) var_eeprom_v2_cfg
 	struct eeprom_command commands[MAX_NUM_OF_COMMANDS];
 	u8 reserved[33];
 	u8 som_info;
-	/* DRAM size in 8KiB unit */
+	/* DRAM size in 128MiB unit */
 	u8 dram_size;
 	u8 crc;
 };

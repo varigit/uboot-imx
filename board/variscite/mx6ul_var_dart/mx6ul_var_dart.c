@@ -106,28 +106,73 @@ static struct i2c_pads_info i2c_pad_info2 = {
 };
 #endif
 
+
+#ifdef CONFIG_SYS_I2C
+static int var_eeprom_get_ram_size(void)
+{
+	u32 read_eeprom_magic;
+	u8  read_ram_size;
+
+	i2c_set_bus_num(VAR_DART_EEPROM_I2C_BUS);
+	if (i2c_probe(VAR_DART_EEPROM_I2C_ADDR)) {
+		eeprom_v2_debug("\nError: Couldn't find EEPROM device\n");
+		return -1;
+	}
+
+	if ((i2c_read(VAR_DART_EEPROM_I2C_ADDR,
+			offsetof(struct var_eeprom_v2_cfg, variscite_magic),
+			1,
+			(u8 *) &read_eeprom_magic,
+			sizeof(read_eeprom_magic))) ||
+	   (i2c_read(VAR_DART_EEPROM_I2C_ADDR + 1,
+			offsetof(struct var_eeprom_v2_cfg, dram_size) & 0xff,
+			1,
+			(u8 *) &read_ram_size,
+			sizeof(read_ram_size))))
+	{
+		eeprom_v2_debug("\nError reading data from EEPROM\n");
+		return -1;
+	}
+
+	if (VARISCITE_MAGIC_V2 != read_eeprom_magic) {
+		eeprom_v2_debug("\nError: Data on EEPROM is invalid\n");
+		return -1;
+	}
+	return (read_ram_size * SZ_128M);
+}
+#endif
+
 int dram_init(void)
 {
-	unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
-	unsigned int volatile * port2;
-	unsigned int volatile * ddr_cs0_end = (unsigned int *) DDR0_CS0_END;
+#ifdef CONFIG_SYS_I2C
+	int eeprom_ram_size = var_eeprom_get_ram_size();
 
-	/* Set the sdram_size to the actually configured one */
-	unsigned int sdram_size = ((*ddr_cs0_end) - 63) * 32;
-	do {
-		port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
+	if (eeprom_ram_size > SZ_512M)
+		gd->ram_size = get_ram_size((void *)PHYS_SDRAM, eeprom_ram_size);
+	else
+#endif
+	{
+		unsigned int volatile * const port1 = (unsigned int *) PHYS_SDRAM;
+		unsigned int volatile * port2;
+		unsigned int volatile * ddr_cs0_end = (unsigned int *) DDR0_CS0_END;
 
-		*port2 = 0;		/* write zero to start of second half of memory. */
-		*port1 = 0x3f3f3f3f;	/* write pattern to start of memory. */
+		/* Set the sdram_size to the actually configured one */
+		unsigned int sdram_size = ((*ddr_cs0_end) - 63) * 32;
+		do {
+			port2 = (unsigned int volatile *) (PHYS_SDRAM + ((sdram_size * 1024 * 1024) / 2));
 
-		if ((*port2 == 0x3f3f3f3f) && (sdram_size > 128))
-			sdram_size = sdram_size / 2;	/* Next step devide size by half */
-		else
-			if (*port2 == 0) break;		/* Done actual size found. */
+			*port2 = 0;		/* write zero to start of second half of memory. */
+			*port1 = 0x3f3f3f3f;	/* write pattern to start of memory. */
 
-	} while (sdram_size > 128);
+			if ((*port2 == 0x3f3f3f3f) && (sdram_size > 128))
+				sdram_size = sdram_size / 2;	/* Next step devide size by half */
+			else
+				if (*port2 == 0) break;		/* Done actual size found. */
 
-	gd->ram_size = (sdram_size * 1024 * 1024);
+		} while (sdram_size > 128);
+
+		gd->ram_size = (sdram_size * 1024 * 1024);
+	}
 
 	return 0;
 }
