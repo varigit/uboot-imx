@@ -243,25 +243,24 @@ int var_eeprom_v1_dram_init(void)
 static int var_eeprom_write(uchar *ptr, u32 size, u32 eeprom_i2c_addr, u32 offset)
 {
 	int ret = 0;
-	u32 size_written;
-	u32 size_to_write;
+	u32 write_len;
+	u32 size_left = size;
 	u32 P0_select_page_EEPROM;
 	u32 chip;
 	u32 addr;
 
 	/* Write to EEPROM device */
-	size_written = 0;
-	size_to_write = size;
-	while ((ret == 0) && (size_written < size_to_write)) {
+	while ((ret == 0) && (size_left > 0)) {
 		P0_select_page_EEPROM = (offset > 0xFF);
 		chip = eeprom_i2c_addr + P0_select_page_EEPROM;
 		addr = (offset & 0xFF);
-		ret = i2c_write(chip, addr, 1, ptr, VAR_EEPROM_WRITE_MAX_SIZE);
+		write_len = min((u32) VAR_EEPROM_WRITE_MAX_SIZE, size_left);
+		ret = i2c_write(chip, addr, 1, ptr, write_len);
 
 		/* Wait for EEPROM write operation to complete (No ACK) */
 		mdelay(11);
 
-		size_written += VAR_EEPROM_WRITE_MAX_SIZE;
+		size_left -= write_len;
 		offset += VAR_EEPROM_WRITE_MAX_SIZE;
 		ptr += VAR_EEPROM_WRITE_MAX_SIZE;
 	}
