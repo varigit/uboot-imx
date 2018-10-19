@@ -1049,11 +1049,13 @@ static int _fastboot_parts_load_from_ptable(void)
 			return -1;
 		}
 
+#if 0
 		/* multiple boot paritions for eMMC 4.3 later */
 		if (mmc->part_config != MMCPART_NOAVAILABLE) {
 			boot_partition = FASTBOOT_MMC_BOOT_PARTITION_ID;
 			user_partition = FASTBOOT_MMC_USER_PARTITION_ID;
 		}
+#endif
 	} else {
 		printf("Can't setup partition table on this device %d\n",
 			fastboot_devinfo.type);
