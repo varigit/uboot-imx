@@ -225,7 +225,7 @@
 	"m4bootdata="__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0" \
 	"m4boot=if run loadm4image; then dcache flush; bootaux ${m4bootdata}; fi\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs " \
+		"root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
