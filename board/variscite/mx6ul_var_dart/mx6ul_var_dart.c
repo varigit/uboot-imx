@@ -443,15 +443,17 @@ static iomux_v3_cfg_t const pwm_pads[] = {
 
 void do_enable_parallel_lcd(struct display_info_t const *dev)
 {
-	enable_lcdif_clock(dev->bus, 1);
+	if (!is_cpu_type(MXC_CPU_MX6ULZ)) {
+		enable_lcdif_clock(dev->bus, 1);
 
-	imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
+		imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
 
-	imx_iomux_v3_setup_multiple_pads(pwm_pads, ARRAY_SIZE(pwm_pads));
+		imx_iomux_v3_setup_multiple_pads(pwm_pads, ARRAY_SIZE(pwm_pads));
 
-	/* Set Brightness to high */
-	gpio_request(IMX_GPIO_NR(3, 5), "backlight");
-	gpio_direction_output(IMX_GPIO_NR(3, 5) , 1);
+		/* Set Brightness to high */
+		gpio_request(IMX_GPIO_NR(3, 5), "backlight");
+		gpio_direction_output(IMX_GPIO_NR(3, 5) , 1);
+	}
 }
 
 #define MHZ2PS(f)       (1000000/(f))
@@ -499,41 +501,43 @@ int splash_screen_prepare(void)
 {
 	int ret = 0;
 
-	char sd_devpart_str[5];
-	char emmc_devpart_str[5];
-	u32 sd_part, emmc_part;
+	if (!is_cpu_type(MXC_CPU_MX6ULZ)) {
+		char sd_devpart_str[5];
+		char emmc_devpart_str[5];
+		u32 sd_part, emmc_part;
 
-	sd_part = emmc_part = env_get_ulong("mmcrootpart", 10, 0);
+		sd_part = emmc_part = env_get_ulong("mmcrootpart", 10, 0);
 
-	sprintf(sd_devpart_str, "0:%d", sd_part);
-	sprintf(emmc_devpart_str, "1:%d", emmc_part);
+		sprintf(sd_devpart_str, "0:%d", sd_part);
+		sprintf(emmc_devpart_str, "1:%d", emmc_part);
 
-	struct splash_location var_splash_locations[] = {
-		{
-			.name = "sd",
-			.storage = SPLASH_STORAGE_MMC,
-			.flags = SPLASH_STORAGE_FS,
-			.devpart = sd_devpart_str,
-		},
-		{
-			.name = "emmc",
-			.storage = SPLASH_STORAGE_MMC,
-			.flags = SPLASH_STORAGE_FS,
-			.devpart = emmc_devpart_str,
-		},
-		{
-			.name = "nand",
-			.storage = SPLASH_STORAGE_NAND,
-			.flags = SPLASH_STORAGE_FS,
-			.mtdpart = "rootfs",
-			.ubivol = "ubi0:rootfs",
-		},
-	};
+		struct splash_location var_splash_locations[] = {
+			{
+				.name = "sd",
+				.storage = SPLASH_STORAGE_MMC,
+				.flags = SPLASH_STORAGE_FS,
+				.devpart = sd_devpart_str,
+			},
+			{
+				.name = "emmc",
+				.storage = SPLASH_STORAGE_MMC,
+				.flags = SPLASH_STORAGE_FS,
+				.devpart = emmc_devpart_str,
+			},
+			{
+				.name = "nand",
+				.storage = SPLASH_STORAGE_NAND,
+				.flags = SPLASH_STORAGE_FS,
+				.mtdpart = "rootfs",
+				.ubivol = "ubi0:rootfs",
+			},
+		};
 
-	set_splashsource_to_boot_rootfs();
+		set_splashsource_to_boot_rootfs();
 
-	ret = splash_source_load(var_splash_locations,
-			ARRAY_SIZE(var_splash_locations));
+		ret = splash_source_load(var_splash_locations,
+				ARRAY_SIZE(var_splash_locations));
+	}
 
 	return ret;
 }
@@ -634,55 +638,62 @@ static void setup_iomux_fec(int fec_id)
 
 int board_eth_init(bd_t *bis)
 {
-	int ret;
-	setup_iomux_fec(CONFIG_FEC_ENET_DEV);
+	int ret = 0;
+	if (!is_cpu_type(MXC_CPU_MX6ULZ)) {
+		setup_iomux_fec(CONFIG_FEC_ENET_DEV);
 
-	ret = fecmxc_initialize_multi(bis, CONFIG_FEC_ENET_DEV,
-				       CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
+		ret = fecmxc_initialize_multi(bis, CONFIG_FEC_ENET_DEV,
+				CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
+	}
 
 #if defined(CONFIG_CI_UDC) && defined(CONFIG_USB_ETHER)
 	/* USB Ethernet Gadget */
 	usb_eth_initialize(bis);
 #endif
+
 	return ret;
 }
 
 static int setup_fec(int fec_id)
 {
-	struct iomuxc *const iomuxc_regs = (struct iomuxc *)IOMUXC_BASE_ADDR;
-	int ret;
+	if (!is_cpu_type(MXC_CPU_MX6ULZ)) {
+		struct iomuxc *const iomuxc_regs = (struct iomuxc *)IOMUXC_BASE_ADDR;
+		int ret;
 
-	if (fec_id == 0) {
-		/*
-		 * Use 50M anatop loopback REF_CLK1 for ENET1,
-		 * clear gpr1[13], set gpr1[17].
-		 */
-		clrsetbits_le32(&iomuxc_regs->gpr[1], IOMUX_GPR1_FEC1_MASK,
-				IOMUX_GPR1_FEC1_CLOCK_MUX1_SEL_MASK);
-	} else {
-		/*
-		 * Use 50M anatop loopback REF_CLK2 for ENET2,
-		 * clear gpr1[14], set gpr1[18].
-		 */
-		clrsetbits_le32(&iomuxc_regs->gpr[1], IOMUX_GPR1_FEC2_MASK,
-				IOMUX_GPR1_FEC2_CLOCK_MUX1_SEL_MASK);
+		if (fec_id == 0) {
+			/*
+			 * Use 50M anatop loopback REF_CLK1 for ENET1,
+			 * clear gpr1[13], set gpr1[17].
+			 */
+			clrsetbits_le32(&iomuxc_regs->gpr[1], IOMUX_GPR1_FEC1_MASK,
+					IOMUX_GPR1_FEC1_CLOCK_MUX1_SEL_MASK);
+		} else {
+			/*
+			 * Use 50M anatop loopback REF_CLK2 for ENET2,
+			 * clear gpr1[14], set gpr1[18].
+			 */
+			clrsetbits_le32(&iomuxc_regs->gpr[1], IOMUX_GPR1_FEC2_MASK,
+					IOMUX_GPR1_FEC2_CLOCK_MUX1_SEL_MASK);
+		}
+
+		ret = enable_fec_anatop_clock(fec_id, ENET_50MHZ);
+		if (ret)
+			return ret;
+
+		enable_enet_clk(1);
 	}
-
-	ret = enable_fec_anatop_clock(fec_id, ENET_50MHZ);
-	if (ret)
-		return ret;
-
-	enable_enet_clk(1);
 
 	return 0;
 }
 
 int board_phy_config(struct phy_device *phydev)
 {
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1f, 0x8190);
+	if (!is_cpu_type(MXC_CPU_MX6ULZ)) {
+		phy_write(phydev, MDIO_DEVAD_NONE, 0x1f, 0x8190);
 
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
+		if (phydev->drv->config)
+			phydev->drv->config(phydev);
+	}
 
 	return 0;
 }
@@ -696,6 +707,10 @@ static void setup_local_i2c(void)
 
 int board_early_init_f(void)
 {
+#ifdef CONFIG_VIDEO_MXS
+	if (is_cpu_type(MXC_CPU_MX6ULZ))
+		display_count = 0;
+#endif
 	setup_iomux_uart();
 
 #ifdef CONFIG_SYS_I2C_MXC
@@ -741,7 +756,6 @@ int board_late_init(void)
 {
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_eeprom_v2_cfg var_eeprom_v2_cfg = {0};
-	u32 imxtype, cpurev;
 
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
@@ -760,11 +774,10 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "MX6UL_VAR_DART");
 
-	cpurev = get_cpu_rev();
-	imxtype = (cpurev & 0xFF000) >> 12;
-
-	if (imxtype == MXC_CPU_MX6ULL)
+	if (is_cpu_type(MXC_CPU_MX6ULL))
 		env_set("soc_type", "imx6ull");
+	else if (is_cpu_type(MXC_CPU_MX6ULZ))
+		env_set("soc_type", "imx6ulz");
 	else
 		env_set("soc_type", "imx6ul");
 
