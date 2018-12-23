@@ -30,7 +30,7 @@
 #define CONFIG_SPL_LDSCRIPT	"arch/arm/mach-omap2/u-boot-spl.lds"
 #if defined(CONFIG_MX6UL)
 #define CONFIG_SPL_TEXT_BASE		0x00909000
-#define CONFIG_SPL_MAX_SIZE		0xF000
+#define CONFIG_SPL_MAX_SIZE		0xFF00
 #else
 #define CONFIG_SPL_TEXT_BASE		0x00908000
 #define CONFIG_SPL_MAX_SIZE		0x10000
