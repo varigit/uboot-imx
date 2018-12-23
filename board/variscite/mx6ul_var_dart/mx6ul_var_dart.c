@@ -558,9 +558,11 @@ int board_usb_phy_mode(int port)
 	if (port == 1) {
 		return USB_INIT_HOST;
 	} else {
+#if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_ENV_SUPPORT)
 		if (check_env("usbmode", "host"))
 			return USB_INIT_HOST;
 		else
+#endif
 			return USB_INIT_DEVICE;
 	}
 }
