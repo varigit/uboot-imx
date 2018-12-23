@@ -1025,9 +1025,11 @@ static void setup_usb(void)
 int board_usb_phy_mode(int port)
 {
 	if (is_mx6_custom_board() && port == 0) {
+#if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_ENV_SUPPORT)
 		if (check_env("usbmode", "host"))
 			return USB_INIT_HOST;
 		else
+#endif
 			return USB_INIT_DEVICE;
 	}
 	return usb_phy_mode(port);
