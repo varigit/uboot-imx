@@ -635,6 +635,7 @@ static u32 sdp_jump_imxheader(void *address)
 	return 0;
 }
 
+#ifdef CONFIG_SPL_BUILD
 static ulong sdp_spl_fit_read(struct spl_load_info *load, ulong sector,
 			      ulong count, void *buf)
 {
@@ -642,6 +643,7 @@ static ulong sdp_spl_fit_read(struct spl_load_info *load, ulong sector,
 
 	return count;
 }
+#endif
 
 static void sdp_handle_in_ep(void)
 {
