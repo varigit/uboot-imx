@@ -33,6 +33,7 @@
 #include <image.h>
 #include <imximage.h>
 #include <watchdog.h>
+#include <linux/libfdt.h>
 
 #define HID_REPORT_ID_MASK	0x000000ff
 
