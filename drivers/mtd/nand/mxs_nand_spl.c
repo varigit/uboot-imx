@@ -216,7 +216,7 @@ static int mxs_flash_ident(struct mtd_info *mtd)
 		chip->onfi_version = 10;
 
 	if (!chip->onfi_version) {
-		printf("unsupported ONFI version: %d\n", val);
+		debug("unsupported ONFI version: %d\n", val);
 		return 0;
 	}
 
