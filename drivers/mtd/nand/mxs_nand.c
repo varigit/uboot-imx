@@ -209,6 +209,23 @@ static int mxs_nand_get_ecc_strength(struct mtd_info *mtd)
 	else
 		max_ecc_strength_supported = 40;
 
+#if defined(CONFIG_NAND_MXS_BCH_LEGACY_GEO)
+	/*
+	 * Determine the ECC layout with the formula:
+	 *      ECC bits per chunk = (total page spare data bits) /
+	 *              (bits per ECC level) / (chunks per page)
+	 * where:
+	 *      total page spare data bits =
+	 *              (page oob size - meta data size) * (bits per byte)
+	 */
+	chip->ecc_strength_ds = ((page_oob_size - MXS_NAND_METADATA_SIZE) * 8)
+				/ (galois_field * mxs_nand_ecc_chunk_cnt(mtd->writesize));
+	chip->ecc_strength_ds += chip->ecc_strength_ds & 1;
+	chip->ecc_strength_ds = min(chip->ecc_strength_ds, (uint16_t) max_ecc_strength_supported);
+
+	chip->ecc_step_ds = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
+#endif
+
 	if (chip->ecc_strength_ds > max_ecc_strength_supported) {
 		printf("cannot support the NAND, ecc too weak\n");
 		return -EINVAL;
@@ -255,12 +272,6 @@ static int mxs_nand_get_ecc_strength(struct mtd_info *mtd)
 	} else {
 		ecc_strength = chip->ecc_strength_ds;
 		ecc_strength += ecc_strength & 1;
-#if defined(CONFIG_NAND_MXS_BCH_LEGACY_GEO)
-		ecc_strength = ((page_oob_size - MXS_NAND_METADATA_SIZE) * 8)
-			/(galois_field * mxs_nand_ecc_chunk_cnt(mtd->writesize));
-		ecc_strength += ecc_strength & 1;
-		ecc_strength = min(ecc_strength, MXS_NAND_MAX_ECC_STRENGTH);
-#endif
 	}
 	return 0;
 };
