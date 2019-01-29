@@ -1,0 +1,15 @@
+#
+# Copyright 2018 NXP
+# Copyright 2019 Variscite Ltd.
+#
+# SPDX-License-Identifier:      GPL-2.0+
+#
+
+obj-y += imx8mm_var_dart.o ../common/mmc.o
+
+ifdef CONFIG_SPL_BUILD
+obj-y += spl.o
+obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing.o
+else
+obj-$(CONFIG_USB_TCPC) += ../../freescale/common/tcpc.o
+endif
