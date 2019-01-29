@@ -60,6 +60,12 @@ config TARGET_IMX8MM_DDR4_EVK
 	select SUPPORT_SPL
 	select IMX8M_DDR4
 
+config TARGET_IMX8M_VAR_DART
+	bool "imx8m_var_dart"
+	select IMX8MQ
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
 endchoice
 
 config SYS_SOC
@@ -70,5 +76,7 @@ source "board/freescale/imx8mq_arm2/Kconfig"
 source "board/freescale/imx8mq_phanbell/Kconfig"
 source "board/freescale/imx8mm_evk/Kconfig"
 source "board/freescale/imx8mm_val/Kconfig"
+
+source "board/variscite/imx8m_var_dart/Kconfig"
 
 endif
