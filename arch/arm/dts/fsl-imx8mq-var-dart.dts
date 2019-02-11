@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Freescale Semiconductor, Inc.
  * Copyright 2017 NXP
+ * Copyright 2018-2019 Variscite Ltd.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -357,4 +358,3 @@
 	status = "okay";
 	dr_mode = "peripheral";
 };
-
