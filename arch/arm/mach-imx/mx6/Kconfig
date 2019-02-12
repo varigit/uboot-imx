@@ -480,6 +480,15 @@ config TARGET_MX6ULL_14X14_EVK
 	select DM
 	select DM_THERMAL
 
+config TARGET_MX6UL_VAR_DART
+	bool "mx6ul_var_dart"
+	select BOARD_LATE_INIT
+	select MX6UL
+	select SUPPORT_SPL
+	select DM
+	select DM_THERMAL
+	select BOARD_EARLY_INIT_F
+
 config TARGET_MX6VAR_SOM
 	bool "mx6var_som"
 	select BOARD_LATE_INIT
@@ -679,6 +688,7 @@ source "board/toradex/apalis_imx6/Kconfig"
 source "board/toradex/colibri_imx6/Kconfig"
 source "board/udoo/Kconfig"
 source "board/udoo/neo/Kconfig"
+source "board/variscite/mx6ul_var_dart/Kconfig"
 source "board/variscite/mx6var_som/Kconfig"
 source "board/wandboard/Kconfig"
 source "board/warp/Kconfig"

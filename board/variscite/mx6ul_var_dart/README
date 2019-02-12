@@ -1,0 +1,47 @@
+U-Boot for Variscite DART-6UL board
+-----------------------------------
+
+For more details:
+http://www.variscite.com/
+http://www.variwiki.com/index.php?title=DART-6UL
+
+
+Building U-Boot
+---------------
+
+$ make mrproper
+
+Choose one of the following:
+$ make mx6ul_var_dart_mmc_defconfig		    # For booting from SD card/eMMC
+$ make mx6ul_var_dart_nand_defconfig		    # For booting from NAND flash
+$ make mx6ul_var_dart_mmc_SECURE_BOOT_defconfig     # For booting from SD card/eMMC with secure boot support
+$ make mx6ul_var_dart_nand_SECURE_BOOT_defconfig    # For booting from NAND flash with secure boot support
+
+$ make
+
+
+Flashing U-Boot to an SD card
+-----------------------------
+
+- After the 'make' command completes, flash the generated SPL & U-Boot
+binaries into the SD card:
+
+$ sudo dd if=SPL of=/dev/sdX bs=1K seek=1; sync
+$ sudo dd if=u-boot.img of=/dev/sdX bs=1K seek=69; sync
+
+(replace /dev/sdX with your correct device node)
+
+- Insert the micro SD card into the slot on the board
+
+- Connect the debug cable to the host PC
+
+- Make sure the boot select DIP switches are set to SD:
+SD:	0 0
+eMMC:	0 1
+NAND:	1 0
+
+- Power up the board and U-Boot messages will appear in the serial console.
+
+
+For flashing U-Boot to NAND flash/eMMC and for a lot of more information,
+please refer to the Variscite wiki link above.
