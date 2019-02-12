@@ -1,0 +1,57 @@
+U-Boot for Variscite VAR-SOM-MX6 / VAR-SOM-SOLO/DUAL / DART-MX6 boards
+----------------------------------------------------------------------
+
+This single U-Boot supports 3 different carrier boards:
+VAR-MX6CustomBoard, VAR-SOLOCustomBoard and VAR-DT6CustomBoard,
+and 3 different SOM types: VAR-SOM-MX6, VAR-SOM-SOLO/DUAL and DART-MX6
+(DART-MX6 goes with VAR-DT6CustomBoard, and the others can be mixed).
+
+Each SOM type can come in various configurations (can be with
+different CPU types and frequencies, can be with or without eMMC,
+can be with different types and capacities of NAND, RAM, etc.)
+
+For more details:
+http://www.variscite.com/
+http://www.variwiki.com/index.php?title=VAR-SOM-MX6
+
+
+Building U-Boot
+---------------
+
+$ make mrproper
+
+Choose one of the following:
+$ make mx6var_som_sd_defconfig			# For booting from SD card/eMMC
+$ make mx6var_som_nand_defconfig		# For booting from NAND flash
+$ make mx6var_som_sd_SECURE_BOOT_defconfig	# For booting from SD card/eMMC with secure boot support
+$ make mx6var_som_nand_SECURE_BOOT_defconfig	# For booting from NAND flash with secure boot support
+$ make mx6var_som_sd_android_defconfig		# For booting from SD card/eMMC (Android)
+$ make mx6var_som_nand_android_defconfig	# For booting from NAND flash (Android)
+
+$ make
+
+
+Flashing U-Boot to an SD card
+-----------------------------
+
+- After the 'make' command completes, flash the generated SPL & U-Boot
+binaries into the SD card:
+
+$ sudo dd if=SPL of=/dev/sdX bs=1K seek=1; sync
+$ sudo dd if=u-boot.img of=/dev/sdX bs=1K seek=69; sync
+
+(replace /dev/sdX with your correct device node)
+
+- Insert the SD card into the slot
+
+- Connect the debug cable to the host PC
+
+- Make sure the boot select is on SD
+(by pressing the boot select button on VAR-MX6CustomBoard while powering up,
+or by toggling a DIP switch on VAR-SOLOCustomBoard / VAR-DT6CustomBoard)
+
+- Power up the board and U-Boot messages will appear in the serial console.
+
+
+For flashing U-Boot to NAND flash/eMMC and for a lot of more information,
+please refer to the Variscite wiki link above.

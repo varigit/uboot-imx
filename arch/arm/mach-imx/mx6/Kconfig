@@ -480,6 +480,15 @@ config TARGET_MX6ULL_14X14_EVK
 	select DM
 	select DM_THERMAL
 
+config TARGET_MX6VAR_SOM
+	bool "mx6var_som"
+	select BOARD_LATE_INIT
+	select MX6QDL
+	select SUPPORT_SPL
+	select DM
+	select DM_THERMAL
+	select BOARD_EARLY_INIT_F
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -670,6 +679,7 @@ source "board/toradex/apalis_imx6/Kconfig"
 source "board/toradex/colibri_imx6/Kconfig"
 source "board/udoo/Kconfig"
 source "board/udoo/neo/Kconfig"
+source "board/variscite/mx6var_som/Kconfig"
 source "board/wandboard/Kconfig"
 source "board/warp/Kconfig"
 
