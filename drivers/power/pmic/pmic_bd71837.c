@@ -27,7 +27,7 @@ int power_bd71837_init (unsigned char bus) {
 	p->hw.i2c.tx_num = 1;
 	p->bus = bus;
 
-	printf("power_bd71837_init\n");
+	debug("power_bd71837_init\n");
 
 	return 0;
 }
