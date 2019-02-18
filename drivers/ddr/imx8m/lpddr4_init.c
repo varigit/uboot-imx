@@ -27,7 +27,7 @@ void ddr_init(struct dram_timing_info *dram_timing)
 {
 	unsigned int tmp;
 
-	printf("DDRINFO: start lpddr4 ddr init\n");
+	debug("DDRINFO: start lpddr4 ddr init\n");
 	/* step 1: reset */
 	if (is_imx8mq()) {
 		reg32_write(SRC_DDRC_RCR_ADDR + 0x04, 0x8F00000F);
@@ -117,7 +117,7 @@ void ddr_init(struct dram_timing_info *dram_timing)
 		tmp = reg32_read(DDRPHY_CalBusy(0));
 	} while ((tmp & 0x1));
 
-	printf("DDRINFO:ddrphy calibration done\n");
+	debug("DDRINFO:ddrphy calibration done\n");
 
 	/* step15 [0]--0: to enable quasi-dynamic programming */
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
@@ -182,7 +182,7 @@ void ddr_init(struct dram_timing_info *dram_timing)
 
 	/* enable port 0 */
 	reg32_write(DDRC_PCTRL_0(0), 0x00000001);
-	printf("DDRINFO: ddrmix config done\n");
+	debug("DDRINFO: ddrmix config done\n");
 
 	/* save the dram timing config into memory */
 	dram_config_save(dram_timing, CONFIG_SAVED_DRAM_TIMING_BASE);
