@@ -11,5 +11,5 @@ ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
 obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing.o
 else
-obj-$(CONFIG_USB_TCPC) += ../../freescale/common/tcpc.o
+obj-y += ../common/imx8m_eeprom.o
 endif

@@ -31,6 +31,8 @@
 #include <mipi_dsi_panel.h>
 #include <asm/mach-imx/video.h>
 
+#include "../common/imx8m_eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
@@ -148,6 +150,25 @@ static iomux_v3_cfg_t const fec_rst_pads[] = {
 	IMX8MM_PAD_GPIO1_IO07_GPIO1_IO7 | MUX_PAD_CTRL(FEC_GPIO_PAD_CTRL),
 };
 
+static int setup_mac(void)
+{
+	int ret;
+	unsigned char enetaddr[6];
+
+	ret = eth_env_get_enetaddr("ethaddr", enetaddr);
+	if (ret)
+		return 0;
+
+	ret = var_eeprom_read_mac(enetaddr);
+	if (ret)
+		return ret;
+
+	if (!is_valid_ethaddr(enetaddr))
+		return -1;
+
+	return eth_env_set_enetaddr("ethaddr", enetaddr);
+}
+
 static void setup_iomux_fec(void)
 {
 	imx_iomux_v3_setup_multiple_pads(fec_rst_pads,
@@ -194,6 +215,8 @@ int board_phy_config(struct phy_device *phydev)
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 
+	setup_mac();
+
 	return 0;
 }
 #endif
@@ -216,6 +239,8 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
+	var_eeprom_print_info();
+
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
 #endif
