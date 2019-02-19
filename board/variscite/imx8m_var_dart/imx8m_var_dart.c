@@ -33,7 +33,7 @@
 #include <dwc3-uboot.h>
 #include <splash.h>
 
-#include "eeprom.h"
+#include "../common/imx8m_eeprom.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 

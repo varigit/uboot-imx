@@ -9,7 +9,7 @@
 #include <dm.h>
 #include <i2c.h>
 
-#include "eeprom.h"
+#include "imx8m_eeprom.h"
 
 static struct var_eeprom e;
 static int eeprom_is_valid = 0;

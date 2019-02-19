@@ -12,5 +12,5 @@ ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
 obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing_b0.o
 else
-obj-y += eeprom.o
+obj-y += ../common/imx8m_eeprom.o
 endif
