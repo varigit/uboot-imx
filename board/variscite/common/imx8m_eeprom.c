@@ -121,8 +121,11 @@ void var_eeprom_print_info(void)
 	if (ret)
 		return;
 
+#ifdef CONFIG_TARGET_IMX8M_VAR_DART
 	printf("\nPart number: VSM-DT8M-%.*s\n", (int)sizeof(e.pn), (char *)e.pn);
-
+#else
+	printf("\nPart number: VSM-DT8MM-%.*s\n", (int)sizeof(e.pn), (char *)e.pn);
+#endif
 	printf("Assembly: AS%.*s\n", (int)sizeof(e.as), (char *)e.as);
 
 	printf("Production date: %.*s %.*s %.*s\n",
