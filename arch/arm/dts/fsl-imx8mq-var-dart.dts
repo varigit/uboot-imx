@@ -20,6 +20,7 @@
 /memreserve/ 0x40000000 0x00020000;
 
 #include "fsl-imx8mq.dtsi"
+#include "fsl-imx8mq-u-boot.dtsi"
 
 / {
 	model = "Variscite DART-MX8M";
@@ -352,4 +353,17 @@
 &usb_dwc3_0 {
 	status = "okay";
 	dr_mode = "peripheral";
+};
+
+&usb3_phy1 {
+	status = "okay";
+};
+
+&usb3_1 {
+	status = "okay";
+};
+
+&usb_dwc3_1 {
+	status = "okay";
+	dr_mode = "host";
 };
