@@ -26,19 +26,11 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-extern struct dram_timing_info dram_timing_b0;
-extern void var_ddr_init(void);
+extern struct dram_timing_info dram_timing;
 
 void spl_dram_init(void)
 {
-#if 0
-	/* ddr init */
-	if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1)
-		ddr_init(&dram_timing);
-	else
-#endif
-		ddr_init(&dram_timing_b0);
-		/* var_ddr_init(); */
+	ddr_init(&dram_timing);
 }
 
 
@@ -198,7 +190,7 @@ int set_vdd_regulator(int bus, char *name)
 
 	/* Read regulator chip ID */
 	if (!((i2c_read(VDD_I2C_ADDR, VDD_CHIP_ID1, 1, &val1, 1) == 0) &&
-	      (i2c_read(VDD_I2C_ADDR, VDD_CHIP_ID2, 1, &val2, 1) == 0) && 
+	      (i2c_read(VDD_I2C_ADDR, VDD_CHIP_ID2, 1, &val2, 1) == 0) &&
 	      (val1 == val2))) {
 		printf("%s: chip ID read failed\n", name);
 		return -1;
