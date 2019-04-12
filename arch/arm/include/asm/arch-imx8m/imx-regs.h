@@ -140,7 +140,7 @@
 #define SNVS_LPPGDR_INIT		0x41736166
 
 struct iomuxc_gpr_base_regs {
-	u32 gpr[47];
+	u32 gpr[48];
 };
 
 struct ocotp_regs {
