@@ -26,11 +26,14 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-extern struct dram_timing_info dram_timing;
+extern struct dram_timing_info dram_timing, dram_timing_b0;
 
 void spl_dram_init(void)
 {
-	ddr_init(&dram_timing);
+       if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1)
+               ddr_init(&dram_timing);
+       else
+               ddr_init(&dram_timing_b0);
 }
 
 
