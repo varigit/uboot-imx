@@ -6,30 +6,16 @@
  */
 
 #include <common.h>
-#include <malloc.h>
-#include <errno.h>
 #include <asm/io.h>
 #include <miiphy.h>
-#include <netdev.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm-generic/gpio.h>
-#include <fsl_esdhc.h>
-#include <mmc.h>
 #include <asm/arch/imx8mm_pins.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/arch/clock.h>
-#include <spl.h>
-#include <asm/mach-imx/dma.h>
-#include <power/pmic.h>
-#include <power/bd71837.h>
-#include "../../freescale/common/tcpc.h"
 #include <usb.h>
-#include <sec_mipi_dsim.h>
-#include <imx_mipi_dsi_bridge.h>
-#include <mipi_dsi_panel.h>
-#include <asm/mach-imx/video.h>
 
 #include "../common/imx8m_eeprom.h"
 
