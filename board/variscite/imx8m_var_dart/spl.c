@@ -1,6 +1,6 @@
 /*
  * Copyright 2017 NXP
- * Copyright 2018 Variscite Ltd.
+ * Copyright 2018-2019 Variscite Ltd.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -23,6 +23,7 @@
 #include <fsl_esdhc.h>
 #include <mmc.h>
 #include <asm/arch/imx8m_ddr.h>
+#include <dwc3-uboot.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -279,6 +280,31 @@ int board_fit_config_name_match(const char *name)
 }
 #endif
 
+#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+#define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
+
+static iomux_v3_cfg_t const wdog_pads[] = {
+	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const uart_pads[] = {
+	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+int board_early_init_f(void)
+{
+	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
+
+	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
+
+	set_wdog_reset(wdog);
+
+	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+
+	return 0;
+}
+
 void board_init_f(ulong dummy)
 {
 	int ret;
@@ -318,3 +344,11 @@ void board_init_f(ulong dummy)
 
 	board_init_r(NULL, 0);
 }
+
+#ifdef CONFIG_USB_DWC3
+int usb_gadget_handle_interrupts(void)
+{
+	dwc3_uboot_handle_interrupt(0);
+	return 0;
+}
+#endif
