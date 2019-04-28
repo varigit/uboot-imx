@@ -130,6 +130,20 @@
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootfstype=ext4 rootwait rw\0" \
 	"mmcautodetect=yes\0" \
+	"m4_addr=0x7e0000\0" \
+	"m4_bin=hello_world.bin\0" \
+	"use_m4=no\0" \
+	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${m4_addr} ${bootdir}/${m4_bin}\0" \
+	"runm4bin=" \
+		"if test ${m4_addr} = 0x80000000; then " \
+			"echo Booting M4 from DRAM; " \
+			"dcache flush; " \
+		"elif test ${m4_addr} = 0x7e0000; then " \
+			"echo Booting M4 from TCM; " \
+		"else " \
+			"echo WARNING: trying to boot M4 from unexpected address; " \
+		"fi; " \
+		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console} root=${mmcroot} video=${video}\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
@@ -180,6 +194,9 @@
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
+		   "if test ${use_m4} = yes && run loadm4bin; then " \
+			   "run runm4bin; " \
+		   "fi; " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
 		   "else " \
