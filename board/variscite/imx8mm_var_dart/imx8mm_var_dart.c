@@ -149,8 +149,6 @@ int board_phy_config(struct phy_device *phydev)
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 
-	setup_mac();
-
 	return 0;
 }
 #endif
@@ -173,8 +171,6 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
-	var_eeprom_print_info();
-
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
 #endif
@@ -194,6 +190,11 @@ int mmc_map_to_kernel_blk(int devno)
 
 int board_late_init(void)
 {
+#ifdef CONFIG_FEC_MXC
+	setup_mac();
+#endif
+	var_eeprom_print_info();
+
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
