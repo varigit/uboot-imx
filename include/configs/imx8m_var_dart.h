@@ -1,6 +1,6 @@
 /*
  * Copyright 2017 NXP
- * Copyright 2018 Variscite Ltd.
+ * Copyright 2018-2019 Variscite Ltd.
  * 
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -235,7 +235,6 @@
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
 					sizeof(CONFIG_SYS_PROMPT) + 16)
-
 #define CONFIG_IMX_BOOTAUX
 
 #define CONFIG_CMD_MMC
@@ -247,21 +246,6 @@
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
-
-#undef CONFIG_FSL_QSPI    /* enable the QUADSPI driver */
-#ifdef CONFIG_FSL_QSPI
-#define CONFIG_CMD_SF
-#define	CONFIG_SPI_FLASH
-#define	CONFIG_SPI_FLASH_STMICRO
-#define	CONFIG_SPI_FLASH_BAR
-#define	CONFIG_SF_DEFAULT_BUS		0
-#define	CONFIG_SF_DEFAULT_CS		0
-#define	CONFIG_SF_DEFAULT_SPEED		40000000
-#define	CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
-
-#define FSL_QSPI_FLASH_SIZE		(SZ_32M)
-#define FSL_QSPI_FLASH_NUM		1
-#endif
 
 #define CONFIG_MXC_GPIO
 
@@ -283,7 +267,6 @@
 
 #define CONFIG_SERIAL_TAG
 #define CONFIG_FASTBOOT_USB_DEV 0
-
 
 #define CONFIG_USB_MAX_CONTROLLER_COUNT         2
 
@@ -309,7 +292,6 @@
 #define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_SPLASH_SOURCE
 #endif
-
 
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8m_var_dart_android.h"

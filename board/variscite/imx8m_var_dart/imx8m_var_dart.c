@@ -1,21 +1,16 @@
 /*
  * Copyright 2016 Freescale Semiconductor, Inc.
  * Copyright 2017 NXP
- * Copyright 2018 Variscite Ltd.
+ * Copyright 2018-2019 Variscite Ltd.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
-#include <malloc.h>
-#include <errno.h>
 #include <asm/io.h>
 #include <miiphy.h>
-#include <netdev.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm-generic/gpio.h>
-#include <fsl_esdhc.h>
-#include <mmc.h>
 #include <asm/arch/imx8mq_pins.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/gpio.h>
@@ -23,12 +18,6 @@
 #include <asm/arch/clock.h>
 #include <asm/mach-imx/video.h>
 #include <asm/arch/video_common.h>
-#include <spl.h>
-#include <power/pmic.h>
-#include <power/pfuze100_pmic.h>
-#include <dm.h>
-#include "../../freescale/common/tcpc.h"
-#include "../../freescale/common/pfuze.h"
 #include <usb.h>
 #include <dwc3-uboot.h>
 #include <splash.h>
@@ -37,8 +26,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define QSPI_PAD_CTRL	(PAD_CTL_DSE2 | PAD_CTL_HYS)
-
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
@@ -46,27 +33,6 @@ DECLARE_GLOBAL_DATA_PTR;
 static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
-
-#ifdef CONFIG_FSL_QSPI
-static iomux_v3_cfg_t const qspi_pads[] = {
-	IMX8MQ_PAD_NAND_ALE__QSPI_A_SCLK | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_CE0_B__QSPI_A_SS0_B | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-
-	IMX8MQ_PAD_NAND_DATA00__QSPI_A_DATA0 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA01__QSPI_A_DATA1 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA02__QSPI_A_DATA2 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA03__QSPI_A_DATA3 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-};
-
-int board_qspi_init(void)
-{
-	imx_iomux_v3_setup_multiple_pads(qspi_pads, ARRAY_SIZE(qspi_pads));
-
-	set_clk_qspi();
-
-	return 0;
-}
-#endif
 
 static iomux_v3_cfg_t const uart_pads[] = {
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -291,10 +257,6 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 int board_init(void)
 {
 	var_eeprom_print_info();
-
-#ifdef CONFIG_FSL_QSPI
-	board_qspi_init();
-#endif
 
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
