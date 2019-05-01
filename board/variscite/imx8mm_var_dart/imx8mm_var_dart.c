@@ -84,7 +84,7 @@ static iomux_v3_cfg_t const fec_rst_pads[] = {
 	IMX8MM_PAD_GPIO1_IO07_GPIO1_IO7 | MUX_PAD_CTRL(FEC_GPIO_PAD_CTRL),
 };
 
-static int setup_mac(void)
+static int setup_mac(struct var_eeprom *eeprom)
 {
 	int ret;
 	unsigned char enetaddr[6];
@@ -93,7 +93,7 @@ static int setup_mac(void)
 	if (ret)
 		return 0;
 
-	ret = var_eeprom_read_mac(enetaddr);
+	ret = var_eeprom_get_mac(eeprom, enetaddr);
 	if (ret)
 		return ret;
 
@@ -190,10 +190,14 @@ int mmc_map_to_kernel_blk(int devno)
 
 int board_late_init(void)
 {
+	struct var_eeprom eeprom;
+
+	var_eeprom_read_header(&eeprom);
+
 #ifdef CONFIG_FEC_MXC
-	setup_mac();
+	setup_mac(&eeprom);
 #endif
-	var_eeprom_print_info();
+	var_eeprom_print_prod_info(&eeprom);
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
