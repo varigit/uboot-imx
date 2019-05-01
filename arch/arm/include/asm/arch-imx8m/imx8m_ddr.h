@@ -51,6 +51,8 @@ struct dram_timing_info {
 };
 
 extern struct dram_timing_info dram_timing;
+extern struct dram_cfg_param ddrphy_trained_csr[];
+extern unsigned int ddrphy_trained_csr_num;
 
 void ddr_load_train_firmware(enum fw_type type);
 void ddr_init(struct dram_timing_info *timing_info);
