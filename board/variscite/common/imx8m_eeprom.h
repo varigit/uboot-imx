@@ -22,6 +22,9 @@
 #define SOM_REV_1_1		0
 #define SOM_REV_1_2		1
 
+/* Number of DRAM adjustment tables */
+#define DRAM_TABLE_NUM 7
+
 struct __attribute__((packed)) var_eeprom
 {
 	u16 magic;                /* 00-0x00 - magic number       */
@@ -33,6 +36,7 @@ struct __attribute__((packed)) var_eeprom
 	u8 version;               /* 31-0x1f - EEPROM version     */
 	u8 features;              /* 32-0x20 - SOM features       */
 	u8 dramsize;              /* 33-0x21 - DRAM size          */
+        u8 off[DRAM_TABLE_NUM+1]; /* 34-0x22 - DRAM table offsets */
 };
 
 static inline int var_eeprom_is_valid(struct var_eeprom *e)
@@ -50,5 +54,9 @@ extern int var_eeprom_read_header(struct var_eeprom *e);
 extern int var_eeprom_get_dram_size(struct var_eeprom *e, u32 *size);
 extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
 extern void var_eeprom_print_prod_info(struct var_eeprom *e);
+
+#ifdef CONFIG_SPL_BUILD
+extern void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d);
+#endif
 
 #endif /* _MX8M_VAR_EEPROM_H_ */

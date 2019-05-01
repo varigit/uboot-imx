@@ -8,6 +8,7 @@
 #include <command.h>
 #include <dm.h>
 #include <i2c.h>
+#include <asm/arch/imx8m_ddr.h>
 
 #include "imx8m_eeprom.h"
 
@@ -129,3 +130,114 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 	debug("SOM features: 0x%x\n", e->features);
 	debug("DRAM size: %d GiB\n\n", e->dramsize);
 }
+
+#ifdef CONFIG_SPL_BUILD
+/*
+ * Modify DRAM table based on adjustment table in EEPROM
+ *
+ * Assumption: register addresses in the adjustment table
+ * follow the order of register addresses in the original table
+ *
+ * @adj_table_offset - offset of adjustment table from start of EEPROM
+ * @adj_table_size   - number of rows in adjustment table
+ * @table            - pointer to DDR table
+ * @table_size       - number of rows in DDR table
+ */
+static void adjust_dram_table(u8 adj_table_offset, u8 adj_table_size,
+				struct dram_cfg_param *table, u8 table_size)
+{
+	int i, j = 0;
+	u8 off = adj_table_offset;
+	struct dram_cfg_param adj_table_row;
+
+	/* Iterate over adjustment table */
+	for (i = 0; i < adj_table_size; i++) {
+
+		/* Read next entry from adjustment table */
+		i2c_read(VAR_EEPROM_I2C_ADDR, off, 1,
+			(uint8_t *)&adj_table_row, sizeof(adj_table_row));
+
+		/* Iterate over DDR table and adjust it */
+		for (; j < table_size; j++) {
+			if (table[j].reg == adj_table_row.reg) {
+				debug("Adjusting reg=0x%x val=0x%x\n",
+					adj_table_row.reg, adj_table_row.val);
+				table[j].val = adj_table_row.val;
+				break;
+			}
+		}
+
+		off += sizeof(adj_table_row);
+	}
+}
+
+/*
+ * Modify DRAM tables based on adjustment tables in EEPROM
+ *
+ * @e - pointer to EEPROM header structure
+ * @d - pointer to DRAM configuration structure
+  */
+void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d)
+{
+	int i;
+	int *idx_map;
+	u8 adj_table_size[DRAM_TABLE_NUM];
+
+	/* Indices of fsp tables in the offset table */
+	int b0_idx_map[] = {3, 4, 6};
+	int b1_idx_map[] = {3, 4, 5, 6};
+
+	/* Check EEPROM validity */
+	if (!var_eeprom_is_valid(e))
+		return;
+
+	/* Check EEPROM version - only version 2+ has DDR adjustment tables */
+	if (e->version < 2) {
+		debug("EEPROM version is %d\n", e->version);
+		return;
+	}
+
+	debug("EEPROM offset table\n");
+	for (i = 0; i < DRAM_TABLE_NUM + 1; i++)
+		debug("off[%d]=%d\n", i, e->off[i]);
+
+	/* Calculate DRAM adjustment table sizes */
+	for (i = 0; i < DRAM_TABLE_NUM; i++)
+		adj_table_size[i] = (e->off[i + 1] - e->off[i]) /
+				(sizeof(struct dram_cfg_param));
+
+	debug("\nSizes table\n");
+	for (i = 0; i < DRAM_TABLE_NUM; i++)
+		debug("sizes[%d]=%d\n", i, adj_table_size[i]);
+
+	/* Adjust DRAM controller configuration table */
+	debug("\nAdjusting DDRC table: offset=%d, count=%d\n",
+		e->off[0], adj_table_size[0]);
+	adjust_dram_table(e->off[0], adj_table_size[0],
+				d->ddrc_cfg, d->ddrc_cfg_num);
+
+	/* Adjust DDR PHY configuration table */
+	debug("\nAdjusting DDR PHY CFG table: offset=%d, count=%d\n",
+		e->off[1], adj_table_size[1]);
+	adjust_dram_table(e->off[1], adj_table_size[1],
+				d->ddrphy_cfg, d->ddrphy_cfg_num);
+
+	/* Adjust DDR PHY PIE table */
+	debug("\nAdjusting DDR PHY PIE table: offset=%d, count=%d\n",
+		e->off[2], adj_table_size[2]);
+	adjust_dram_table(e->off[2], adj_table_size[2],
+				d->ddrphy_pie, d->ddrphy_pie_num);
+
+	/* Adjust FSP configuration tables
+	 * i.MX8M B0 has 3 tables, i.MX8M B1 and i.MX8M Mini have 4 tables
+	 */
+	idx_map = (d->fsp_msg_num == 4) ? b1_idx_map : b0_idx_map;
+	for (i = 0; i < d->fsp_msg_num; i++) {
+		int j = idx_map[i];
+		debug("\nAdjusting FSP table %d: offset=%d, count=%d\n",
+			i, e->off[j], adj_table_size[j]);
+		adjust_dram_table(e->off[j], adj_table_size[j],
+			d->fsp_msg[i].fsp_cfg, d->fsp_msg[i].fsp_cfg_num);
+	}
+}
+#endif
