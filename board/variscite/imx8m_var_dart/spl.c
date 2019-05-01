@@ -25,18 +25,27 @@
 #include <asm/arch/imx8m_ddr.h>
 #include <dwc3-uboot.h>
 
+#include "../common/imx8m_eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 extern struct dram_timing_info dram_timing, dram_timing_b0;
 
 void spl_dram_init(void)
 {
-       if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1)
-               ddr_init(&dram_timing);
-       else
-               ddr_init(&dram_timing_b0);
-}
+	struct var_eeprom eeprom;
 
+	var_eeprom_read_header(&eeprom);
+
+	if ((get_cpu_rev() & 0xfff) == CHIP_REV_2_1) {
+		var_eeprom_adjust_dram(&eeprom, &dram_timing);
+		ddr_init(&dram_timing);
+	}
+	else {
+		var_eeprom_adjust_dram(&eeprom, &dram_timing_b0);
+		ddr_init(&dram_timing_b0);
+	}
+}
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)

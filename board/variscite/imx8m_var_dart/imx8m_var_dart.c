@@ -42,7 +42,16 @@ int board_postclk_init(void)
 /* Return DRAM size in bytes */
 static unsigned long long get_dram_size(void)
 {
-	return (1ULL * CONFIG_DDR_MB) << 20;
+	int ret;
+	u32 dram_size_mb;
+	struct var_eeprom eeprom;
+
+	var_eeprom_read_header(&eeprom);
+	ret = var_eeprom_get_dram_size(&eeprom, &dram_size_mb);
+	if (ret)
+		return (1ULL * DEFAULT_DRAM_SIZE_MB ) << 20;
+
+	return (1ULL * dram_size_mb) << 20;
 }
 
 int dram_init_banksize(void)
