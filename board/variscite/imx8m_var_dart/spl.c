@@ -23,7 +23,6 @@
 #include <fsl_esdhc.h>
 #include <mmc.h>
 #include <asm/arch/imx8m_ddr.h>
-#include <dwc3-uboot.h>
 
 #include "../common/imx8m_eeprom.h"
 
@@ -358,10 +357,3 @@ void board_init_f(ulong dummy)
 	board_init_r(NULL, 0);
 }
 
-#ifdef CONFIG_USB_DWC3
-int usb_gadget_handle_interrupts(void)
-{
-	dwc3_uboot_handle_interrupt(0);
-	return 0;
-}
-#endif

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier:      GPL-2.0+
 #
 
-obj-y += ../common/imx8m_eeprom.o
+obj-y += ../common/imx8m_eeprom.o usb.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
