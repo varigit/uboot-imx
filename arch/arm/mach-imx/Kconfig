@@ -177,6 +177,12 @@ config NXP_BOARD_REVISION
 	  stored in the fuses. Select this option if you want to be able to
 	  retrieve the board revision information.
 
+config FLASH_MCUFIRMWARE_SUPPORT
+	bool "Enable mcu firmware flash support"
+	depends on ARCH_MX7ULP || ARCH_IMX8M
+	help
+	  This enables the mcu firmware flash support for some SOCs.
+
 config DDRMC_VF610_CALIBRATION
 	bool "Enable DDRMC (DDR3) on-chip calibration"
 	depends on ARCH_VF610
@@ -207,6 +213,49 @@ config IMX_DCD_ADDR
 	  the ROM code to configure the device at early boot stage, is located.
 	  This information is shared with the user via mkimage -l just so the
 	  image can be signed.
+
+config ANDROID_SUPPORT
+	bool "Standard Android features support"
+	default n
+	select FSL_FASTBOOT
+	select FASTBOOT_LOCK
+	select BCB_SUPPORT
+	select ANDROID_RECOVERY
+	select SUPPORT_RAW_INITRD
+	select LIBAVB
+	select AVB_SUPPORT
+
+config ANDROID_AUTO_SUPPORT
+	bool "Android Automotive features support"
+	default n
+	select FSL_FASTBOOT
+	select FASTBOOT_LOCK
+	select BCB_SUPPORT
+	select ANDROID_RECOVERY
+	select SUPPORT_RAW_INITRD
+	select LIBAVB
+	select AVB_SUPPORT
+
+config ANDROID_THINGS_SUPPORT
+	bool "Android Things features support"
+	default n
+	select FSL_FASTBOOT
+	select FASTBOOT_LOCK
+	select BCB_SUPPORT
+	select ANDROID_RECOVERY
+	select SUPPORT_RAW_INITRD
+	select LIBAVB
+	select AVB_SUPPORT
+
+config ANDROID_AB_SUPPORT
+	bool "Android A/B slots support"
+	depends on ANDROID_SUPPORT || ANDROID_AUTO_SUPPORT || ANDROID_THINGS_SUPPORT
+	default n
+	select SYSTEM_RAMDISK_SUPPORT
+
+config SYSTEM_RAMDISK_SUPPORT
+	bool "Support build ramdisk in system image"
+	default n
 
 config IOMUX_LPSR
 	bool

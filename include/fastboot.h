@@ -50,6 +50,12 @@ enum {
 	FASTBOOT_COMMAND_OEM_CONSOLE,
 	FASTBOOT_COMMAND_ACMD,
 	FASTBOOT_COMMAND_UCMD,
+	FASTBOOT_COMMAND_UPLOAD,
+	FASTBOOT_COMMAND_GETSTAGED,
+	FASTBOOT_COMMAND_FLASHING,
+	FASTBOOT_COMMAND_OEM,
+	FASTBOOT_COMMAND_SETACTIVE,
+	FASTBOOT_COMMAND_STAGE,
 	FASTBOOT_COMMAND_COUNT
 };
 
@@ -192,4 +198,9 @@ void fastboot_data_complete(char *response);
 void fastboot_multiresponse(int cmd, char *response);
 
 void fastboot_acmd_complete(void);
+
+int fastboot_tx_write_more(const char *buffer);
+
+int fastboot_tx_write(const char *buffer, unsigned int buffer_size);
+
 #endif /* _FASTBOOT_H_ */

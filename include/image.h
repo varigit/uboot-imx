@@ -1940,6 +1940,7 @@ ulong android_image_get_kcomp(const void *hdr,
  */
 void android_print_contents(const struct andr_boot_img_hdr_v0 *hdr);
 bool android_image_print_dtb_contents(ulong hdr_addr);
+bool image_arm64(void *images);
 
 /**
  * is_android_boot_image_header() - Check the magic of boot image

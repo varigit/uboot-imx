@@ -13,7 +13,7 @@
 #include <mapmem.h>
 #include <part.h>
 
-static int
+int
 do_rw(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	struct blk_desc *dev_desc = NULL;
