@@ -203,38 +203,35 @@
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
-			"if test -n $soc_type; then " \
-				"if test $boot_dev = sd; then " \
-					"if test $som_storage = emmc || test $som_storage = none; then " \
-						"setenv fdt_file ${soc_type}-var-dart-sd_emmc.dtb; " \
-					"fi; " \
-					"if test $som_storage = nand; then " \
-						"setenv fdt_file ${soc_type}-var-dart-sd_nand.dtb; " \
-					"fi; " \
-				"fi; " \
-				"if test $boot_dev = emmc; then " \
-					"if test $wifi = yes; then " \
-						"if test $som_rev = 5G; then " \
-							"setenv fdt_file ${soc_type}-var-dart-5g-emmc_wifi.dtb; " \
-						"else " \
-							"setenv fdt_file ${soc_type}-var-dart-emmc_wifi.dtb; " \
-						"fi; " \
-					"else " \
-						"setenv fdt_file ${soc_type}-var-dart-sd_emmc.dtb; " \
-					"fi; " \
-				"fi; " \
-				"if test $boot_dev = nand; then " \
-					"if test $wifi = yes; then " \
-						"if test $som_rev = 5G; then " \
-							"setenv fdt_file ${soc_type}-var-dart-5g-nand_wifi.dtb; " \
-						"else " \
-							"setenv fdt_file ${soc_type}-var-dart-nand_wifi.dtb; " \
-						"fi; " \
-					"else " \
-						"setenv fdt_file ${soc_type}-var-dart-sd_nand.dtb; " \
-					"fi; " \
+			"if test $board_name = DART-6UL; then " \
+				"setenv som var-dart; " \
+				"setenv carrier 6ulcustomboard; " \
+			"fi; " \
+			"if test $board_name = VAR-SOM-6UL; then " \
+				"setenv som var-som; " \
+				"setenv carrier concerto-board; " \
+			"fi; " \
+			"if test $boot_dev = emmc || test $som_storage = emmc || " \
+			   "test $som_storage = none; then " \
+				"setenv storage emmc; " \
+			"fi; " \
+			"if test $boot_dev = nand || test $som_storage = nand; then " \
+				"setenv storage nand; " \
+			"fi; " \
+			"if test $boot_dev = sd; then " \
+				"setenv mmc0_dev sd-card; " \
+			"else " \
+				"if test $wifi = yes; then " \
+					"setenv mmc0_dev wifi; " \
+				"else " \
+					"setenv mmc0_dev sd-card; " \
 				"fi; " \
 			"fi; " \
+			"if test -n $soc_type && test -n $som && " \
+			   "test -n $storage && test -n $mmc0_dev && test -n $carrier; then " \
+				"setenv fdt_file ${soc_type}-${som}-${carrier}-${storage}-${mmc0_dev}.dtb; " \
+			"fi; " \
+			"setenv som; setenv carrier; setenv storage; setenv mmc0_dev; " \
 			"if test $fdt_file = undefined; then " \
 				"echo WARNING: Could not determine dtb to use; " \
 			"fi; " \

@@ -72,40 +72,114 @@ DECLARE_GLOBAL_DATA_PTR;
 			PAD_CTL_SRE_FAST)
 #define GPMI_PAD_CTRL2 (GPMI_PAD_CTRL0 | GPMI_PAD_CTRL1)
 
+
 #ifdef CONFIG_SYS_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
-/* I2C1  38 54 55*/
-static struct i2c_pads_info i2c_pad_info1 = {
-	.scl = {
-		/* conflict with usb_otg2_pwr */
-		.i2c_mode  = MX6_PAD_UART4_TX_DATA__I2C1_SCL | PC,
-		.gpio_mode = MX6_PAD_UART4_TX_DATA__GPIO1_IO28 | PC,
-		.gp = IMX_GPIO_NR(1, 28),
+
+static struct i2c_pads_info i2c_pad_info1[] = {
+	{
+		/* DART-6UL */
+		.scl = {
+			.i2c_mode  = MX6_PAD_UART4_TX_DATA__I2C1_SCL | PC,
+			.gpio_mode = MX6_PAD_UART4_TX_DATA__GPIO1_IO28 | PC,
+			.gp = IMX_GPIO_NR(1, 28),
+		},
+		.sda = {
+			.i2c_mode  = MX6_PAD_UART4_RX_DATA__I2C1_SDA | PC,
+			.gpio_mode = MX6_PAD_UART4_RX_DATA__GPIO1_IO29 | PC,
+			.gp = IMX_GPIO_NR(1, 29),
+		},
 	},
-	.sda = {
-		/* conflict with usb_otg2_oc */
-		.i2c_mode  = MX6_PAD_UART4_RX_DATA__I2C1_SDA | PC,
-		.gpio_mode = MX6_PAD_UART4_RX_DATA__GPIO1_IO29 | PC,
-		.gp = IMX_GPIO_NR(1, 29),
+	{
+		/* VAR-SOM-6UL */
+		.scl = {
+			.i2c_mode  = MX6_PAD_CSI_PIXCLK__I2C1_SCL | PC,
+			.gpio_mode = MX6_PAD_CSI_PIXCLK__GPIO4_IO18 | PC,
+			.gp = IMX_GPIO_NR(4, 18),
+		},
+		.sda = {
+			.i2c_mode  = MX6_PAD_CSI_MCLK__I2C1_SDA | PC,
+			.gpio_mode = MX6_PAD_CSI_MCLK__GPIO4_IO17 | PC,
+			.gp = IMX_GPIO_NR(4, 17),
+		},
 	},
 };
 
-/* I2C2  1A 50 51 */
-static struct i2c_pads_info i2c_pad_info2 = {
-	.scl = {
-		.i2c_mode  = MX6_PAD_UART5_TX_DATA__I2C2_SCL | PC,
-		.gpio_mode = MX6_PAD_UART5_TX_DATA__GPIO1_IO30 | PC,
-		.gp = IMX_GPIO_NR(1, 30),
+static struct i2c_pads_info i2c_pad_info2[] = {
+	{
+		/* DART-6UL */
+		.scl = {
+			.i2c_mode  = MX6_PAD_UART5_TX_DATA__I2C2_SCL | PC,
+			.gpio_mode = MX6_PAD_UART5_TX_DATA__GPIO1_IO30 | PC,
+			.gp = IMX_GPIO_NR(1, 30),
+		},
+		.sda = {
+			.i2c_mode  = MX6_PAD_UART5_RX_DATA__I2C2_SDA | PC,
+			.gpio_mode = MX6_PAD_UART5_RX_DATA__GPIO1_IO31 | PC,
+			.gp = IMX_GPIO_NR(1, 31),
+		},
 	},
-	.sda = {
-		/* conflict with usb_otg2_oc */
-		.i2c_mode  = MX6_PAD_UART5_RX_DATA__I2C2_SDA | PC,
-		.gpio_mode = MX6_PAD_UART5_RX_DATA__GPIO1_IO31 | PC,
-		.gp = IMX_GPIO_NR(1, 31),
+	{
+		/* VAR-SOM-6UL */
+		.scl = {
+			.i2c_mode  = MX6_PAD_CSI_HSYNC__I2C2_SCL | PC,
+			.gpio_mode = MX6_PAD_CSI_HSYNC__GPIO4_IO20 | PC,
+			.gp = IMX_GPIO_NR(4, 20),
+		},
+		.sda = {
+			.i2c_mode  = MX6_PAD_CSI_VSYNC__I2C2_SDA | PC,
+			.gpio_mode = MX6_PAD_CSI_VSYNC__GPIO4_IO19 | PC,
+			.gp = IMX_GPIO_NR(4, 19),
+		},
 	},
 };
 #endif
 
+/*
+ * Returns true iff the SOM is DART-6UL
+ */
+static inline bool is_dart_6ul(void)
+{
+	static int is_dart = -1;
+
+	if (is_dart == -1) {
+		imx_iomux_v3_setup_pad(MX6_PAD_NAND_CE0_B__GPIO4_IO13 | MUX_PAD_CTRL(PAD_CTL_PUS_100K_UP));
+
+		gpio_request(IMX_GPIO_NR(4, 13), "SOM ID");
+		gpio_direction_input(IMX_GPIO_NR(4, 13));
+		is_dart = (gpio_get_value(IMX_GPIO_NR(4, 13)) != 0);
+
+#ifdef CONFIG_NAND_MXS
+		imx_iomux_v3_setup_pad(MX6_PAD_NAND_CE0_B__RAWNAND_CE0_B | MUX_PAD_CTRL(GPMI_PAD_CTRL2));
+#endif
+	}
+
+	return is_dart;
+}
+
+/*
+ * Returns true iff the SOM is VAR-SOM-6UL
+ */
+static inline bool is_var_som_6ul(void)
+{
+	return !is_dart_6ul();
+}
+
+enum current_board {
+	DART_6UL,
+	VAR_SOM_6UL,
+};
+
+static enum current_board get_board_indx(void)
+{
+	if (is_dart_6ul())
+		return DART_6UL;
+	if (is_var_som_6ul())
+		return VAR_SOM_6UL;
+
+	printf("Error identifying board!\n");
+	hang();
+}
 
 #ifdef CONFIG_SYS_I2C
 static int var_eeprom_get_ram_size(void)
@@ -435,23 +509,39 @@ static iomux_v3_cfg_t const lcd_pads[] = {
 	MX6_PAD_LCD_DATA23__LCDIF_DATA23 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 };
 
-static iomux_v3_cfg_t const pwm_pads[] = {
+static iomux_v3_cfg_t const pwm_pads[][1*2] = {
 	/* Use GPIO for Brightness adjustment, duty cycle = period */
-	MX6_PAD_LCD_DATA00__GPIO3_IO05 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	{
+		/* DART-6UL */
+		MX6_PAD_LCD_DATA00__GPIO3_IO05 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	},
+	{
+		/* VAR-SOM-6UL */
+		MX6_PAD_GPIO1_IO05__GPIO1_IO05 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	},
+};
+
+static int backlight_gpio[] = {
+	/* DART-6UL */
+	IMX_GPIO_NR(3, 5),
+	/* VAR-SOM-6UL */
+	IMX_GPIO_NR(1, 5)
 };
 
 void do_enable_parallel_lcd(struct display_info_t const *dev)
 {
 	if (!is_cpu_type(MXC_CPU_MX6ULZ)) {
+		int board = get_board_indx();
+
 		enable_lcdif_clock(dev->bus, 1);
 
 		imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
 
-		imx_iomux_v3_setup_multiple_pads(pwm_pads, ARRAY_SIZE(pwm_pads));
+		imx_iomux_v3_setup_multiple_pads(pwm_pads[board], ARRAY_SIZE(pwm_pads[board]));
 
 		/* Set Brightness to high */
-		gpio_request(IMX_GPIO_NR(3, 5), "backlight");
-		gpio_direction_output(IMX_GPIO_NR(3, 5) , 1);
+		gpio_request(backlight_gpio[board], "backlight");
+		gpio_direction_output(backlight_gpio[board], 1);
 	}
 }
 
@@ -550,14 +640,15 @@ int splash_screen_prepare(void)
 #define UCTRL_PWR_POL		(1 << 9)
 
 static iomux_v3_cfg_t const usb_otg_pads[] = {
-	MX6_PAD_GPIO1_IO00__ANATOP_OTG1_ID | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_UART3_TX_DATA__ANATOP_OTG1_ID | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 /* At default the 3v3 enables the MIC2026 for VBUS power */
 static void setup_usb(void)
 {
-	imx_iomux_v3_setup_multiple_pads(usb_otg_pads,
-					 ARRAY_SIZE(usb_otg_pads));
+	if (is_var_som_6ul())
+		imx_iomux_v3_setup_multiple_pads(usb_otg_pads,
+						 ARRAY_SIZE(usb_otg_pads));
 }
 
 int board_usb_phy_mode(int port)
@@ -565,12 +656,16 @@ int board_usb_phy_mode(int port)
 	if (port == 1) {
 		return USB_INIT_HOST;
 	} else {
+		if (is_dart_6ul()) {
 #if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_ENV_SUPPORT)
-		if (env_check("usbmode", "host"))
-			return USB_INIT_HOST;
-		else
+			if (env_check("usbmode", "host"))
+				return USB_INIT_HOST;
+			else
 #endif
-			return USB_INIT_DEVICE;
+				return USB_INIT_DEVICE;
+		} else {
+			return usb_phy_mode(port);
+		}
 	}
 }
 
@@ -700,8 +795,9 @@ int board_phy_config(struct phy_device *phydev)
 
 static void setup_local_i2c(void)
 {
-	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
-	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
+	int board = get_board_indx();
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1[board]);
+	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2[board]);
 }
 
 int board_early_init_f(void)
@@ -771,7 +867,10 @@ int board_late_init(void)
 		print_emmc_size();
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "MX6UL_VAR_DART");
+	if (is_dart_6ul())
+		env_set("board_name", "DART-6UL");
+	else
+		env_set("board_name", "VAR-SOM-6UL");
 
 	if (is_cpu_type(MXC_CPU_MX6ULL))
 		env_set("soc_type", "imx6ull");
@@ -807,10 +906,10 @@ int board_late_init(void)
 
 	switch ((var_eeprom_v2_cfg.som_info >> 3) & 0x3) {
 	case 0x0:
-		env_set("som_rev", "2.4G"); /* Rev 1.x */
+		env_set("som_rev", "2.4G");
 		break;
 	case 0x1:
-		env_set("som_rev", "5G"); /* Rev 2.x */
+		env_set("som_rev", "5G");
 		break;
 	default:
 		env_set("som_rev", "unknown");
@@ -838,7 +937,11 @@ int board_late_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Variscite DART-6UL\n");
+	puts("Board: Variscite ");
+	if (is_dart_6ul())
+		puts("DART-6UL\n");
+	else
+		puts("VAR-SOM-6UL\n");
 
 	return 0;
 }
