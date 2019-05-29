@@ -251,12 +251,11 @@
 
 #define CONFIG_SYS_SDRAM_BASE           0x40000000
 #define PHYS_SDRAM                      0x40000000
-#define PHYS_SDRAM_SIZE                 0x80000000	/* 2GB DDR */
-#define CONFIG_DDR_MB                   2048		/* 2GB DDR */
+#define DEFAULT_DRAM_SIZE_MB            512
 #define CONFIG_NR_DRAM_BANKS            1
 
 #define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (PHYS_SDRAM_SIZE >> 1))
+#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + ((256 * SZ_1M)))
 
 #define CONFIG_BAUDRATE			115200
 

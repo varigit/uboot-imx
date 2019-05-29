@@ -22,10 +22,16 @@
 #include <mmc.h>
 #include <asm/arch/imx8m_ddr.h>
 
+#include "../common/imx8m_eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 void spl_dram_init(void)
 {
+	struct var_eeprom eeprom;
+
+	var_eeprom_read_header(&eeprom);
+	var_eeprom_adjust_dram(&eeprom, &dram_timing);
 	ddr_init(&dram_timing);
 }
 
