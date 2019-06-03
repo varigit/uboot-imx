@@ -150,6 +150,9 @@ static int handle_commands(const struct eeprom_command commands[],
 			while(!(*reg_ptr & value));
 			break;
 		default:
+			if ((address == 0x021B0020) && (value == 0x00007800))
+				value = 0x00000800;
+
 			/* This is a regular set command (non-wait) */
 			eeprom_v2_debug("Setting data at address %08x to %08x\n", address, value);
 			*reg_ptr = value;
