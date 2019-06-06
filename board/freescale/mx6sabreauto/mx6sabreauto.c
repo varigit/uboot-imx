@@ -35,10 +35,6 @@
 #include <power/pmic.h>
 #include <power/pfuze100_pmic.h>
 #include "../common/pfuze.h"
-
-#ifdef CONFIG_SATA
-#include <asm/mach-imx/sata.h>
-#endif
 #ifdef CONFIG_FSL_FASTBOOT
 #include <fsl_fastboot.h>
 #ifdef CONFIG_ANDROID_RECOVERY
@@ -187,9 +183,22 @@ static void eim_clk_setup(void)
 
 static void setup_iomux_eimnor(void)
 {
+	int ret;
+	struct gpio_desc desc;
+
 	SETUP_IOMUX_PADS(eimnor_pads);
 
-	gpio_direction_output(IMX_GPIO_NR(5, 4), 0);
+	ret = dm_gpio_lookup_name("GPIO5_4", &desc);
+	if (ret) {
+		printf("%s lookup GPIO5_4 failed ret = %d\n", __func__, ret);
+		return;
+	}
+	ret = dm_gpio_request(&desc, "steer ctrl");
+	if (ret) {
+		printf("%s request steer logic failed ret = %d\n", __func__, ret);
+		return;
+	}
+	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE | GPIOD_ACTIVE_LOW);
 
 	eimnor_cs_setup();
 }
@@ -553,9 +562,22 @@ iomux_v3_cfg_t const ecspi1_pads[] = {
 
 void setup_spinor(void)
 {
+	int ret;
+	struct gpio_desc desc;
+
 	SETUP_IOMUX_PADS(ecspi1_pads);
 
-	gpio_direction_output(IMX_GPIO_NR(5, 4), 0);
+	ret = dm_gpio_lookup_name("GPIO5_4", &desc);
+	if (ret) {
+		printf("%s lookup GPIO5_4 failed ret = %d\n", __func__, ret);
+		return;
+	}
+	ret = dm_gpio_request(&desc, "steer ctrl");
+	if (ret) {
+		printf("%s request steer logic failed ret = %d\n", __func__, ret);
+		return;
+	}
+	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE | GPIOD_ACTIVE_LOW);
 }
 #endif
 
@@ -581,19 +603,6 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
-	/* I2C 3 Steer */
-	ret = dm_gpio_lookup_name("GPIO5_4", &desc);
-	if (ret) {
-		printf("%s lookup GPIO5_4 failed ret = %d\n", __func__, ret);
-		return -ENODEV;
-	}
-	ret = dm_gpio_request(&desc, "steer logic");
-	if (ret) {
-		printf("%s request steer logic failed ret = %d\n", __func__, ret);
-		return -ENODEV;
-	}
-	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE);
-	SETUP_IOMUX_PADS(i2c3_pads);
 
 	ret = dm_gpio_lookup_name("GPIO1_15", &desc);
 	if (ret) {
