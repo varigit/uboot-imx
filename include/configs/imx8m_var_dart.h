@@ -151,11 +151,13 @@
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
+	"findfdt=if gpio input 12; then setenv fdt_file fsl-imx8mq-var-dart-cb12.dtb; else setenv fdt_file fsl-imx8mq-var-dart.dtb; fi;\0" \
 	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+			"run findfdt; " \
 			"if run loadfdt; then " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
 			"else " \
