@@ -122,7 +122,7 @@
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"fdt_file=undefined\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
 	"video=HDMI-A-1:1920x1080-32@60\0" \
@@ -151,7 +151,14 @@
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
-	"findfdt=if gpio input 12; then setenv fdt_file fsl-imx8mq-var-dart-cb12.dtb; else setenv fdt_file fsl-imx8mq-var-dart.dtb; fi;\0" \
+	"findfdt=" \
+		"if test $fdt_file = undefined; then " \
+			"if gpio input 12; then " \
+				"setenv fdt_file fsl-imx8mq-var-dart-cb12.dtb; " \
+			"else " \
+				"setenv fdt_file fsl-imx8mq-var-dart.dtb;" \
+			"fi; " \
+		"fi; \0" \
 	"loadfdt=run findfdt; " \
 		"echo fdt_file=${fdt_file}; " \
 		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
