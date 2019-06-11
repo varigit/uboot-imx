@@ -87,11 +87,18 @@ config TARGET_IMX8QXP_MEK
 	select SUPPORT_SPL
 	select IMX8QXP
 
+config TARGET_IMX8QXP_VAR_SOM
+	bool "Support Variscite VAR-SOM-MX8X board"
+	select BOARD_LATE_INIT
+	select SUPPORT_SPL
+	select IMX8QXP
+
 endchoice
 
 source "board/freescale/imx8qm_arm2/Kconfig"
 source "board/freescale/imx8qm_mek/Kconfig"
 source "board/freescale/imx8qxp_arm2/Kconfig"
 source "board/freescale/imx8qxp_mek/Kconfig"
+source "board/variscite/imx8qxp_var_som/Kconfig"
 
 endif
