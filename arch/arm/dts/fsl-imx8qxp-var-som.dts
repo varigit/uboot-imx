@@ -146,6 +146,13 @@
 			>;
 		};
 
+		pinctrl_lpi2c0: lpi2c0grp {
+			fsl,pins = <
+				SC_P_MIPI_CSI0_GPIO0_00_ADMA_I2C0_SCL		0x06000021
+				SC_P_MIPI_CSI0_GPIO0_01_ADMA_I2C0_SDA		0x06000021
+			>;
+		};
+
 		pinctrl_lpi2c1: lpi2c1grp {
 			fsl,pins = <
 				SC_P_USB_SS3_TC0_ADMA_I2C1_SCL			0x06000021
@@ -316,6 +323,15 @@
 	status = "okay";
 	phy-supply = <&reg_ethphy1>;
 	phy-reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
+};
+
+&i2c0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpi2c0>;
+	status = "okay";
 };
 
 &i2c1 {
