@@ -78,6 +78,17 @@
 			enable-active-high;
 			regulator-off-in-suspend;
 		};
+
+		reg_usdhc2_vmmc: usdhc2_vmmc {
+			compatible = "regulator-fixed";
+			regulator-name = "reg_sd_pwr";
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			gpio = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+			startup-delay-us = <100>;
+			off-on-delay-us = <12000>;
+		};
 	};
 };
 
@@ -218,6 +229,7 @@
 			fsl,pins = <
 				SC_P_USDHC1_CD_B_LSIO_GPIO4_IO22		0x00000021
 				SC_P_USDHC1_VSELECT_CONN_USDHC1_VSELECT		0x00000021
+				SC_P_SPI0_CS1_LSIO_GPIO1_IO07			0x00000021
 			>;
 		};
 
@@ -368,6 +380,7 @@
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
 	bus-width = <4>;
 	cd-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
+	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";
 };
 
