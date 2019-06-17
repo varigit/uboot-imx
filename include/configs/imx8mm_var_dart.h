@@ -162,6 +162,7 @@
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
+	"ip_dyn=yes\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
@@ -193,14 +194,14 @@
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
-		"run netargs;  " \
-		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
 			"setenv get_cmd tftp; " \
 		"fi; " \
 		"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
+		"run netargs; " \
+		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
