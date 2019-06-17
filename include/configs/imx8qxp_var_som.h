@@ -222,6 +222,7 @@
 	"cntr_addr=0x98000000\0"			\
 	"cntr_file=os_cntr_signed.bin\0" \
 	"boot_fdt=try\0" \
+	"ip_dyn=yes\0" \
 	"fdt_file=fsl-imx8qxp-var-som.dtb\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
@@ -262,8 +263,6 @@
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
-		"run netargs;  " \
-		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
@@ -271,6 +270,8 @@
 		"fi; " \
 		"if test ${sec_boot} = yes; then " \
 			"${get_cmd} ${cntr_addr} ${cntr_file}; " \
+			"run netargs; " \
+			"run optargs; " \
 			"if run auth_os; then " \
 				"run boot_os; " \
 			"else " \
@@ -278,6 +279,8 @@
 			"fi; " \
 		"else " \
 			"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
+			"run netargs; " \
+			"run optargs; " \
 			"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 				"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 					"run boot_os; " \
