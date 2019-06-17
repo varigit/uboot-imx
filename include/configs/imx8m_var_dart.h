@@ -187,6 +187,8 @@
 		"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
 		"run netargs; " \
 		"run optargs; " \
+		"run findfdt; " \
+		"echo fdt_file=${fdt_file}; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
