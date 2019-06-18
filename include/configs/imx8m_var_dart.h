@@ -146,12 +146,22 @@
 		"fi; " \
 		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console} root=${mmcroot} video=${video}\0 " \
+	"mmcargs=setenv bootargs console=${console} root=${mmcroot} video=${video} ${cma_size}\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
+	"ramsize_check="\
+		"if test $sdram_size -le 512; then " \
+			"setenv cma_size cma=320MB; " \
+		"else " \
+			"if test $sdram_size -le 1024; then " \
+				"setenv cma_size cma=640MB; " \
+			"else " \
+				"setenv cma_size cma=960MB; " \
+			"fi; " \
+		"fi;\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if gpio input 12; then " \
@@ -176,7 +186,7 @@
 			"echo wait for boot; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console} " \
-		"root=/dev/nfs video=${video} " \
+		"root=/dev/nfs video=${video} ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"if test ${ip_dyn} = yes; then " \
@@ -185,6 +195,7 @@
 			"setenv get_cmd tftp; " \
 		"fi; " \
 		"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
+		"run ramsize_check; " \
 		"run netargs; " \
 		"run optargs; " \
 		"run findfdt; " \
@@ -206,6 +217,7 @@
 	"splashdisable=setenv splashfile; setenv splashimage\0"
 
 #define CONFIG_BOOTCOMMAND \
+	   "run ramsize_check; " \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if test ${use_m4} = yes && run loadm4bin; then " \
 			   "run runm4bin; " \
