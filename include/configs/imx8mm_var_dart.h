@@ -171,13 +171,19 @@
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
 	"mmcautodetect=yes\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs ${jh_clk} console=${console} root=${mmcroot}\0 " \
+	"mmcargs=setenv bootargs ${jh_clk} console=${console} root=${mmcroot} ${cma_size}\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
+	"ramsize_check="\
+		"if test $sdram_size -le 512; then " \
+			"setenv cma_size cma=320MB; " \
+		"else " \
+			"setenv cma_size cma=640MB; " \
+		"fi;\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
@@ -191,7 +197,7 @@
 			"echo wait for boot; " \
 		"fi;\0" \
 	"netargs=setenv bootargs ${jh_clk} console=${console} " \
-		"root=/dev/nfs " \
+		"root=/dev/nfs ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"if test ${ip_dyn} = yes; then " \
@@ -200,6 +206,7 @@
 			"setenv get_cmd tftp; " \
 		"fi; " \
 		"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
+		"run ramsize_check; " \
 		"run netargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
@@ -213,6 +220,7 @@
 		"fi;\0"
 
 #define CONFIG_BOOTCOMMAND \
+	   "run ramsize_check; " \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \

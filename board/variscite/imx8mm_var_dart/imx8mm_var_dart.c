@@ -197,9 +197,11 @@ int mmc_map_to_kernel_blk(int devno)
 	return devno + 1;
 }
 
+#define SDRAM_SIZE_STR_LEN 5
 int board_late_init(void)
 {
 	struct var_eeprom eeprom;
+	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 
 	var_eeprom_read_header(&eeprom);
 
@@ -207,6 +209,9 @@ int board_late_init(void)
 	setup_mac(&eeprom);
 #endif
 	var_eeprom_print_prod_info(&eeprom);
+
+	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int) (gd->ram_size / 1024 / 1024));
+	env_set("sdram_size", sdram_size_str);
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
