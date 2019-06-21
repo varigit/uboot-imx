@@ -273,8 +273,10 @@ void part_print_efi(struct blk_desc *desc)
 		printf("\tguid:\t%pUl\n", uuid);
 	}
 
+#if !defined(CONFIG_DUAL_BOOTLOADER) || !defined(CONFIG_SPL_BUILD)
 	/* Remember to free pte */
 	free(gpt_pte);
+#endif
 	return;
 }
 
@@ -297,7 +299,9 @@ int part_get_info_efi(struct blk_desc *desc, int part,
 	if (part > le32_to_cpu(gpt_head->num_partition_entries) ||
 	    !is_pte_valid(&gpt_pte[part - 1])) {
 		log_debug("Invalid partition number %d\n", part);
+#if !defined(CONFIG_DUAL_BOOTLOADER) || !defined(CONFIG_SPL_BUILD)
 		free(gpt_pte);
+#endif
 		return -EPERM;
 	}
 
@@ -326,8 +330,14 @@ int part_get_info_efi(struct blk_desc *desc, int part,
 	log_debug("start 0x" LBAF ", size 0x" LBAF ", name %s\n", info->start,
 		  info->size, info->name);
 
-	/* Remember to free pte */
+#if !defined(CONFIG_DUAL_BOOTLOADER) || !defined(CONFIG_SPL_BUILD)
+	/* Heap memory is very limited in SPL, if the dual bootloader is
+	 * enabled, just load pte to dram instead of oc-ram. In such case,
+	 * this part of  memory shouldn't be freed. But in common routine,
+	 * don't forget to free the memory after use.
+	 */
 	free(gpt_pte);
+#endif
 	return 0;
 }
 
@@ -1206,10 +1216,19 @@ static gpt_entry *alloc_read_gpt_entries(struct blk_desc *desc,
 		  (u32)le32_to_cpu(pgpt_head->sizeof_partition_entry),
 		  (ulong)count);
 
-	/* Allocate memory for PTE, remember to FREE */
+	/* Allocate memory for PTE.
+	 * Heap memory is very limited in SPL, if the dual bootloader is
+	 * enabled, just load pte to dram instead of oc-ram. In such case,
+	 * this part of  memory shouldn't be freed. But in common routine,
+	 * don't forget to free the memory after use.
+	 */
 	if (count != 0) {
+#if defined(CONFIG_DUAL_BOOTLOADER) && defined(CONFIG_SPL_BUILD)
+		pte = (gpt_entry *)CFG_SYS_SPL_PTE_RAM_BASE;
+#else
 		pte = memalign(ARCH_DMA_MINALIGN,
 			       PAD_TO_BLOCKSIZE(count, desc));
+#endif
 	}
 
 	if (count == 0 || pte == NULL) {
@@ -1223,7 +1242,9 @@ static gpt_entry *alloc_read_gpt_entries(struct blk_desc *desc,
 	blk_cnt = BLOCK_CNT(count, desc);
 	if (blk_dread(desc, blk, (lbaint_t)blk_cnt, pte) != blk_cnt) {
 		log_debug("Can't read GPT Entries\n");
+#if !defined(CONFIG_DUAL_BOOTLOADER) || !defined(CONFIG_SPL_BUILD)
 		free(pte);
+#endif
 		return NULL;
 	}
 	return pte;
