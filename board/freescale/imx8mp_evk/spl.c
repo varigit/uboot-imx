@@ -18,6 +18,7 @@
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/arch/ddr.h>
+#include <asm/sections.h>
 #include <power/pmic.h>
 #include <power/pca9450.h>
 #include <dm/uclass.h>
@@ -124,6 +125,9 @@ int board_fit_config_name_match(const char *name)
 void board_init_f(ulong dummy)
 {
 	int ret;
+
+	/* Clear the BSS. */
+	memset(__bss_start, 0, __bss_end - __bss_start);
 
 	arch_cpu_init();
 
