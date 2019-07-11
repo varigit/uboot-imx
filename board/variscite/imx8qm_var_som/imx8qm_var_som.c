@@ -437,8 +437,6 @@ int splash_screen_prepare(void)
 
 	splash_set_source();
 
-	printf("Loading splash screen\n");
-
 	return splash_source_load(splash_locations,
 			ARRAY_SIZE(splash_locations));
 
