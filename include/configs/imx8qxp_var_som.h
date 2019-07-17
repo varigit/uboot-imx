@@ -213,7 +213,7 @@
 	"bootdir=/boot\0"	\
 	"script=boot.scr\0" \
 	"image=Image.gz\0" \
-	"panel=NULL\0" \
+	"panel=VAR-WVGA-LCD\0" \
 	"console=ttyLP3\0" \
 	"earlycon=lpuart32,0x5a090000\0" \
 	"img_addr=0x82000000\0"			\
@@ -290,7 +290,13 @@
 			"else " \
 				"booti; " \
 			"fi;" \
-		"fi;\0"
+		"fi;\0" \
+	"splashsourceauto=yes\0" \
+	"splashfile=/boot/splash.bmp\0" \
+	"splashimage=0x83100000\0" \
+	"splashenable=setenv splashfile ${bootdir}/splash.bmp; " \
+		"setenv splashimage 0x83100000\0" \
+	"splashdisable=setenv splashfile; setenv splashimage\0"
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
@@ -397,11 +403,17 @@
 #define CONFIG_VIDEO_IMXDPUV1
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
-#define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IMX_VIDEO_SKIP
+#endif
+
+/* SPLASH SCREEN Configs  */
+#ifdef CONFIG_SPLASH_SCREEN
+#define CONFIG_CMD_BMP
+#define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
 #endif
 
 #define CONFIG_OF_SYSTEM_SETUP
