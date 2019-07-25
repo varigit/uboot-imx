@@ -7,6 +7,7 @@
 
 	aliases {
 		usbhost1 = &usbh3;
+		usbgadget0 = &usbg1;
 	};
 
 	usbh3: usbh3 {
@@ -15,6 +16,15 @@
 		cdns3,usb = <&usbotg3>;
 		status = "okay";
 	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+		bootph-pre-ram;
+	};
+
 };
 
 &{/imx8qx-pm} {
@@ -149,6 +159,14 @@
 	bootph-pre-ram;
 };
 
+&pd_conn_usbotg0 {
+	bootph-pre-ram;
+};
+
+&pd_conn_usbotg0_phy {
+	bootph-pre-ram;
+};
+
 &pd_lsio_flexspi0 {
 	bootph-pre-ram;
 };
@@ -195,6 +213,18 @@
 
 &lpuart0 {
 	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&usbmisc1 {
+	bootph-pre-ram;
+};
+
+&usbphy1 {
+	bootph-pre-ram;
+};
+
+&usbotg1 {
 	bootph-pre-ram;
 };
 
