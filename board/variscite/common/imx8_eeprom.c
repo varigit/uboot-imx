@@ -116,6 +116,8 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 	printf("\nPart number: VSM-DT8MM-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
 #elif CONFIG_TARGET_IMX8QXP_VAR_SOM
 	printf("\nPart number: VSM-MX8X-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+#elif CONFIG_TARGET_IMX8QM_VAR_SOM
+	printf("\nPart number: VSM-MX8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
 #endif
 	printf("Assembly: AS%.*s\n", (int)sizeof(e->assembly), (char *)e->assembly);
 
