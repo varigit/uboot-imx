@@ -42,6 +42,21 @@ int udc_device_put(struct udevice *udev)
 	return -ENOSYS;
 #endif
 }
+
+int dm_usb_gadget_handle_interrupts(struct udevice *dev)
+{
+	const struct driver *drv = dev->driver;
+
+	assert(drv);
+
+	if (drv->handle_interrupts)
+		return drv->handle_interrupts(dev);
+	else
+		pr_err("No handle_interrupts function found\n");
+
+	return -EINVAL;
+}
+
 #else
 /* Backwards hardware compatibility -- switch to DM_USB_GADGET */
 static int legacy_index;

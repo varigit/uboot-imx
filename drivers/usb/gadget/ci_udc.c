@@ -926,7 +926,7 @@ void udc_irq(void)
 	}
 }
 
-int dm_usb_gadget_handle_interrupts(struct udevice *dev)
+int ci_udc_handle_interrupts(void)
 {
 	struct ci_udc *udc = (struct ci_udc *)controller.ctrl->hcor;
 	u32 value;
@@ -1078,6 +1078,11 @@ bool dfu_usb_get_reset(void)
 }
 
 #if !CONFIG_IS_ENABLED(DM_USB_GADGET)
+int dm_usb_gadget_handle_interrupts(struct udevice *dev)
+{
+	return ci_udc_handle_interrupts();
+}
+
 int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 {
 	int ret;
@@ -1165,6 +1170,11 @@ struct ci_udc_priv_data {
 	struct power_domain phy_pd;
 	struct ehci_mx6_phy_data phy_data;
 };
+
+static int ci_udc_gadget_handle_interrupts(struct udevice *dev)
+{
+	return ci_udc_handle_interrupts();
+}
 
 static int ci_udc_phy_setup(struct udevice *dev, struct ci_udc_priv_data *priv)
 {
@@ -1436,6 +1446,7 @@ U_BOOT_DRIVER(ci_udc_otg) = {
 	.of_to_plat = ci_udc_otg_ofdata_to_platdata,
 	.probe = ci_udc_otg_probe,
 	.remove = ci_udc_otg_remove,
+	.handle_interrupts = ci_udc_gadget_handle_interrupts,
 	.priv_auto = sizeof(struct ci_udc_priv_data),
 };
 
