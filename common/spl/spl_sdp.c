@@ -15,9 +15,14 @@
 static int spl_sdp_load_image(struct spl_image_info *spl_image,
 			      struct spl_boot_device *bootdev)
 {
-	const int controller_index = CONFIG_SPL_SDP_USB_DEV;
+	int controller_index = CONFIG_SPL_SDP_USB_DEV;
 	struct udevice *udc;
 	int ret;
+	int index;
+
+	index = board_usb_gadget_port_auto();
+	if (index >= 0)
+		controller_index = index;
 
 	ret = udc_device_get_by_index(controller_index, &udc);
 	if (ret)
