@@ -36,6 +36,7 @@
 #include <usb.h>
 #include <usb/ehci-ci.h>
 #include <asm/arch/mx6-ddr.h>
+#include <power/regulator.h>
 #if defined(CONFIG_MX6DL) && defined(CONFIG_MXC_EPDC)
 #include <mxc_epdc_fb.h>
 #endif
@@ -157,20 +158,6 @@ static void enable_rgb(struct display_info_t const *dev)
 static void enable_lvds(struct display_info_t const *dev)
 {
 	enable_backlight();
-}
-#endif
-
-#ifdef CONFIG_PCIE_IMX
-iomux_v3_cfg_t const pcie_pads[] = {
-	IOMUX_PADS(PAD_EIM_D19__GPIO3_IO19 | MUX_PAD_CTRL(NO_PAD_CTRL)),	/* POWER */
-	IOMUX_PADS(PAD_GPIO_17__GPIO7_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL)),	/* RESET */
-};
-
-static void setup_pcie(void)
-{
-	SETUP_IOMUX_PADS(pcie_pads);
-	gpio_request(CFG_PCIE_IMX_POWER_GPIO, "PCIE Power Enable");
-	gpio_request(CFG_PCIE_IMX_PERST_GPIO, "PCIE Reset");
 }
 #endif
 
@@ -761,14 +748,14 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
+#if defined(CONFIG_DM_REGULATOR)
+	regulators_enable_boot_on(false);
+#endif
+
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
 
-
-#ifdef CONFIG_PCIE_IMX
-	setup_pcie();
-#endif
 
 #if defined(CONFIG_MX6DL) && defined(CONFIG_MXC_EPDC)
 	setup_epdc();
