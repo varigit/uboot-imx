@@ -167,11 +167,12 @@
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
+	"mmcpart=1\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs ${jh_clk} console=${console} root=${mmcroot} ${cma_size}\0 " \
+	"mmcargs=setenv bootargs ${jh_clk} console=${console} " \
+		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size}\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
@@ -253,7 +254,6 @@
 #endif
 #define CONFIG_ENV_SIZE			0x1000
 #define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC2 */
-#define CONFIG_MMCROOT			"/dev/mmcblk1p1"  /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
@@ -293,7 +293,6 @@
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
 #ifdef CONFIG_CMD_NAND
 #define CONFIG_NAND_MXS

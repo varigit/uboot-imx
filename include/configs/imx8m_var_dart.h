@@ -128,9 +128,9 @@
 	"initrd_high=0xffffffffffffffff\0" \
 	"video=HDMI-A-1:1920x1080-32@60\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootfstype=ext4 rootwait rw\0" \
+	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
+	"mmcpart=1\0" \
 	"m4_addr=0x7e0000\0" \
 	"m4_bin=hello_world.bin\0" \
 	"use_m4=no\0" \
@@ -146,7 +146,9 @@
 		"fi; " \
 		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console} root=${mmcroot} video=${video} ${cma_size}\0 " \
+	"mmcargs=setenv bootargs console=${console} " \
+		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootfstype=ext4 rootwait rw " \
+		"video=${video} ${cma_size}\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
@@ -247,7 +249,6 @@
 #define CONFIG_ENV_OFFSET               (64 * SZ_64K)
 #define CONFIG_ENV_SIZE			0x1000
 #define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
-#define CONFIG_MMCROOT			"/dev/mmcblk1p1"  /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
@@ -284,7 +285,6 @@
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
 #define CONFIG_MXC_GPIO
 

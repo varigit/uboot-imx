@@ -35,9 +35,7 @@ void board_late_mmc_env_init(void)
 	env_set_ulong("mmcdev", dev_no);
 
 	/* Set mmcblk env */
-	sprintf(mmcblk, "/dev/mmcblk%dp1 rootwait rw",
-		mmc_map_to_kernel_blk(dev_no));
-	env_set("mmcroot", mmcblk);
+	env_set_ulong("mmcblk", mmc_map_to_kernel_blk(dev_no));
 
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);
