@@ -32,7 +32,6 @@ __weak int mmc_map_to_kernel_blk(int dev_no)
 void board_late_mmc_env_init(void)
 {
 	char cmd[32];
-	char mmcblk[64];
 	u32 dev_no = mmc_get_env_dev();
 
 	if (!check_mmc_autodetect())
@@ -41,9 +40,7 @@ void board_late_mmc_env_init(void)
 	env_set_ulong("mmcdev", dev_no);
 
 	/* Set mmcblk env */
-	sprintf(mmcblk, "/dev/mmcblk%dp1 rootfstype=ext4 rootwait rw",
-		mmc_map_to_kernel_blk(dev_no));
-	env_set("mmcroot", mmcblk);
+	env_set_ulong("mmcblk", mmc_map_to_kernel_blk(dev_no));
 
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);

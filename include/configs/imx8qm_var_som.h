@@ -226,11 +226,12 @@
 	"ip_dyn=yes\0" \
 	"fdt_file="__stringify(CONFIG_DEFAULT_DEVICE_TREE)".dtb\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
+	"mmcpart=1\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} earlycon=${earlycon},${baudrate} root=${mmcroot}\0 " \
+	"mmcargs=setenv bootargs console=${console},${baudrate} earlycon=${earlycon},${baudrate} " \
+		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootfstype=ext4 rootwait rw\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
@@ -341,10 +342,7 @@
 #define CONFIG_ENV_OFFSET				(64 * SZ_64K)
 #define CONFIG_SYS_MMC_ENV_PART				0	/* user area */
 
-#define CONFIG_SYS_MMC_IMG_LOAD_PART			1
-
 #define CONFIG_SYS_MMC_ENV_DEV				1   /* USDHC1 */
-#define CONFIG_MMCROOT					"/dev/mmcblk1p1"  /* USDHC1 */
 #define CONFIG_SYS_FSL_USDHC_NUM			2
 
 /* Size of malloc() pool */
