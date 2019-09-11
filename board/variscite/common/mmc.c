@@ -26,7 +26,6 @@ static int check_mmc_autodetect(void)
 void board_late_mmc_env_init(void)
 {
 	char cmd[32];
-	char mmcblk[32];
 	u32 dev_no = mmc_get_env_dev();
 
 	if (!check_mmc_autodetect())
