@@ -251,6 +251,7 @@
 		"if run loadhdp; then; hdp load ${hdp_addr}; fi;" \
 		"if run loadhdprx; then; hdprx load ${hdprx_addr}; fi;" \
 		"run mmcargs; " \
+		"run optargs; " \
 		"if test ${sec_boot} = yes; then " \
 			"if run auth_os; then " \
 				"run boot_os; " \
