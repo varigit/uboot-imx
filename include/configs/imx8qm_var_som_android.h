@@ -63,10 +63,10 @@
 	"initrd_high=0xffffffffffffffff\0" \
 	"panel=NULL\0" \
 	"bootargs=" \
-		"console=ttyLP3,115200 " \
-		"earlycon=lpuart32,0x5a090000,115200 " \
+		"console=ttyLP0,115200 " \
+		"earlycon=lpuart32,0x5a060000,115200 " \
 		"init=/init " \
-		"androidboot.console=ttyLP3 " \
+		"androidboot.console=ttyLP0 " \
 		"consoleblank=0 " \
 		"androidboot.hardware=freescale " \
 		"cma=800M@0x960M-0xe00M " \
