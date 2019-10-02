@@ -22,12 +22,23 @@
 #include "fsl-imx8qm.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX8";
-	compatible = "variscite,imx8qm-var-som", "fsl,imx8qm";
+	model = "Variscite SPEAR-MX8";
+	compatible = "variscite,imx8qm-var-spear", "fsl,imx8qm";
 
 	chosen {
 		bootargs = "console=ttyLP0,115200 earlycon=lpuart32,0x5a060000,115200";
 		stdout-path = &lpuart0;
+	};
+
+	aliases {
+		gpio0 = &gpio0;
+		gpio1 = &gpio1;
+		gpio2 = &gpio2;
+		gpio3 = &gpio3;
+		gpio4 = &gpio4;
+		gpio5 = &gpio5;
+		gpio6 = &gpio6;
+		gpio7 = &gpio7;
 	};
 
 	regulators {
@@ -37,10 +48,11 @@
 
 		reg_usb_otg1_vbus: usb_otg1_vbus {
 			compatible = "regulator-fixed";
+			reg = <0>;
 			regulator-name = "usb_otg1_vbus";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio0 18 GPIO_ACTIVE_HIGH>;
+			gpio = <&gpio4 3 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
 		};
 
@@ -49,13 +61,22 @@
 			regulator-name = "sw-3p3-sd1";
 			regulator-min-microvolt = <3300000>;
 			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio4 7 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
 		};
 	};
 };
 
 &iomuxc {
-	imx8qm-var-som {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	imx8qm-var-spear {
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+				SC_P_USB_SS3_TC0_LSIO_GPIO4_IO03	  	0x06000048
+			>;
+		};
 
 		pinctrl_fec1: fec1grp {
 			fsl,pins = <
@@ -93,6 +114,7 @@
 				SC_P_ENET1_RGMII_RXD1_CONN_ENET1_RGMII_RXD1	0x00000060
 				SC_P_ENET1_RGMII_RXD2_CONN_ENET1_RGMII_RXD2	0x00000060
 				SC_P_ENET1_RGMII_RXD3_CONN_ENET1_RGMII_RXD3	0x00000060
+				SC_P_ESAI0_TX3_RX2_LSIO_GPIO2_IO29 		0x00000021
 			>;
 		};
 
@@ -154,6 +176,13 @@
 			>;
 		};
 
+		pinctrl_usdhc2_gpio: usdhc2grpgpio {
+			fsl,pins = <
+				SC_P_USDHC1_DATA7_LSIO_GPIO5_IO22		0x00000021
+				SC_P_USDHC1_RESET_B_LSIO_GPIO4_IO07		0x00000021
+			>;
+		};
+
 		pinctrl_usdhc2: usdhc2grp {
 			fsl,pins = <
 				SC_P_USDHC1_CLK_CONN_USDHC1_CLK			0x06000041
@@ -190,26 +219,6 @@
 			>;
 		};
 
-		pinctrl_usdhc2_gpio: usdhc2grpgpio {
-			fsl,pins = <
-				SC_P_GPT0_CLK_LSIO_GPIO0_IO14			0x00000021
-			>;
-		};
-
-		pinctrl_i2c0: lpi2c0grp {
-			fsl,pins = <
-				SC_P_HDMI_TX0_TS_SCL_DMA_I2C0_SCL		0x06000020
-				SC_P_HDMI_TX0_TS_SDA_DMA_I2C0_SDA		0x06000020
-			>;
-		};
-
-		pinctrl_i2c1: lpi2c1grp {
-			fsl,pins = <
-				SC_P_GPT0_CLK_DMA_I2C1_SCL			0x06000020
-				SC_P_GPT0_CAPTURE_DMA_I2C1_SDA			0x06000020
-			>;
-		};
-
 		pinctrl_usbotg1: otg1grp {
 			fsl,pins = <
 				SC_P_GPT1_CAPTURE_LSIO_GPIO0_IO18		0x06000048
@@ -234,7 +243,7 @@
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
 	bus-width = <4>;
-	cd-gpios = <&gpio0 14 GPIO_ACTIVE_LOW>;
+	cd-gpios = <&gpio5 22 GPIO_ACTIVE_LOW>;
 	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";
 };
@@ -269,16 +278,16 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy0: ethernet-phy@4 {
+		ethphy0: ethernet-phy@0 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <4>;
+			reg = <0>;
 			at803x,eee-disabled;
 			at803x,vddio-1p8v;
 		};
 
-		ethphy1: ethernet-phy@5 {
+		ethphy1: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <5>;
+			reg = <1>;
 			at803x,eee-disabled;
 			at803x,vddio-1p8v;
 		};
@@ -288,37 +297,11 @@
 &fec2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec2>;
-	phy-mode = "rgmii-rxid";
+	phy-mode = "rgmii";
 	phy-handle = <&ethphy1>;
 	fsl,magic-packet;
-	phy-reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
-	status = "disabled";
-};
-
-&i2c0 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	clock-frequency = <100000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c0>;
+	phy-reset-gpios = <&gpio2 29 GPIO_ACTIVE_LOW>;
 	status = "okay";
-};
-
-&i2c1 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	clock-frequency = <100000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c1>;
-	status = "okay";
-
-	/* GPIO expander */
-	pca9534: gpio@20 {
-		compatible = "nxp,pca9534";
-		reg = <0x20>;
-		gpio-controller;
-		#gpio-cells = <2>;
-        };
 };
 
 &lpuart0 {

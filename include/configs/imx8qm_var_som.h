@@ -110,19 +110,6 @@
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_ATHEROS
 
-/* ENET0 connects AR8033 on SOM board, ENET1 connects to carrier board */
-#define CONFIG_FEC_ENET_DEV				0
-
-#if (CONFIG_FEC_ENET_DEV == 0)
-#define IMX_FEC_BASE					0x5B040000
-#define CONFIG_FEC_MXC_PHYADDR				0x4
-#define CONFIG_ETHPRIME					"eth0"
-#elif (CONFIG_FEC_ENET_DEV == 1)
-#define IMX_FEC_BASE					0x5B050000
-#define CONFIG_FEC_MXC_PHYADDR				0x5
-#define CONFIG_ETHPRIME					"eth1"
-#endif
-
 /* ENET0 MDIO are shared */
 #define CONFIG_FEC_MXC_MDIO_BASE			0x5B040000
 
@@ -224,7 +211,7 @@
 	"cntr_file=os_cntr_signed.bin\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"fdt_file="__stringify(CONFIG_DEFAULT_DEVICE_TREE)".dtb\0" \
+	"fdt_file=undefined\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
@@ -237,7 +224,17 @@
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
-	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
+	"findfdt=" \
+		"if test $fdt_file = undefined; then " \
+			"if test $board_name = VAR-SOM-MX8; then " \
+				"setenv fdt_file fsl-imx8qm-var-som.dtb; " \
+			"else " \
+				"setenv fdt_file fsl-imx8qm-var-spear.dtb;" \
+			"fi; " \
+		"fi; \0" \
+	"loadfdt=run findfdt; " \
+		"echo fdt_file=${fdt_file}; " \
+		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"hdp_addr=0x84000000\0" \
 	"hdprx_addr=0x84800000\0" \
 	"hdp_file=hdmitxfw.bin\0" \

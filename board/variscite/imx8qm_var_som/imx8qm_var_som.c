@@ -129,9 +129,51 @@ static int setup_mac(struct var_eeprom *eeprom)
 }
 #endif /* CONFIG_FEC_MXC */
 
+enum {
+	SPEAR_MX8   =  1,
+	VAR_SOM_MX8 =  2,
+};
+
+static int get_board_id(void)
+{
+	struct var_eeprom eeprom;
+	static int board_id = -1;
+
+	if (board_id == -1) {
+		if (!var_scu_eeprom_read_header(&eeprom) &&
+		    var_eeprom_is_valid(&eeprom) && (eeprom.somrev & 0x40))
+			board_id = SPEAR_MX8;
+		else
+			board_id = VAR_SOM_MX8;
+	}
+
+	return board_id;
+}
+
+#ifdef CONFIG_MULTI_DTB_FIT
+int board_fit_config_name_match(const char *name)
+{
+	int board_id = get_board_id();
+
+	if ((board_id == SPEAR_MX8) && !strcmp(name, "fsl-imx8qm-var-spear"))
+		return 0;
+	else if ((board_id == VAR_SOM_MX8) && !strcmp(name, "fsl-imx8qm-var-som"))
+		return 0;
+	else
+		return -1;
+}
+#endif
+
 int checkboard(void)
 {
-	puts("Board: VAR-SOM-MX8\n");
+	int board_id = get_board_id();
+
+	if (board_id == SPEAR_MX8)
+		puts("Board: SPEAR-MX8\n");
+	else if (board_id == VAR_SOM_MX8)
+		puts("Board: VAR-SOM-MX8\n");
+	else
+		puts("Board: Unknown\n");
 
 	print_bootinfo();
 
@@ -300,6 +342,7 @@ int board_mmc_get_env_dev(int devno)
 int board_late_init(void)
 {
 	struct var_eeprom eeprom;
+	int board_id = get_board_id();
 
 	var_eeprom_read_header(&eeprom);
 
@@ -309,7 +352,10 @@ int board_late_init(void)
 	var_eeprom_print_prod_info(&eeprom);
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "VAR-SOM-MX8");
+	if (board_id == VAR_SOM_MX8)
+		env_set("board_name", "VAR-SOM-MX8");
+	else if (board_id == SPEAR_MX8)
+		env_set("board_name", "SPEAR-MX8");
 	env_set("board_rev", "iMX8QM");
 #endif
 

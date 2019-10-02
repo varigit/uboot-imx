@@ -51,11 +51,12 @@ static inline int var_eeprom_is_valid(struct var_eeprom *e)
 }
 
 extern int var_eeprom_read_header(struct var_eeprom *e);
+extern int var_scu_eeprom_read_header(struct var_eeprom *e);
 extern int var_eeprom_get_dram_size(struct var_eeprom *e, u32 *size);
 extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
 extern void var_eeprom_print_prod_info(struct var_eeprom *e);
 
-#ifdef CONFIG_SPL_BUILD
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_ARCH_IMX8M)
 extern void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d);
 #endif
 

@@ -8,11 +8,73 @@
 #include <command.h>
 #include <dm.h>
 #include <i2c.h>
+#include <asm/io.h>
+
 #ifdef CONFIG_ARCH_IMX8M
 #include <asm/arch/imx8m_ddr.h>
 #endif
 
+#ifdef CONFIG_ARCH_IMX8
+#include <asm/mach-imx/sci/sci.h>
+#endif
+
 #include "imx8_eeprom.h"
+
+#ifdef CONFIG_ARCH_IMX8
+
+DECLARE_GLOBAL_DATA_PTR;
+
+#define CTL_CODE(function, method) ((4 << 16) | ((function) << 2) | (method))
+
+#define METHOD_BUFFERED		0
+#define METHOD_NEITHER		3
+
+#define SOMINFO_READ_EEPROM	CTL_CODE(2100, METHOD_BUFFERED)
+#define SOMINFO_WRITE_EEPROM	CTL_CODE(2101, METHOD_BUFFERED)
+
+static int var_scu_eeprom_read(uint8_t *buf, uint32_t size)
+{
+	uint32_t command;
+	sc_err_t ret = 0;
+	sc_ipc_t ipc_handle;
+
+	/* Open IPC channel */
+	ret = sc_ipc_open(&ipc_handle, SC_IPC_CH);
+	if (ret != SC_ERR_NONE) {
+		printf("sc_ipc_open failed\n");
+		return -EPERM;
+	}
+
+	command = SOMINFO_READ_EEPROM;
+
+	/* Send command to SC firmware */
+	memset(buf, 0, size);
+	flush_dcache_all();
+	invalidate_icache_all();
+	ret = sc_misc_board_ioctl(ipc_handle, &command, (uint32_t *)&buf, &size);
+
+	/* Close IPC channel */
+	sc_ipc_close(ipc_handle);
+
+	flush_dcache_all();
+	invalidate_icache_all();
+
+	return ret;
+}
+
+int var_scu_eeprom_read_header(struct var_eeprom *e)
+{
+	int ret;
+
+	ret = var_scu_eeprom_read((uint8_t *)e, sizeof(struct var_eeprom));
+	if (ret) {
+		debug("SCU EEPROM read failed\n");
+		return ret;
+	}
+
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_DM_I2C
 static struct udevice *var_eeprom_init(void)
@@ -42,8 +104,15 @@ int var_eeprom_read_header(struct var_eeprom *e)
 	struct udevice *edev;
 
 	edev = var_eeprom_init();
-	if (!edev)
+	if (!edev) {
+#ifdef CONFIG_ARCH_IMX8
+		debug("var_eeprom_read_header: calling SCU to read EEPROM\n");
+		return var_scu_eeprom_read_header(e);
+#else
+		debug("var_eeprom_read_header: I2C init failed\n");
 		return -1;
+#endif
+	}
 
 	/* Read EEPROM to memory */
 	ret = dm_i2c_read(edev, 0, (void *)e, sizeof(*e));
@@ -62,10 +131,15 @@ int var_eeprom_read_header(struct var_eeprom *e)
 	/* Probe EEPROM */
 	i2c_set_bus_num(VAR_EEPROM_I2C_BUS);
 	ret = i2c_probe(VAR_EEPROM_I2C_ADDR);
-        if (ret) {
+	if (ret) {
+#ifdef CONFIG_ARCH_IMX8
+		debug("var_eeprom_read_header: calling SCU to read EEPROM\n");
+		return var_scu_eeprom_read_header(e);
+#else
 		printf("EEPROM init failed\n");
 		return -1;
-        }
+#endif
+	}
 
 	/* Read EEPROM header to memory */
 	ret = i2c_read(VAR_EEPROM_I2C_ADDR, 0, 1, (uint8_t *)e, sizeof(*e));
@@ -117,7 +191,10 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 #elif CONFIG_TARGET_IMX8QXP_VAR_SOM
 	printf("\nPart number: VSM-MX8X-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
 #elif CONFIG_TARGET_IMX8QM_VAR_SOM
-	printf("\nPart number: VSM-MX8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+	if (e->somrev & 0x40)
+		printf("\nPart number: VSM-SP8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+	else
+		printf("\nPart number: VSM-MX8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
 #endif
 	printf("Assembly: AS%.*s\n", (int)sizeof(e->assembly), (char *)e->assembly);
 
@@ -134,7 +211,10 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 
 	debug("EEPROM version: 0x%x\n", e->version);
 	debug("SOM features: 0x%x\n", e->features);
-	debug("DRAM size: %d GiB\n\n", e->dramsize);
+	if (e->version == 1)
+		debug("DRAM size: %d GiB\n\n", e->dramsize);
+	else
+		debug("DRAM size: %d GiB\n\n", (e->dramsize * 128) / 1024);
 }
 
 #if defined(CONFIG_ARCH_IMX8M) && defined(CONFIG_SPL_BUILD)
