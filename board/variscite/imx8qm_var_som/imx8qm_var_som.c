@@ -109,10 +109,37 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
+#define CHAR_BIT 8
+
+static uint64_t mac2int(const uint8_t hwaddr[])
+{
+	int8_t i;
+	uint64_t ret = 0;
+	const uint8_t *p = hwaddr;
+
+	for (i = 5; i >= 0; i--) {
+		ret |= (uint64_t)*p++ << (CHAR_BIT * i);
+	}
+
+	return ret;
+}
+
+static void int2mac(const uint64_t mac, uint8_t *hwaddr)
+{
+	int8_t i;
+	uint8_t *p = hwaddr;
+
+	for (i = 5; i >= 0; i--) {
+		*p++ = mac >> (CHAR_BIT * i);
+	}
+}
+
 static int setup_mac(struct var_eeprom *eeprom)
 {
 	int ret;
+	uint64_t addr;
 	unsigned char enetaddr[6];
+	unsigned char enet1addr[6];
 
 	ret = eth_env_get_enetaddr("ethaddr", enetaddr);
 	if (ret)
@@ -125,7 +152,13 @@ static int setup_mac(struct var_eeprom *eeprom)
 	if (!is_valid_ethaddr(enetaddr))
 		return -1;
 
-	return eth_env_set_enetaddr("ethaddr", enetaddr);
+	addr = mac2int(enetaddr);
+	int2mac(addr + 1, enet1addr);
+
+	eth_env_set_enetaddr("ethaddr", enetaddr);
+	eth_env_set_enetaddr("eth1addr", enet1addr);
+
+	return 0;
 }
 #endif /* CONFIG_FEC_MXC */
 
