@@ -136,13 +136,11 @@
 	"use_m4=no\0" \
 	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${m4_addr} ${bootdir}/${m4_bin}\0" \
 	"runm4bin=" \
-		"if test ${m4_addr} = 0x80000000; then " \
-			"echo Booting M4 from DRAM; " \
-			"dcache flush; " \
-		"elif test ${m4_addr} = 0x7e0000; then " \
+		"if test ${m4_addr} = 0x7e0000; then " \
 			"echo Booting M4 from TCM; " \
 		"else " \
-			"echo WARNING: trying to boot M4 from unexpected address; " \
+			"echo Booting M4 from DRAM; " \
+			"dcache flush; " \
 		"fi; " \
 		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
@@ -156,12 +154,16 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"ramsize_check="\
 		"if test $sdram_size -le 512; then " \
-			"setenv cma_size cma=320MB; " \
+			"setenv cma_size cma=320M; " \
 		"else " \
 			"if test $sdram_size -le 1024; then " \
-				"setenv cma_size cma=640MB; " \
+				"setenv cma_size cma=640M; " \
 			"else " \
-				"setenv cma_size cma=960MB; " \
+				"if test ${use_m4} = yes; then " \
+					"setenv cma_size cma=928M@1088M; " \
+				"else " \
+					"setenv cma_size cma=960M@1088M; " \
+				"fi; " \
 			"fi; " \
 		"fi;\0" \
 	"findfdt=" \
