@@ -35,6 +35,7 @@ int board_phy_config(struct phy_device *phydev)
 
 #define CHAR_BIT 8
 
+#ifdef CONFIG_ARCH_IMX8
 static uint64_t mac2int(const uint8_t hwaddr[])
 {
 	int8_t i;
@@ -57,6 +58,7 @@ static void int2mac(const uint64_t mac, uint8_t *hwaddr)
 		*p++ = mac >> (CHAR_BIT * i);
 	}
 }
+#endif
 
 int var_setup_mac(struct var_eeprom *eeprom)
 {
