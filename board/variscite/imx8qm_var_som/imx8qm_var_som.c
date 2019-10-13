@@ -29,8 +29,6 @@
 #include <asm/arch/video_common.h>
 #include <power-domain.h>
 #include <cdns3-uboot.h>
-#include <miiphy.h>
-#include <splash.h>
 
 #include "../common/imx8_eeprom.h"
 
@@ -40,6 +38,8 @@ DECLARE_GLOBAL_DATA_PTR;
 						| (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT) | (SC_PAD_28FDSOI_PS_PU << PADRING_PULL_SHIFT))
 #define GPIO_PAD_CTRL	((SC_PAD_CONFIG_NORMAL << PADRING_CONFIG_SHIFT) | (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) \
 						| (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT) | (SC_PAD_28FDSOI_PS_PU << PADRING_PULL_SHIFT))
+
+extern int var_setup_mac(struct var_eeprom *eeprom);
 
 static iomux_cfg_t uart0_pads[] = {
 	SC_P_UART0_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -78,89 +78,6 @@ int board_early_init_f(void)
 
 	return 0;
 }
-
-#ifdef CONFIG_FEC_MXC
-#define AR803x_PHY_DEBUG_ADDR_REG	0x1d
-#define AR803x_PHY_DEBUG_DATA_REG	0x1e
-
-#define AR803x_DEBUG_REG_5		0x05
-#define AR803x_DEBUG_REG_0		0x00
-
-#define AR803x_DEBUG_REG_0		0x00
-#define AR803x_DEBUG_REG_31		0x1f
-#define AR803x_VDDIO_1P8V_EN		0x8
-
-int board_phy_config(struct phy_device *phydev)
-{
-	/* Disable RGMII RX clock delay (enabled by default) */
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
-		  AR803x_DEBUG_REG_0);
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG, 0);
-
-	/* Enable 1.8V VDDIO voltage */
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
-		  AR803x_DEBUG_REG_31);
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG,
-		AR803x_VDDIO_1P8V_EN);
-
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-
-	return 0;
-}
-
-#define CHAR_BIT 8
-
-static uint64_t mac2int(const uint8_t hwaddr[])
-{
-	int8_t i;
-	uint64_t ret = 0;
-	const uint8_t *p = hwaddr;
-
-	for (i = 5; i >= 0; i--) {
-		ret |= (uint64_t)*p++ << (CHAR_BIT * i);
-	}
-
-	return ret;
-}
-
-static void int2mac(const uint64_t mac, uint8_t *hwaddr)
-{
-	int8_t i;
-	uint8_t *p = hwaddr;
-
-	for (i = 5; i >= 0; i--) {
-		*p++ = mac >> (CHAR_BIT * i);
-	}
-}
-
-static int setup_mac(struct var_eeprom *eeprom)
-{
-	int ret;
-	uint64_t addr;
-	unsigned char enetaddr[6];
-	unsigned char enet1addr[6];
-
-	ret = eth_env_get_enetaddr("ethaddr", enetaddr);
-	if (ret)
-		return 0;
-
-	ret = var_eeprom_get_mac(eeprom, enetaddr);
-	if (ret)
-		return ret;
-
-	if (!is_valid_ethaddr(enetaddr))
-		return -1;
-
-	addr = mac2int(enetaddr);
-	int2mac(addr + 1, enet1addr);
-
-	eth_env_set_enetaddr("ethaddr", enetaddr);
-	eth_env_set_enetaddr("eth1addr", enet1addr);
-
-	return 0;
-}
-#endif /* CONFIG_FEC_MXC */
 
 enum {
 	SPEAR_MX8   =  1,
@@ -380,7 +297,7 @@ int board_late_init(void)
 	var_eeprom_read_header(&eeprom);
 
 #ifdef CONFIG_FEC_MXC
-	setup_mac(&eeprom);
+	var_setup_mac(&eeprom);
 #endif
 	var_eeprom_print_prod_info(&eeprom);
 
@@ -462,62 +379,3 @@ struct display_info_t const displays[] = {{
 size_t display_count = ARRAY_SIZE(displays);
 
 #endif /* CONFIG_VIDEO_IMXDPUV1 */
-
-#ifdef CONFIG_SPLASH_SCREEN
-
-static int check_env(char *var, char *val)
-{
-	char *env_val = env_get(var);
-
-	if ((env_val != NULL) &&
-		(strcmp(env_val, val) == 0)) {
-		return 1;
-	}
-
-	return 0;
-}
-
-static void splash_set_source(void)
-{
-	if (!check_env("splashsourceauto", "yes"))
-		return;
-
-	if (mmc_get_env_dev() == 0)
-		env_set("splashsource", "emmc");
-	else if (mmc_get_env_dev() == 1)
-		env_set("splashsource", "sd");
-}
-
-int splash_screen_prepare(void)
-{
-	char sd_devpart[5];
-	char emmc_devpart[5];
-	u32 sd_part, emmc_part;
-
-	sd_part = emmc_part = env_get_ulong("mmcpart", 10, 0);
-
-	sprintf(sd_devpart, "1:%d", sd_part);
-	sprintf(emmc_devpart, "0:%d", emmc_part);
-
-	struct splash_location splash_locations[] = {
-		{
-			.name = "sd",
-			.storage = SPLASH_STORAGE_MMC,
-			.flags = SPLASH_STORAGE_FS,
-			.devpart = sd_devpart,
-		},
-		{
-			.name = "emmc",
-			.storage = SPLASH_STORAGE_MMC,
-			.flags = SPLASH_STORAGE_FS,
-			.devpart = emmc_devpart,
-		}
-	};
-
-	splash_set_source();
-
-	return splash_source_load(splash_locations,
-			ARRAY_SIZE(splash_locations));
-
-}
-#endif /* CONFIG_SPLASH_SCREEN */
