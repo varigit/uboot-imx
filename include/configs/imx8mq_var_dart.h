@@ -11,6 +11,8 @@
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
 
+#include "imx_env.h"
+
 #ifdef CONFIG_SECURE_BOOT
 #define CONFIG_CSF_SIZE			0x2000 /* 8K region */
 #endif
@@ -95,8 +97,17 @@
 #define CONFIG_PHY_ATHEROS
 #endif
 
+/* UUU environment variables */
+#define CONFIG_MFG_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
+	"initrd_addr=0x43800000\0" \
+	"initrd_high=0xffffffffffffffff\0" \
+	"emmc_dev=0\0"\
+	"sd_dev=1\0" \
+
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
+	CONFIG_MFG_ENV_SETTINGS \
 	"bootdir=/boot\0"	\
 	"script=boot.scr\0" \
 	"image=Image.gz\0" \
@@ -107,8 +118,6 @@
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"fdt_file=undefined\0" \
-	"initrd_addr=0x43800000\0"		\
-	"initrd_high=0xffffffffffffffff\0" \
 	"video=HDMI-A-1:1920x1080-32@60\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcblk=1\0" \
