@@ -5,8 +5,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef __MX8M_VAR_DART_H
-#define __MX8M_VAR_DART_H
+#ifndef __IMX8MQ_VAR_DART_H
+#define __IMX8MQ_VAR_DART_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
@@ -36,11 +36,11 @@
 #define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_GPIO_SUPPORT
 #define CONFIG_SPL_MMC_SUPPORT
-#define CONFIG_SPL_BSS_START_ADDR      0x00180000
-#define CONFIG_SPL_BSS_MAX_SIZE        0x2000	/* 8 KB */
-#define CONFIG_SYS_SPL_MALLOC_START    0x42200000
-#define CONFIG_SYS_SPL_MALLOC_SIZE     0x80000	/* 512 KB */
-#define CONFIG_SYS_SPL_PTE_RAM_BASE    0x41580000
+#define CONFIG_SPL_BSS_START_ADDR	0x00180000
+#define CONFIG_SPL_BSS_MAX_SIZE		0x2000	/* 8 KB */
+#define CONFIG_SYS_SPL_MALLOC_START	0x42200000
+#define CONFIG_SYS_SPL_MALLOC_SIZE	0x80000	/* 512 KB */
+#define CONFIG_SYS_SPL_PTE_RAM_BASE	0x41580000
 #define CONFIG_SYS_ICACHE_OFF
 #define CONFIG_SYS_DCACHE_OFF
 
@@ -55,13 +55,8 @@
 #define CONFIG_POWER
 #define CONFIG_POWER_I2C
 #define CONFIG_POWER_PFUZE100
-#define CONFIG_POWER_PFUZE100_I2C_ADDR 0x08
+#define CONFIG_POWER_PFUZE100_I2C_ADDR	0x08
 #endif
-
-#define CONFIG_SYS_I2C
-#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
-#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
-#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
 
 #define CONFIG_REMAKE_ELF
 
@@ -86,10 +81,10 @@
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_MII
 #define CONFIG_MII
-#define CONFIG_ETHPRIME                 "FEC"
+#define CONFIG_ETHPRIME			"FEC"
 
 #define CONFIG_FEC_MXC
-#define CONFIG_FEC_XCV_TYPE             RGMII
+#define CONFIG_FEC_XCV_TYPE		RGMII
 #define FEC_QUIRK_ENET_MAC
 
 #define CONFIG_PHY_GIGE
@@ -137,8 +132,7 @@
 		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console} " \
-		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootfstype=ext4 rootwait rw " \
-		"video=${video} ${cma_size}\0" \
+		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw video=${video} ${cma_size}\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
@@ -232,28 +226,28 @@
 #define CONFIG_LOADADDR			0x40480000
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 
-#define CONFIG_SYS_INIT_RAM_ADDR        0x40000000
-#define CONFIG_SYS_INIT_RAM_SIZE        0x80000
+#define CONFIG_SYS_INIT_RAM_ADDR	0x40000000
+#define CONFIG_SYS_INIT_RAM_SIZE	0x80000
 #define CONFIG_SYS_INIT_SP_OFFSET \
         (CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_ADDR \
         (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 #define CONFIG_ENV_OVERWRITE
-#define CONFIG_ENV_OFFSET               (64 * SZ_64K)
+#define CONFIG_ENV_OFFSET		(64 * SZ_64K)
 #define CONFIG_ENV_SIZE			0x1000
 #define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
 
-#define CONFIG_SYS_SDRAM_BASE           0x40000000
-#define PHYS_SDRAM                      0x40000000
-#define DEFAULT_DRAM_SIZE_MB            512
-#define CONFIG_NR_DRAM_BANKS            1
+#define CONFIG_SYS_SDRAM_BASE		0x40000000
+#define PHYS_SDRAM			0x40000000
+#define DEFAULT_DRAM_SIZE_MB		512
+#define CONFIG_NR_DRAM_BANKS		1
 
 #define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
-#define CONFIG_SYS_MEMTEST_END 		(CONFIG_SYS_MEMTEST_START + (256 * SZ_1M))
+#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (256 * SZ_1M))
 
 #define CONFIG_BAUDRATE			115200
 
@@ -263,20 +257,21 @@
 /* Monitor Command Prompt */
 #undef CONFIG_SYS_PROMPT
 #define CONFIG_SYS_PROMPT		"u-boot=> "
-#define CONFIG_SYS_PROMPT_HUSH_PS2     "> "
-#define CONFIG_SYS_CBSIZE              2048
-#define CONFIG_SYS_MAXARGS             64
+#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
+#define CONFIG_SYS_CBSIZE		2048
+#define CONFIG_SYS_MAXARGS		64
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
 #define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
 					sizeof(CONFIG_SYS_PROMPT) + 16)
 #define CONFIG_IMX_BOOTAUX
 
+/* USDHC configs */
 #define CONFIG_CMD_MMC
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
 
 #define CONFIG_SYS_FSL_USDHC_NUM	2
-#define CONFIG_SYS_FSL_ESDHC_ADDR       0
+#define CONFIG_SYS_FSL_ESDHC_ADDR	0
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
 
@@ -285,8 +280,14 @@
 #define CONFIG_MXC_OCOTP
 #define CONFIG_CMD_FUSE
 
-/* I2C Configs */
-#define CONFIG_SYS_I2C_SPEED		  100000
+/* I2C configs */
+#ifndef CONFIG_DM_I2C
+#define CONFIG_SYS_I2C
+#endif
+#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
+#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
+#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
+#define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
 #ifndef CONFIG_SPL_BUILD
@@ -299,12 +300,12 @@
 #endif
 
 #define CONFIG_SERIAL_TAG
-#define CONFIG_FASTBOOT_USB_DEV 0
+#define CONFIG_FASTBOOT_USB_DEV		0
 
-#define CONFIG_USB_MAX_CONTROLLER_COUNT         2
+#define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 
 #define CONFIG_USBD_HS
-#define CONFIG_USB_GADGET_VBUS_DRAW 2
+#define CONFIG_USB_GADGET_VBUS_DRAW	2
 
 #define CONFIG_OF_SYSTEM_SETUP
 
