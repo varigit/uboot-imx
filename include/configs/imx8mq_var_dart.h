@@ -95,22 +95,8 @@
 #define CONFIG_PHY_ATHEROS
 #endif
 
-/*
- * Another approach is add the clocks for inmates into clks_init_on
- * in clk-imx8mq.c, then clk_ingore_unused could be removed.
- */
-#define JAILHOUSE_ENV \
-	"jh_clk= \0 " \
-	"jh_mmcboot=setenv fdt_file imx8m-var-dart-root.dtb; " \
-		"setenv jh_clk clk_ignore_unused; " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "else run jh_netboot; fi; \0" \
-	"jh_netboot=setenv fdt_file imx8m-var-dart-root.dtb; setenv jh_clk clk_ignore_unused; run netboot; \0 "
-
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
-	JAILHOUSE_ENV \
 	"bootdir=/boot\0"	\
 	"script=boot.scr\0" \
 	"image=Image.gz\0" \
@@ -333,7 +319,5 @@
 
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mq_var_dart_android.h"
-#elif defined (CONFIG_ANDROID_THINGS_SUPPORT)
-#include "imx8mq_var_dart_androidthings.h"
 #endif
 #endif
