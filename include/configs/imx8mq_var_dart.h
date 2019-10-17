@@ -113,7 +113,6 @@
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"fdt_file=undefined\0" \
-	"video=HDMI-A-1:1920x1080-32@60\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
@@ -132,7 +131,7 @@
 		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console} " \
-		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw video=${video} ${cma_size}\0" \
+		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size}\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
@@ -176,7 +175,7 @@
 			"echo wait for boot; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console} " \
-		"root=/dev/nfs video=${video} ${cma_size} " \
+		"root=/dev/nfs ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"if test ${ip_dyn} = yes; then " \
