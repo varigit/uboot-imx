@@ -184,7 +184,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 	if (!var_eeprom_is_valid(e))
 		return;
 
-#ifdef CONFIG_TARGET_IMX8M_VAR_DART
+#ifdef CONFIG_TARGET_IMX8MQ_VAR_DART
 	printf("\nPart number: VSM-DT8M-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
 #elif CONFIG_TARGET_IMX8MM_VAR_DART
 	printf("\nPart number: VSM-DT8MM-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
