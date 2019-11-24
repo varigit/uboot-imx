@@ -23,7 +23,11 @@ void lpddr4_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 	}
 }
 
+#ifndef CONFIG_IMX8M_DDR4
 void ddr_init(struct dram_timing_info *dram_timing)
+#else
+void ddr_init_lpddr4(struct dram_timing_info *dram_timing)
+#endif
 {
 	unsigned int tmp;
 
