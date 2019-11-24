@@ -22,8 +22,8 @@
 	compatible = "variscite,imx8mm-var-dart", "fsl,imx8mm";
 
 	chosen {
-		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
-		stdout-patch = &uart2;
+		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
+		stdout-patch = &uart1;
 	};
 
 	regulators {
@@ -104,10 +104,10 @@
 			>;
 		};
 
-		pinctrl_uart2: uart1grp {
+		pinctrl_uart1: uart1grp {
 			fsl,pins = <
-				MX8MM_IOMUXC_UART2_RXD_UART2_DCE_RX		0x49
-				MX8MM_IOMUXC_UART2_TXD_UART2_DCE_TX		0x49
+				MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX		0x140
+				MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX		0x140
 			>;
 		};
 
@@ -406,9 +406,9 @@
 	};
 };
 
-&uart2 { /* console */
+&uart1 { /* console */
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart2>;
+	pinctrl-0 = <&pinctrl_uart1>;
 	status = "okay";
 };
 
