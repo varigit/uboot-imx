@@ -31,6 +31,8 @@ struct dram_fsp_msg {
 };
 
 struct dram_timing_info {
+	/* ddrphy firmware offset */
+	unsigned int ddrphy_fw_offset;
 	/* umctl2 config */
 	struct dram_cfg_param *ddrc_cfg;
 	unsigned int ddrc_cfg_num;
@@ -54,7 +56,7 @@ extern struct dram_timing_info dram_timing;
 extern struct dram_cfg_param ddrphy_trained_csr[];
 extern unsigned int ddrphy_trained_csr_num;
 
-void ddr_load_train_firmware(enum fw_type type);
+void ddr_load_train_firmware(enum fw_type type, unsigned int);
 void ddr_init(struct dram_timing_info *timing_info);
 void ddr_cfg_phy(struct dram_timing_info *timing_info);
 void load_lpddr4_phy_pie(void);
