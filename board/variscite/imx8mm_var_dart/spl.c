@@ -26,13 +26,61 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+enum {
+	DART_MX8M_MINI,
+	VAR_SOM_MX8M_MINI,
+	UNKNOWN_BOARD,
+};
+
+extern void ddr_init_ddr4(struct dram_timing_info *dram_timing);
+extern void ddr_init_lpddr4(struct dram_timing_info *dram_timing);
+
+extern struct dram_timing_info dram_timing_ddr4, dram_timing_lpddr4;
+
+#define GPIO_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1 | PAD_CTL_PUE | PAD_CTL_PE)
+#define ID_GPIO 	IMX_GPIO_NR(2, 11)
+
+static iomux_v3_cfg_t const id_pads[] = {
+	IMX8MM_PAD_SD1_STROBE_GPIO2_IO11 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
+};
+
+static int get_board_id(void)
+{
+	static int board_id = UNKNOWN_BOARD;
+
+	if (board_id != UNKNOWN_BOARD)
+		return board_id;
+
+	imx_iomux_v3_setup_multiple_pads(id_pads, ARRAY_SIZE(id_pads));
+	gpio_request(ID_GPIO, "board_id");
+	gpio_direction_input(ID_GPIO);
+
+	board_id = gpio_get_value(ID_GPIO) ? DART_MX8M_MINI : VAR_SOM_MX8M_MINI;
+
+	return board_id;
+}
+
 void spl_dram_init(void)
 {
+	int id;
 	struct var_eeprom eeprom;
 
-	var_eeprom_read_header(&eeprom);
-	var_eeprom_adjust_dram(&eeprom, &dram_timing);
-	ddr_init(&dram_timing);
+	id = get_board_id();
+
+	if (id == DART_MX8M_MINI) {
+		var_eeprom_read_header(&eeprom);
+		var_eeprom_adjust_dram(&eeprom, &dram_timing_lpddr4);
+		ddr_init_lpddr4(&dram_timing_lpddr4);
+	}
+	else if (id == VAR_SOM_MX8M_MINI) {
+		var_eeprom_read_header(&eeprom);
+		var_eeprom_adjust_dram(&eeprom, &dram_timing_ddr4);
+		ddr_init_ddr4(&dram_timing_ddr4);
+	}
+	else {
+		printf("Undefined board ID\n");
+		return;
+	}
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
@@ -50,9 +98,10 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
-#define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 12)
-#define USDHC2_PWR_GPIO IMX_GPIO_NR(2, 19)
-#define USDHC3_PWR_GPIO IMX_GPIO_NR(3, 16)
+#define USDHC2_CD_GPIO		IMX_GPIO_NR(2, 12)
+#define USDHC2_PWR_GPIO_DART 	IMX_GPIO_NR(2, 19)
+#define USDHC2_PWR_GPIO_SOM 	IMX_GPIO_NR(4, 22)
+#define USDHC3_PWR_GPIO 	IMX_GPIO_NR(3, 16)
 
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE |PAD_CTL_PE | \
 			 PAD_CTL_FSEL2)
@@ -79,8 +128,16 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IMX8MM_PAD_SD2_DATA1_USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA2_USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA3_USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
 	IMX8MM_PAD_SD2_CD_B_GPIO2_IO12    | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
+	IMX8MM_PAD_GPIO1_IO04_USDHC2_VSELECT | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const usdhc2_pwr_pads_som[] = {
+	IMX8MM_PAD_SAI2_RXC_GPIO4_IO22 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const usdhc2_pwr_pads_dart[] = {
+	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
 };
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
@@ -91,6 +148,18 @@ static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 int board_mmc_init(bd_t *bis)
 {
 	int i, ret;
+	int usdhc2_pwr_gpio;
+	iomux_v3_cfg_t const *usdhc2_pwr_pads;
+
+	if (get_board_id() == DART_MX8M_MINI) {
+		usdhc2_pwr_gpio = USDHC2_PWR_GPIO_DART;
+		usdhc2_pwr_pads = usdhc2_pwr_pads_dart;
+	}
+	else {
+		usdhc2_pwr_gpio = USDHC2_PWR_GPIO_SOM;
+		usdhc2_pwr_pads = usdhc2_pwr_pads_som;
+	}
+
 	/*
 	 * According to the board_mmc_init() the following map is done:
 	 * (U-Boot device node)    (Physical Port)
@@ -103,10 +172,12 @@ int board_mmc_init(bd_t *bis)
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-			gpio_request(USDHC2_PWR_GPIO, "usdhc2_reset");
-			gpio_direction_output(USDHC2_PWR_GPIO, 0);
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc2_pwr_pads, ARRAY_SIZE(usdhc2_pwr_pads));
+			gpio_request(usdhc2_pwr_gpio, "usdhc2_reset");
+			gpio_direction_output(usdhc2_pwr_gpio, 0);
 			mdelay(10);
-			gpio_direction_output(USDHC2_PWR_GPIO, 1);
+			gpio_direction_output(usdhc2_pwr_gpio, 1);
 			break;
 		case 1:
 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
@@ -176,6 +247,10 @@ int power_init_board(void)
 	/* increase VDD_DRAM to 0.975v for 3Ghz DDR */
 	pmic_reg_write(p, BD71837_BUCK5_VOLT, 0x83);
 
+	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
+	if (get_board_id() == VAR_SOM_MX8M_MINI)
+		pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
+
 	/* lock the PMIC regs */
 	pmic_reg_write(p, BD71837_REGLOCK, 0x11);
 
@@ -198,8 +273,14 @@ void spl_board_init(void)
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
 {
-	/* Just empty function now - can't decide what to choose */
-	debug("%s: %s\n", __func__, name);
+	int id = get_board_id();
+
+	if ((id == DART_MX8M_MINI) && !strcmp(name, "fsl-imx8mm-var-dart"))
+		return 0;
+	else if ((id == VAR_SOM_MX8M_MINI) && !strcmp(name, "fsl-imx8mm-var-som"))
+		return 0;
+	else
+		return -1;
 
 	return 0;
 }
@@ -208,24 +289,38 @@ int board_fit_config_name_match(const char *name)
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 
-static iomux_v3_cfg_t const uart_pads[] = {
+static iomux_v3_cfg_t const uart1_pads[] = {
 	IMX8MM_PAD_UART1_RXD_UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MM_PAD_UART1_TXD_UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const uart4_pads[] = {
+	IMX8MM_PAD_UART4_RXD_UART4_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	IMX8MM_PAD_UART4_TXD_UART4_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
+extern struct mxc_uart *mxc_base;
+
 int board_early_init_f(void)
 {
+	int id;
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
 	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
 
 	set_wdog_reset(wdog);
 
-	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+	id = get_board_id();
+	if (id == DART_MX8M_MINI)
+		imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+	else if (id == VAR_SOM_MX8M_MINI) {
+		mxc_base = (struct mxc_uart *)UART4_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart4_pads, ARRAY_SIZE(uart4_pads));
+	}
 
 	return 0;
 }

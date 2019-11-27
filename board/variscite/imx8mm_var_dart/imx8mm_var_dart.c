@@ -15,6 +15,7 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/arch/clock.h>
 #include <usb.h>
+#include <dm.h>
 
 #include "../common/imx8_eeprom.h"
 
@@ -22,8 +23,66 @@ DECLARE_GLOBAL_DATA_PTR;
 
 extern int var_setup_mac(struct var_eeprom *eeprom);
 
+#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+#define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
+
+static iomux_v3_cfg_t const uart1_pads[] = {
+	IMX8MM_PAD_UART1_RXD_UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	IMX8MM_PAD_UART1_TXD_UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const uart4_pads[] = {
+	IMX8MM_PAD_UART4_RXD_UART4_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	IMX8MM_PAD_UART4_TXD_UART4_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const wdog_pads[] = {
+	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+};
+
+extern struct mxc_uart *mxc_base;
+
+enum {
+	DART_MX8M_MINI,
+	VAR_SOM_MX8M_MINI,
+	UNKNOWN_BOARD,
+};
+
+static int get_board_id(void)
+{
+	static int board_id = UNKNOWN_BOARD;
+
+	if (board_id != UNKNOWN_BOARD)
+		return board_id;
+
+	if (of_machine_is_compatible("variscite,imx8mm-var-som"))
+		board_id = VAR_SOM_MX8M_MINI;
+	else if (of_machine_is_compatible("variscite,imx8mm-var-dart"))
+		board_id = DART_MX8M_MINI;
+	else
+		board_id = UNKNOWN_BOARD;
+
+	return board_id;
+}
+
 int board_early_init_f(void)
 {
+	int id;
+	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
+
+	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
+
+	set_wdog_reset(wdog);
+
+	id = get_board_id();
+
+	if (id == DART_MX8M_MINI)
+		imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+	else if (id == VAR_SOM_MX8M_MINI) {
+		mxc_base = (struct mxc_uart *)UART4_BASE_ADDR;
+		imx_iomux_v3_setup_multiple_pads(uart4_pads, ARRAY_SIZE(uart4_pads));
+	}
+
 	return 0;
 }
 
@@ -136,6 +195,7 @@ int board_late_init(void)
 {
 	struct var_eeprom eeprom;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
+	int id = get_board_id();
 
 	var_eeprom_read_header(&eeprom);
 
@@ -146,6 +206,13 @@ int board_late_init(void)
 
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int) (gd->ram_size / 1024 / 1024));
 	env_set("sdram_size", sdram_size_str);
+
+	if (id == VAR_SOM_MX8M_MINI) {
+		env_set("board_name", "VAR-SOM-MX8M-MINI");
+		env_set("console", "ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200");
+	}
+	else if (id == DART_MX8M_MINI)
+		env_set("board_name", "DART-MX8M-MINI");
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();

@@ -110,7 +110,7 @@
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"fdt_file=undefined\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
@@ -135,7 +135,17 @@
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
-	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
+	"findfdt=" \
+		"if test $fdt_file = undefined; then " \
+			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
+				"setenv fdt_file fsl-imx8mm-var-som.dtb; " \
+			"else " \
+				"setenv fdt_file fsl-imx8mm-var-dart.dtb;" \
+			"fi; " \
+		"fi; \0" \
+	"loadfdt=run findfdt; " \
+		"echo fdt_file=${fdt_file}; " \
+		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"ramsize_check="\
 		"if test $sdram_size -le 512; then " \
 			"setenv cma_size cma=320M; " \

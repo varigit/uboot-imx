@@ -468,7 +468,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += fsl-imx8mq-evk.dtb \
 		fsl-imx8mm-ddr3l-val.dtb \
 		fsl-imx8mm-ddr4-evk.dtb \
 		fsl-imx8mm-ddr4-val.dtb \
-		fsl-imx8mm-evk.dtb
+		fsl-imx8mm-evk.dtb \
+		fsl-imx8mm-var-dart.dtb \
+		fsl-imx8mm-var-som.dtb
 
 dtb-$(CONFIG_ARCH_IMX8) += fsl-imx8dx-17x17-val.dtb \
 		fsl-imx8qm-ddr4-arm2.dtb \
