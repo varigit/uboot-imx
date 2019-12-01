@@ -179,6 +179,7 @@ int var_eeprom_get_dram_size(struct var_eeprom *e, u32 *size)
 	return 0;
 }
 
+#ifndef CONFIG_SPL_BUILD
 void var_eeprom_print_prod_info(struct var_eeprom *e)
 {
 	if (!var_eeprom_is_valid(e))
@@ -191,7 +192,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 #elif CONFIG_TARGET_IMX8QXP_VAR_SOM
 	printf("\nPart number: VSM-MX8X-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
 #elif CONFIG_TARGET_IMX8QM_VAR_SOM
-	if (e->somrev & 0x40)
+	if (of_machine_is_compatible("variscite,imx8qm-var-spear"))
 		printf("\nPart number: VSM-SP8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
 	else
 		printf("\nPart number: VSM-MX8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
@@ -216,6 +217,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 	else
 		debug("DRAM size: %d GiB\n\n", (e->dramsize * 128) / 1024);
 }
+#endif
 
 #if defined(CONFIG_ARCH_IMX8M) && defined(CONFIG_SPL_BUILD)
 /*
