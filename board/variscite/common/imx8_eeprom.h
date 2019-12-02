@@ -36,7 +36,9 @@ struct __attribute__((packed)) var_eeprom
 	u8 version;               /* 31-0x1f - EEPROM version     */
 	u8 features;              /* 32-0x20 - SOM features       */
 	u8 dramsize;              /* 33-0x21 - DRAM size          */
-        u8 off[DRAM_TABLE_NUM+1]; /* 34-0x22 - DRAM table offsets */
+	u8 off[DRAM_TABLE_NUM+1]; /* 34-0x22 - DRAM table offsets */
+	u8 partnum2[5];           /* 42-0x2a - part number        */
+	u8 reserved[3];           /* 47 0x2f - reserved           */
 };
 
 static inline int var_eeprom_is_valid(struct var_eeprom *e)

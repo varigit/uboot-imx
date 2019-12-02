@@ -182,24 +182,33 @@ int var_eeprom_get_dram_size(struct var_eeprom *e, u32 *size)
 #ifndef CONFIG_SPL_BUILD
 void var_eeprom_print_prod_info(struct var_eeprom *e)
 {
+	u8 partnum[8] = {0};
+
 	if (!var_eeprom_is_valid(e))
 		return;
 
+	memcpy(partnum, e->partnum, sizeof(e->partnum));
+
+	/* Read second part of P/N  */
+	if (e->version >= 3)
+		memcpy(partnum + sizeof(e->partnum), e->partnum2, sizeof(e->partnum2));
+
 #ifdef CONFIG_TARGET_IMX8MQ_VAR_DART
-	printf("\nPart number: VSM-DT8M-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+	printf("\nPart number: VSM-DT8M-%.*s\n", (int)sizeof(partnum), partnum);
 #elif CONFIG_TARGET_IMX8MM_VAR_DART
 	if (of_machine_is_compatible("variscite,imx8mm-var-dart"))
-		printf("\nPart number: VSM-DT8MM-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+		printf("\nPart number: VSM-DT8MM-%.*s\n", (int)sizeof(partnum), partnum);
 	else
-		printf("\nPart number: VSM-VS8MM-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+		printf("\nPart number: VSM-VS8MM-%.*s\n", (int)sizeof(partnum), partnum);
 #elif CONFIG_TARGET_IMX8QXP_VAR_SOM
-	printf("\nPart number: VSM-MX8X-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+	printf("\nPart number: VSM-MX8X-%.*s\n", (int)sizeof(partnum), partnum);
 #elif CONFIG_TARGET_IMX8QM_VAR_SOM
 	if (of_machine_is_compatible("variscite,imx8qm-var-spear"))
-		printf("\nPart number: VSM-SP8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+		printf("\nPart number: VSM-SP8-%.*s\n", (int)sizeof(partnum), partnum);
 	else
-		printf("\nPart number: VSM-MX8-%.*s\n", (int)sizeof(e->partnum), (char *)e->partnum);
+		printf("\nPart number: VSM-MX8-%.*s\n", (int)sizeof(partnum), partnum);
 #endif
+
 	printf("Assembly: AS%.*s\n", (int)sizeof(e->assembly), (char *)e->assembly);
 
 	printf("Production date: %.*s %.*s %.*s\n",
