@@ -178,6 +178,8 @@
 		"run netargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+			"run findfdt; " \
+			"echo fdt_file=${fdt_file}; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
 			"else " \
