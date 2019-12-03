@@ -668,7 +668,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 	struct usb_platdata *plat = dev_get_platdata(dev);
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
 	const char *mode;
-	const struct fdt_property *extcon;
+	const struct fdt_property *extcon = NULL;
 
 	mode = fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "dr_mode", NULL);
 	if (mode) {
@@ -689,7 +689,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 			priv->init_type = USB_INIT_UNKNOWN;
 	}
 
-	if (priv->init_type != USB_INIT_UNKNOWN && priv->init_type != plat->init_type) {
+	if (priv->init_type != USB_INIT_UNKNOWN && !extcon && priv->init_type != plat->init_type) {
 		debug("Request USB type is %u, board forced type is %u\n",
 			plat->init_type, priv->init_type);
 		return -ENODEV;
