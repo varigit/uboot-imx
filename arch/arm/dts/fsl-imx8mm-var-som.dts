@@ -49,6 +49,15 @@
 			regulator-max-microvolt = <3300000>;
 			gpio = <&gpio2 9 GPIO_ACTIVE_HIGH>;
 		};
+
+                reg_usb_otg2_vbus: regulator-usb-otg2-vbus {
+			compatible = "regulator-fixed";
+			regulator-name = "usb_otg2_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+		};
 	};
 };
 
@@ -210,6 +219,12 @@
 		pinctrl_typec: typecgrp {
 			fsl,pins = <
 				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x16
+			>;
+		};
+
+		pinctrl_usbotg2: usbotg2grp {
+			fsl,pins = <
+				MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1			0x16
 			>;
 		};
 	};
@@ -465,5 +480,8 @@
 
 &usbotg2 {
 	dr_mode = "host";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg2>;
+	vbus-supply = <&reg_usb_otg2_vbus>;
 	status = "okay";
 };
