@@ -61,6 +61,8 @@
 	"splashpos=m,m\0"	  \
 	"fdt_high=0xffffffffffffffff\0"	  \
 	"initrd_high=0xffffffffffffffff\0" \
+	"hdp_file=hdmitxfw.bin\0" \
+	"hdprx_file=hdmirxfw.bin\0" \
 	"panel=NULL\0" \
 	"bootargs=" \
 		"console=ttyLP0,115200 " \

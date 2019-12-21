@@ -318,6 +318,32 @@ int board_late_init(void)
 	board_late_mmc_env_init();
 #endif
 
+#ifdef IMX_LOAD_HDMI_FIMRWARE
+	char command[256];
+	char fw_folder[] = "firmware/hdp";
+	char *hdp_file = env_get("hdp_file");
+	char *hdprx_file = env_get("hdprx_file");
+	u32 dev_no = mmc_get_env_dev();
+	u32 part_no = 10;
+
+	sprintf(command, "load mmc %x:%x 0x%x %s/%s", dev_no, part_no,
+			 IMX_HDMI_FIRMWARE_LOAD_ADDR,
+			 fw_folder, hdp_file);
+	run_command(command, 0);
+
+	sprintf(command, "hdp load 0x%x", IMX_HDMI_FIRMWARE_LOAD_ADDR);
+	run_command(command, 0);
+
+	sprintf(command, "load mmc %x:%x 0x%x %s/%s", dev_no, part_no,
+			 IMX_HDMI_FIRMWARE_LOAD_ADDR + IMX_HDMITX_FIRMWARE_SIZE,
+			 fw_folder, hdprx_file);
+	run_command(command, 0);
+
+	sprintf(command, "hdprx load 0x%x",
+			IMX_HDMI_FIRMWARE_LOAD_ADDR + IMX_HDMITX_FIRMWARE_SIZE);
+	run_command(command, 0);
+#endif
+
 	return 0;
 }
 
