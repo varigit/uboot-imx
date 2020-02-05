@@ -37,6 +37,9 @@ static ulong eqos_get_tick_clk_rate_imx(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
 
+	if (device_is_compatible(dev, "nxp,imx8dxl-dwmac-eqos"))
+		return clk_get_rate(&eqos->clk_ck);
+
 	return clk_get_rate(&eqos->clk_master_bus);
 }
 
@@ -166,7 +169,8 @@ static int eqos_set_tx_clk_speed_imx(struct udevice *dev)
 	ulong rate;
 	int ret;
 
-	if (device_is_compatible(dev, "nxp,imx93-dwmac-eqos"))
+	if (device_is_compatible(dev, "nxp,imx93-dwmac-eqos") ||
+	    device_is_compatible(dev, "nxp,imx8dxl-dwmac-eqos"))
 		return 0;
 
 	debug("%s(dev=%p):\n", __func__, dev);
