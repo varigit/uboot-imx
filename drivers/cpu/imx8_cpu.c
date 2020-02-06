@@ -37,6 +37,8 @@ static const char *get_imx_type_str(u32 imxtype)
 		return "8QXP";
 	case MXC_CPU_IMX8QM:
 		return "8QM";
+	case MXC_CPU_IMX8DXL:
+		return "8DXL";
 	case MXC_CPU_IMX93:
 		return "93(52)";/* iMX93 Dual core with NPU */
 	case MXC_CPU_IMX9351:
