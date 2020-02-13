@@ -17,10 +17,18 @@
 #define VAR_EEPROM_F_ETH 	(1 << 1)
 #define VAR_EEPROM_F_AUDIO 	(1 << 2)
 #define VAR_EEPROM_F_LVDS	(1 << 3)
+#define VAR_EEPROM_F_NAND	(1 << 4)
 
 /* SOM revision numbers */
 #define SOM_REV_1_1		0
 #define SOM_REV_1_2		1
+
+/* SOM storage types */
+enum som_storage {
+	SOM_STORAGE_EMMC,
+	SOM_STORAGE_NAND,
+	SOM_STORAGE_UNDEFINED,
+};
 
 /* Number of DRAM adjustment tables */
 #define DRAM_TABLE_NUM 7
@@ -56,6 +64,7 @@ extern int var_eeprom_read_header(struct var_eeprom *e);
 extern int var_scu_eeprom_read_header(struct var_eeprom *e);
 extern int var_eeprom_get_dram_size(struct var_eeprom *e, u32 *size);
 extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
+extern int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
 extern void var_eeprom_print_prod_info(struct var_eeprom *e);
 
 #if defined(CONFIG_SPL_BUILD) && defined(CONFIG_ARCH_IMX8M)

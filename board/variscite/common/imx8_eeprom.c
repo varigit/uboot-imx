@@ -179,6 +179,19 @@ int var_eeprom_get_dram_size(struct var_eeprom *e, u32 *size)
 	return 0;
 }
 
+int var_eeprom_get_storage(struct var_eeprom *e, int *storage)
+{
+	if (!var_eeprom_is_valid(e))
+		return -1;
+
+	if (e->features & VAR_EEPROM_F_NAND)
+		*storage = SOM_STORAGE_NAND;
+	else
+		*storage = SOM_STORAGE_EMMC;
+
+	return 0;
+}
+
 #ifndef CONFIG_SPL_BUILD
 void var_eeprom_print_prod_info(struct var_eeprom *e)
 {
