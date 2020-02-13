@@ -455,6 +455,7 @@
 #define	IMX8MN_CLK_GPT_3M                       443
 #define	IMX8MN_CLK_ARM                          444
 #define	IMX8MN_CLK_PDM_IPG			445
+#define	IMX8MN_CLK_NAND_USDHC_BUS_RAWNAND_CLK	446
 
-#define	IMX8MN_CLK_END				446
+#define	IMX8MN_CLK_END				447
 #endif
