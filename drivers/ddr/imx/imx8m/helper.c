@@ -74,7 +74,7 @@ void ddr_load_train_firmware(enum fw_type type)
 		i += 4;
 	}
 	if (error)
-		printf("check ddr_pmu_train_imem code fail=%d\n", error);
+		debug("check ddr_pmu_train_imem code fail=%d\n", error);
 	else
 		debug("check ddr_pmu_train_imem code pass\n");
 
@@ -95,7 +95,7 @@ void ddr_load_train_firmware(enum fw_type type)
 	}
 
 	if (error)
-		printf("check ddr_pmu_train_dmem code fail=%d", error);
+		debug("check ddr_pmu_train_dmem code fail=%d", error);
 	else
 		debug("check ddr_pmu_train_dmem code pass\n");
 }
