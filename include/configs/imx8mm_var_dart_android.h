@@ -50,10 +50,7 @@
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
 	"bootargs=" \
-		"console=ttymxc0,115200 " \
-		"earlycon=ec_imx6q,0x30860000,115200 " \
 		"init=/init " \
-		"androidboot.console=ttymxc0 " \
 		"consoleblank=0 " \
 		"androidboot.hardware=freescale " \
 		"cma=800M " \
