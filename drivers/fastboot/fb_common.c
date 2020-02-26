@@ -205,6 +205,9 @@ void fastboot_handle_boot(int command, bool success)
 	case FASTBOOT_COMMAND_REBOOT_BOOTLOADER:
 	case FASTBOOT_COMMAND_REBOOT_FASTBOOTD:
 	case FASTBOOT_COMMAND_REBOOT_RECOVERY:
+#ifdef CONFIG_ANDROID_RECOVERY
+	case FASTBOOT_COMMAND_RECOVERY_FASTBOOT:
+#endif
 		do_reset(NULL, 0, 0, NULL);
 		break;
 	}
