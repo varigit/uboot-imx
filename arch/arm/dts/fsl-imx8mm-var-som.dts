@@ -23,7 +23,7 @@
 
 	chosen {
 		bootargs = "console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200";
-		stdout-patch = &uart4;
+		stdout-path = &uart4;
 	};
 
 	regulators {
@@ -64,7 +64,7 @@
 &iomuxc {
 	pinctrl-names = "default";
 
-	imx8mm-var-dart {
+	imx8mm-var-som {
 		pinctrl_fec1: fec1grp {
 			fsl,pins = <
 				MX8MM_IOMUXC_ENET_MDC_ENET1_MDC			0x3
@@ -123,6 +123,7 @@
 		pinctrl_usdhc2_gpio: usdhc2grpgpio {
 			fsl,pins = <
 				MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x41
+				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x41
 			>;
 		};
 
@@ -213,12 +214,6 @@
 		pinctrl_wdog: wdoggrp {
 			fsl,pins = <
 				MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
-			>;
-		};
-
-		pinctrl_typec: typecgrp {
-			fsl,pins = <
-				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x16
 			>;
 		};
 
@@ -390,16 +385,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c2>;
 	status = "okay";
-
-	/* USB-C controller */
-	typec_ptn5150: typec@3d {
-		status = "okay";
-		compatible = "nxp,ptn5150";
-		reg = <0x3d>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_typec>;
-		connect-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
-	};
 };
 
 &i2c3 {
@@ -447,7 +432,7 @@
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
 	bus-width = <4>;
-	non-removable;
+	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
 	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";
 };
@@ -474,7 +459,6 @@
 };
 
 &usbotg1 {
-	extcon = <&typec_ptn5150>;
 	status = "okay";
 };
 
