@@ -1441,6 +1441,7 @@ static int get_owned_memreg(sc_rm_mr_t mr, sc_faddr_t *addr_start, sc_faddr_t *a
 	return -EINVAL;
 }
 
+#ifndef CONFIG_IMX8_BOARD_INIT_DRAM
 phys_size_t get_effective_memsize(void)
 {
 	sc_rm_mr_t mr;
@@ -1622,6 +1623,10 @@ static u64 get_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end)
 
 	return (addr_end - addr_start + 1);
 }
+#else
+extern u64 get_block_attrs(sc_faddr_t addr_start);
+extern u64 get_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end);
+#endif
 
 #define MAX_PTE_ENTRIES 512
 #define MAX_MEM_MAP_REGIONS 16
