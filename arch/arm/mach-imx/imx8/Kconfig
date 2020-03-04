@@ -104,6 +104,7 @@ config TARGET_IMX8QXP_VAR_SOM
 	select BOARD_LATE_INIT
 	select SUPPORT_SPL
 	select IMX8QXP
+	select IMX8_BOARD_INIT_DRAM
 
 endchoice
 
