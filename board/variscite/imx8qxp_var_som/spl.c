@@ -43,8 +43,9 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_FSL_ESDHC
 
-#define USDHC1_CD_GPIO	IMX_GPIO_NR(4, 22)
-#define USDHC1_PWR_GPIO	IMX_GPIO_NR(1, 7)
+#define USDHC1_CD_GPIO		IMX_GPIO_NR(4, 22)
+#define USDHC1_PWR_GPIO		IMX_GPIO_NR(1, 7)
+#define USDHC1_ROUTE_GPIO	IMX_GPIO_NR(3, 9)
 
 static struct fsl_esdhc_cfg usdhc_cfg[CONFIG_SYS_FSL_USDHC_NUM] = {
 	{USDHC1_BASE_ADDR, 0, 8},
@@ -74,6 +75,7 @@ static iomux_cfg_t usdhc1_sd[] = {
 	SC_P_USDHC1_DATA3 | MUX_PAD_CTRL(ESDHC_PAD_CTRL),
 	SC_P_USDHC1_CD_B  | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL), /* Mux for CD,  GPIO4 IO22 */
 	SC_P_SPI0_CS1 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),     /* Mux for PWR, GPIO1 IO07 */
+	SC_P_QSPI0A_DATA0 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL), /* Mux for SDIO Route, GPIO3 IO09 */
 	SC_P_USDHC1_VSELECT | MUX_PAD_CTRL(ESDHC_PAD_CTRL),
 };
 
@@ -117,9 +119,14 @@ int board_mmc_init(bd_t *bis)
 			ret = sc_pm_set_resource_power_mode(ipcHndl, SC_R_GPIO_1, SC_PM_PW_MODE_ON);
 			if (ret != SC_ERR_NONE)
 				return ret;
+			ret = sc_pm_set_resource_power_mode(ipcHndl, SC_R_GPIO_3, SC_PM_PW_MODE_ON);
+			if (ret != SC_ERR_NONE)
+				return ret;
 			imx8_iomux_setup_multiple_pads(usdhc1_sd, ARRAY_SIZE(usdhc1_sd));
 			init_clk_usdhc(1);
 			usdhc_cfg[i].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+			gpio_request(USDHC1_ROUTE_GPIO, "sd1_route");
+			gpio_direction_output(USDHC1_ROUTE_GPIO, 0);
 			gpio_request(USDHC1_CD_GPIO, "sd1_cd");
 			gpio_direction_input(USDHC1_CD_GPIO);
 			gpio_request(USDHC1_PWR_GPIO, "sd1_pwr");
@@ -159,7 +166,6 @@ int board_mmc_getcd(struct mmc *mmc)
 
 	return ret;
 }
-
 #endif
 
 void spl_board_init(void)
