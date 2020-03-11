@@ -32,6 +32,12 @@ enum {
 	UNKNOWN_BOARD,
 };
 
+enum {
+	SOM_REV10,
+	SOM_REV11,
+	UNKNOWN_REV,
+};
+
 extern struct dram_timing_info dram_timing_ddr4, dram_timing_lpddr4;
 
 #define GPIO_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1 | PAD_CTL_PUE | PAD_CTL_PE)
@@ -57,10 +63,32 @@ static int get_board_id(void)
 	return board_id;
 }
 
+static int get_som_rev(void)
+{
+	struct var_eeprom eeprom = {0};
+	static int som_rev = UNKNOWN_REV;
+
+	if (som_rev != UNKNOWN_REV)
+		return som_rev;
+
+	var_eeprom_read_header(&eeprom);
+
+	if (!var_eeprom_is_valid(&eeprom)) {
+		printf("No SOM rev info in EEPROM, assuming REV1.1+\n");
+		som_rev = SOM_REV11;
+	}
+	else if (eeprom.somrev == 0)
+		som_rev = SOM_REV10;
+	else
+		som_rev = SOM_REV11;
+
+	return som_rev;
+}
+
 void spl_dram_init(void)
 {
 	int id;
-	struct var_eeprom eeprom;
+	struct var_eeprom eeprom = {0};
 
 	id = get_board_id();
 
@@ -95,10 +123,11 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
-#define USDHC2_CD_GPIO		IMX_GPIO_NR(2, 12)
-#define USDHC2_PWR_GPIO_DART 	IMX_GPIO_NR(2, 19)
-#define USDHC2_PWR_GPIO_SOM 	IMX_GPIO_NR(4, 22)
-#define USDHC3_PWR_GPIO 	IMX_GPIO_NR(3, 16)
+#define USDHC2_CD_GPIO			IMX_GPIO_NR(2, 12)
+#define USDHC2_CD_GPIO_SOM_REV11	IMX_GPIO_NR(1, 10)
+#define USDHC2_PWR_GPIO_DART 		IMX_GPIO_NR(2, 19)
+#define USDHC2_PWR_GPIO_SOM 		IMX_GPIO_NR(4, 22)
+#define USDHC3_PWR_GPIO 		IMX_GPIO_NR(3, 16)
 
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE |PAD_CTL_PE | \
 			 PAD_CTL_FSEL2)
@@ -125,7 +154,6 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IMX8MM_PAD_SD2_DATA1_USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA2_USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MM_PAD_SD2_DATA3_USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	IMX8MM_PAD_SD2_CD_B_GPIO2_IO12    | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
 	IMX8MM_PAD_GPIO1_IO04_USDHC2_VSELECT | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
@@ -135,6 +163,14 @@ static iomux_v3_cfg_t const usdhc2_pwr_pads_som[] = {
 
 static iomux_v3_cfg_t const usdhc2_pwr_pads_dart[] = {
 	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const usdhc2_cd_pads_dart[] = {
+	IMX8MM_PAD_SD2_CD_B_GPIO2_IO12 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const usdhc2_cd_pads_som_rev11[] = {
+	IMX8MM_PAD_GPIO1_IO10_GPIO1_IO10 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
 };
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
@@ -147,14 +183,21 @@ int board_mmc_init(bd_t *bis)
 	int i, ret;
 	int usdhc2_pwr_gpio;
 	iomux_v3_cfg_t const *usdhc2_pwr_pads;
+	iomux_v3_cfg_t const *usdhc2_cd_pads;
 
 	if (get_board_id() == DART_MX8M_MINI) {
 		usdhc2_pwr_gpio = USDHC2_PWR_GPIO_DART;
 		usdhc2_pwr_pads = usdhc2_pwr_pads_dart;
+		usdhc2_cd_pads = usdhc2_cd_pads_dart;
 	}
 	else {
 		usdhc2_pwr_gpio = USDHC2_PWR_GPIO_SOM;
 		usdhc2_pwr_pads = usdhc2_pwr_pads_som;
+
+		if (get_som_rev() == SOM_REV11)
+			usdhc2_cd_pads = usdhc2_cd_pads_som_rev11;
+		else
+			usdhc2_cd_pads = usdhc2_cd_pads_dart;
 	}
 
 	/*
@@ -172,6 +215,8 @@ int board_mmc_init(bd_t *bis)
 				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc2_pwr_pads, ARRAY_SIZE(usdhc2_pwr_pads));
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc2_cd_pads, ARRAY_SIZE(usdhc2_cd_pads));
 			gpio_request(usdhc2_pwr_gpio, "usdhc2_reset");
 			gpio_direction_output(usdhc2_pwr_gpio, 0);
 			mdelay(10);
@@ -204,16 +249,23 @@ int board_mmc_init(bd_t *bis)
 int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-	int ret = 0;
+	int usdhc2_cd_gpio, ret = 0;
 
 	switch (cfg->esdhc_base) {
 	case USDHC3_BASE_ADDR:
 		ret = 1;
 		break;
 	case USDHC2_BASE_ADDR:
-		gpio_request(USDHC2_CD_GPIO, "usdhc2 cd");
-		gpio_direction_input(USDHC2_CD_GPIO);
-		ret = !gpio_get_value(USDHC2_CD_GPIO);
+		if (get_board_id() == DART_MX8M_MINI)
+			usdhc2_cd_gpio = USDHC2_CD_GPIO;
+		else if (get_som_rev() == SOM_REV11)
+			usdhc2_cd_gpio = USDHC2_CD_GPIO_SOM_REV11;
+		else
+			usdhc2_cd_gpio = USDHC2_CD_GPIO;
+
+		gpio_request(usdhc2_cd_gpio, "usdhc2 cd");
+		gpio_direction_input(usdhc2_cd_gpio);
+		ret = !gpio_get_value(usdhc2_cd_gpio);
 		return ret;
 	}
 
@@ -276,12 +328,18 @@ int board_fit_config_name_match(const char *name)
 
 	if ((id == DART_MX8M_MINI) && !strcmp(name, "fsl-imx8mm-var-dart"))
 		return 0;
-	else if ((id == VAR_SOM_MX8M_MINI) && !strcmp(name, "fsl-imx8mm-var-som"))
-		return 0;
+	else if (id == VAR_SOM_MX8M_MINI) {
+		int rev = get_som_rev();
+
+		if ((rev == SOM_REV11) && !strcmp(name, "fsl-imx8mm-var-som"))
+			return 0;
+		else if ((rev == SOM_REV10) && !strcmp(name, "fsl-imx8mm-var-som-rev10"))
+			return 0;
+		else
+			return -1;
+	}
 	else
 		return -1;
-
-	return 0;
 }
 #endif
 

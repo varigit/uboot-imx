@@ -48,6 +48,12 @@ enum {
 	UNKNOWN_BOARD,
 };
 
+enum {
+	SOM_REV10,
+	SOM_REV11,
+	UNKNOWN_REV,
+};
+
 static int get_board_id(void)
 {
 	static int board_id = UNKNOWN_BOARD;
@@ -63,6 +69,26 @@ static int get_board_id(void)
 		board_id = UNKNOWN_BOARD;
 
 	return board_id;
+}
+
+static int get_som_rev(void)
+{
+	struct var_eeprom eeprom = {0};
+	static int som_rev = UNKNOWN_REV;
+
+	if (som_rev != UNKNOWN_REV)
+		return som_rev;
+
+	var_eeprom_read_header(&eeprom);
+
+	if (!var_eeprom_is_valid(&eeprom))
+		som_rev = SOM_REV10;
+	else if (eeprom.somrev == 0)
+		som_rev = SOM_REV10;
+	else
+		som_rev = SOM_REV11;
+
+	return som_rev;
 }
 
 int board_early_init_f(void)
@@ -178,7 +204,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return 0;
 }
 
-/* Used only on VAR-SOM-MX8M-MINI */
+/* Used only on VAR-SOM-MX8M-MINI Rev1.0 (with extcon) */
 int board_ehci_usb_phy_mode(struct udevice *dev)
 {
 	if (dev->seq == 1)
@@ -190,7 +216,8 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
 
 static void setup_usb(void)
 {
-	if (get_board_id() == VAR_SOM_MX8M_MINI) {
+	if ((get_board_id() == VAR_SOM_MX8M_MINI) &&
+	    (get_som_rev() == SOM_REV10)) {
 		imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
 		gpio_request(USB_OTG1_ID_GPIO, "usb_otg1_id");
 		gpio_direction_input(USB_OTG1_ID_GPIO);
@@ -241,6 +268,10 @@ int board_late_init(void)
 	if (id == VAR_SOM_MX8M_MINI) {
 		env_set("board_name", "VAR-SOM-MX8M-MINI");
 		env_set("console", "ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200");
+		if (get_som_rev() == SOM_REV10)
+			env_set("som_rev", "som_rev10");
+		else
+			env_set("som_rev", "som_rev11");
 	}
 	else if (id == DART_MX8M_MINI)
 		env_set("board_name", "DART-MX8M-MINI");
