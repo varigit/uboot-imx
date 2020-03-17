@@ -26,6 +26,34 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+enum {
+	SOM_REV10,
+	SOM_REV11,
+	UNKNOWN_REV,
+};
+
+static int get_som_rev(void)
+{
+	struct var_eeprom eeprom = {0};
+	static int som_rev = UNKNOWN_REV;
+
+	if (som_rev != UNKNOWN_REV)
+		return som_rev;
+
+	var_eeprom_read_header(&eeprom);
+
+	if (!var_eeprom_is_valid(&eeprom)) {
+		printf("No SOM rev info in EEPROM, assuming REV1.1+\n");
+		som_rev = SOM_REV11;
+	}
+	else if (eeprom.somrev == 0)
+		som_rev = SOM_REV10;
+	else
+		som_rev = SOM_REV11;
+
+	return som_rev;
+}
+
 void spl_dram_init(void)
 {
 	struct var_eeprom eeprom;
@@ -51,9 +79,10 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
-#define USDHC2_CD_GPIO		IMX_GPIO_NR(2, 12)
-#define USDHC2_PWR_GPIO 	IMX_GPIO_NR(4, 22)
-#define USDHC3_PWR_GPIO 	IMX_GPIO_NR(3, 16)
+#define USDHC2_CD_GPIO_SOM_REV10	IMX_GPIO_NR(2, 12)
+#define USDHC2_CD_GPIO			IMX_GPIO_NR(1, 10)
+#define USDHC2_PWR_GPIO 		IMX_GPIO_NR(4, 22)
+#define USDHC3_PWR_GPIO 		IMX_GPIO_NR(3, 16)
 
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE |PAD_CTL_PE | \
 			 PAD_CTL_FSEL2)
@@ -81,9 +110,16 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IMX8MN_PAD_SD2_DATA1__USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MN_PAD_SD2_DATA2__USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MN_PAD_SD2_DATA3__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	IMX8MN_PAD_SD2_CD_B__GPIO2_IO12    | MUX_PAD_CTRL(USDHC_CD_PAD_CTRL),
 	IMX8MN_PAD_GPIO1_IO04__USDHC2_VSELECT | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MN_PAD_SAI2_RXC__GPIO4_IO22 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const usdhc2_cd_pads_som_rev10[] = {
+	IMX8MN_PAD_SD2_CD_B__GPIO2_IO12 | MUX_PAD_CTRL(USDHC_CD_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const usdhc2_cd_pads_som_rev11[] = {
+	IMX8MN_PAD_GPIO1_IO10__GPIO1_IO10 | MUX_PAD_CTRL(USDHC_CD_PAD_CTRL),
 };
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
@@ -94,6 +130,18 @@ static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 int board_mmc_init(bd_t *bis)
 {
 	int i, ret;
+	iomux_v3_cfg_t const *usdhc2_cd_pads;
+	int usdhc2_cd_gpio;
+
+	if (get_som_rev() == SOM_REV10) {
+		usdhc2_cd_pads = usdhc2_cd_pads_som_rev10;
+		usdhc2_cd_gpio = USDHC2_CD_GPIO_SOM_REV10;
+	}
+	else {
+		usdhc2_cd_pads = usdhc2_cd_pads_som_rev11;
+		usdhc2_cd_gpio = USDHC2_CD_GPIO;
+	}
+
 	/*
 	 * According to the board_mmc_init() the following map is done:
 	 * (U-Boot device node)    (Physical Port)
@@ -110,8 +158,11 @@ int board_mmc_init(bd_t *bis)
 			gpio_direction_output(USDHC2_PWR_GPIO, 0);
 			mdelay(10);
 			gpio_direction_output(USDHC2_PWR_GPIO, 1);
-			gpio_request(USDHC2_CD_GPIO, "usdhc2_cd");
-			gpio_direction_input(USDHC2_CD_GPIO);
+
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc2_cd_pads, ARRAY_SIZE(usdhc2_cd_pads));
+			gpio_request(usdhc2_cd_gpio, "usdhc2_cd");
+			gpio_direction_input(usdhc2_cd_gpio);
 			break;
 		case 1:
 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
@@ -140,13 +191,19 @@ int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 	int ret = 0;
+	int usdhc2_cd_gpio;
+
+	if (get_som_rev() == SOM_REV10)
+		usdhc2_cd_gpio = USDHC2_CD_GPIO_SOM_REV10;
+	else
+		usdhc2_cd_gpio = USDHC2_CD_GPIO;
 
 	switch (cfg->esdhc_base) {
 	case USDHC3_BASE_ADDR:
 		ret = 1;
 		break;
 	case USDHC2_BASE_ADDR:
-		ret = !gpio_get_value(USDHC2_CD_GPIO);
+		ret = !gpio_get_value(usdhc2_cd_gpio);
 		return ret;
 	}
 
@@ -213,10 +270,14 @@ void spl_board_init(void)
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
 {
-	/* Just empty function now - can't decide what to choose */
-	debug("%s: %s\n", __func__, name);
+	int rev = get_som_rev();
 
-	return 0;
+	if ((rev == SOM_REV11) && !strcmp(name, "fsl-imx8mn-var-som"))
+		return 0;
+	else if ((rev == SOM_REV10) && !strcmp(name, "fsl-imx8mn-var-som-rev10"))
+		return 0;
+	else
+		return -1;
 }
 #endif
 

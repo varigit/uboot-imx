@@ -117,7 +117,7 @@
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"fdt_file=undefined\0" \
 	"initrd_addr=0x43800000\0"		\
 	"initrd_high=0xffffffffffffffff\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
@@ -132,7 +132,17 @@
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
-	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
+	"findfdt=" \
+		"if test $fdt_file = undefined; then " \
+			"if test $som_rev = som_rev10; then " \
+				"setenv fdt_file fsl-imx8mn-var-som-rev10.dtb; " \
+			"else " \
+				"setenv fdt_file fsl-imx8mn-var-som.dtb; " \
+			"fi;" \
+		"fi; \0" \
+	"loadfdt=run findfdt; " \
+		"echo fdt_file=${fdt_file}; " \
+		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"ramsize_check="\
 		"if test $sdram_size -le 512; then " \
 			"setenv cma_size cma=320M; " \
@@ -165,6 +175,8 @@
 		"run netargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+			"run findfdt; " \
+			"echo fdt_file=${fdt_file}; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 				"booti ${loadaddr} - ${fdt_addr}; " \
 			"else " \

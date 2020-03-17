@@ -26,6 +26,12 @@ extern int var_setup_mac(struct var_eeprom *eeprom);
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 
+enum {
+	SOM_REV10,
+	SOM_REV11,
+	UNKNOWN_REV,
+};
+
 static iomux_v3_cfg_t const uart4_pads[] = {
 	IMX8MN_PAD_UART4_RXD__UART4_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MN_PAD_UART4_TXD__UART4_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -34,6 +40,26 @@ static iomux_v3_cfg_t const uart4_pads[] = {
 static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MN_PAD_GPIO1_IO02__WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
+
+static int get_som_rev(void)
+{
+	struct var_eeprom eeprom = {0};
+	static int som_rev = UNKNOWN_REV;
+
+	if (som_rev != UNKNOWN_REV)
+		return som_rev;
+
+	var_eeprom_read_header(&eeprom);
+
+	if (!var_eeprom_is_valid(&eeprom))
+		som_rev = SOM_REV11;
+	else if (eeprom.somrev == 0)
+		som_rev = SOM_REV10;
+	else
+		som_rev = SOM_REV11;
+
+	return som_rev;
+}
 
 int board_early_init_f(void)
 {
@@ -138,6 +164,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return 0;
 }
 
+/* Used only on VAR-SOM-MX8M-NANO Rev1.0 (with extcon) */
 int board_ehci_usb_phy_mode(struct udevice *dev)
 {
 	return gpio_get_value(USB_OTG1_ID_GPIO) ? USB_INIT_DEVICE : USB_INIT_HOST;
@@ -145,6 +172,9 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
 
 static void setup_usb(void)
 {
+	if ((get_som_rev() != SOM_REV10))
+		return;
+
 	imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
 	gpio_request(USB_OTG1_ID_GPIO, "usb_otg1_id");
 	gpio_direction_input(USB_OTG1_ID_GPIO);
@@ -191,6 +221,11 @@ int board_late_init(void)
 	env_set("sdram_size", sdram_size_str);
 
 	env_set("board_name", "VAR-SOM-MX8M-NANO");
+
+	if (get_som_rev() == SOM_REV10)
+		env_set("som_rev", "som_rev10");
+	else
+		env_set("som_rev", "som_rev11");
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
