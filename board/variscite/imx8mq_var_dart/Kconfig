@@ -1,0 +1,14 @@
+if TARGET_IMX8MQ_VAR_DART
+
+config SYS_BOARD
+	default "imx8mq_var_dart"
+
+config SYS_VENDOR
+	default "variscite"
+
+config SYS_CONFIG_NAME
+	default "imx8mq_var_dart"
+
+source "board/freescale/common/Kconfig"
+
+endif
