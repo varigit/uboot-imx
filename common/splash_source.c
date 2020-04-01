@@ -23,7 +23,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_SPI_FLASH
 static struct spi_flash *sf;
-static int splash_sf_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
+static int splash_sf_read_raw(uintptr_t bmp_load_addr, int offset, size_t read_size)
 {
 	if (!sf) {
 		sf = spi_flash_probe(CONFIG_SF_DEFAULT_BUS,
@@ -37,7 +37,7 @@ static int splash_sf_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
 	return spi_flash_read(sf, offset, read_size, (void *)bmp_load_addr);
 }
 #else
-static int splash_sf_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
+static int splash_sf_read_raw(uintptr_t bmp_load_addr, int offset, size_t read_size)
 {
 	debug("%s: sf support not available\n", __func__);
 	return -ENOSYS;
@@ -45,7 +45,7 @@ static int splash_sf_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
 #endif
 
 #ifdef CONFIG_CMD_NAND
-static int splash_nand_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
+static int splash_nand_read_raw(uintptr_t bmp_load_addr, int offset, size_t read_size)
 {
 	struct mtd_info *mtd = get_nand_dev_by_index(nand_curr_device);
 	return nand_read_skip_bad(mtd, offset,
@@ -54,7 +54,7 @@ static int splash_nand_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
 				  (u_char *)bmp_load_addr);
 }
 #else
-static int splash_nand_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
+static int splash_nand_read_raw(uintptr_t bmp_load_addr, int offset, size_t read_size)
 {
 	debug("%s: nand support not available\n", __func__);
 	return -ENOSYS;
@@ -62,7 +62,7 @@ static int splash_nand_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
 #endif
 
 static int splash_storage_read_raw(struct splash_location *location,
-			       u32 bmp_load_addr, size_t read_size)
+			       uintptr_t bmp_load_addr, size_t read_size)
 {
 	u32 offset;
 
@@ -82,7 +82,7 @@ static int splash_storage_read_raw(struct splash_location *location,
 	return -EINVAL;
 }
 
-static int splash_load_raw(struct splash_location *location, u32 bmp_load_addr)
+static int splash_load_raw(struct splash_location *location, uintptr_t bmp_load_addr)
 {
 	struct bmp_header *bmp_hdr;
 	int res;
@@ -300,7 +300,7 @@ static struct splash_location *select_splash_location(
 }
 
 #ifdef CONFIG_FIT
-static int splash_load_fit(struct splash_location *location, u32 bmp_load_addr)
+static int splash_load_fit(struct splash_location *location, uintptr_t bmp_load_addr)
 {
 	int res;
 	int node_offset;
@@ -326,7 +326,7 @@ static int splash_load_fit(struct splash_location *location, u32 bmp_load_addr)
 
 	/* Read in entire FIT */
 	fit_header = (const u32 *)(bmp_load_addr + header_size);
-	res = splash_storage_read_raw(location, (u32)fit_header, fit_size);
+	res = splash_storage_read_raw(location, (uintptr_t)fit_header, fit_size);
 	if (res < 0)
 		return res;
 
