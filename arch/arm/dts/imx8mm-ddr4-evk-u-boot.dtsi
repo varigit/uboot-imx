@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2019, 2021 NXP
+ * Copyright 2020 NXP
  */
 
 #include "imx8mm-u-boot.dtsi"
@@ -11,10 +11,13 @@
 		wdt = <&wdog1>;
 		bootph-pre-ram;
 	};
-};
 
-&aips4 {
-	bootph-pre-ram;
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
 };
 
 &reg_usdhc2_vmmc {
@@ -35,10 +38,6 @@
 };
 
 &pinctrl_usdhc2 {
-	bootph-pre-ram;
-};
-
-&pinctrl_usdhc3 {
 	bootph-pre-ram;
 };
 
@@ -66,18 +65,6 @@
 	bootph-pre-ram;
 };
 
-&usbmisc1 {
-	bootph-pre-ram;
-};
-
-&usbphynop1 {
-	bootph-pre-ram;
-};
-
-&usbotg1 {
-	bootph-pre-ram;
-};
-
 &usdhc1 {
 	bootph-pre-ram;
 	assigned-clocks = <&clk IMX8MM_CLK_USDHC1>;
@@ -95,24 +82,15 @@
 	fsl,signal-voltage-switch-extra-delay-ms = <8>;
 };
 
-&usdhc3 {
-	bootph-pre-ram;
-	mmc-hs400-1_8v;
-	mmc-hs400-enhanced-strobe;
-	assigned-clocks = <&clk IMX8MM_CLK_USDHC3>;
-	assigned-clock-rates = <400000000>;
-	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_400M>;
-};
-
 &i2c1 {
 	bootph-pre-ram;
 };
 
-&{/soc@0/bus@30800000/i2c@30a20000/pca9450@25} {
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b} {
 	bootph-pre-ram;
 };
 
-&{/soc@0/bus@30800000/i2c@30a20000/pca9450@25/regulators} {
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b/regulators} {
 	bootph-pre-ram;
 };
 
@@ -121,10 +99,6 @@
 };
 
 &pinctrl_pmic {
-	bootph-pre-ram;
-};
-
-&pinctrl_wdog {
 	bootph-pre-ram;
 };
 
@@ -147,4 +121,20 @@
 &usbotg1 {
 	status = "okay";
 	extcon = <&ptn5110>;
+};
+
+&blob_1d_imem {
+			filename = "ddr4_imem_1d.bin";
+};
+
+&blob_1d_dmem {
+			filename = "ddr4_dmem_1d.bin";
+};
+
+&blob_2d_imem {
+			filename = "ddr4_imem_2d.bin";
+};
+
+&blob_2d_dmem {
+			filename = "ddr4_dmem_2d.bin";
 };
