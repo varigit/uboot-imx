@@ -26,17 +26,7 @@
 #define CONFIG_SYS_MALLOC_LEN           (96 * SZ_1M)
 #endif
 
-#define CONFIG_USB_FUNCTION_FASTBOOT
-#define CONFIG_CMD_FASTBOOT
-#define CONFIG_ANDROID_BOOT_IMAGE
-#define CONFIG_FASTBOOT_FLASH
-#define CONFIG_FASTBOOT_STORAGE_MMC
-
-#define CONFIG_FSL_FASTBOOT
 #define CONFIG_ANDROID_RECOVERY
-
-#define CONFIG_FASTBOOT_BUF_ADDR   CONFIG_SYS_LOAD_ADDR
-#define CONFIG_FASTBOOT_BUF_SIZE   0x19000000
 
 #define CONFIG_CMD_BOOTA
 #define CONFIG_SUPPORT_RAW_INITRD
@@ -54,6 +44,7 @@
 		"consoleblank=0 " \
 		"androidboot.hardware=freescale " \
 		"cma=800M " \
+		"androidboot.force_normal_boot=1 " \
 		"firmware_class.path=/vendor/firmware " \
 		"transparent_hugepage=never " \
 		"androidboot.primary_display=imx-drm\0"
