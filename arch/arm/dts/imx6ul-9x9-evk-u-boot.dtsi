@@ -3,8 +3,29 @@
  * Copyright 2018 NXP
  */
 
+&{/aliases} {
+	bootph-all;
+	display0 = &lcdif;
+};
+
 &qspi {
 	flash0: n25q256a@0 {
 		compatible = "jedec,spi-nor";
 	};
+};
+
+&{/soc} {
+	bootph-all;
+};
+
+&aips2 {
+	bootph-all;
+};
+
+&iomuxc {
+	bootph-all;
+};
+
+&lcdif {
+	bootph-all;
 };
