@@ -45,6 +45,7 @@
 		"androidboot.console=ttymxc0 " \
 		"consoleblank=0 " \
 		"androidboot.hardware=freescale " \
+		"androidboot.force_normal_boot=1 " \
 		"cma=1280M " \
 		"firmware_class.path=/vendor/firmware " \
 		"transparent_hugepage=never\0"
