@@ -8,6 +8,23 @@
 		multiple-images;
 	};
 
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+
+	aliases {
+		usbgadget0 = &usbg1;
+	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
+
 #ifdef CONFIG_OPTEE
 	firmware {
 		optee {
@@ -16,12 +33,6 @@
 		};
 	};
 #endif
-
-	wdt-reboot {
-		compatible = "wdt-reboot";
-		wdt = <&wdog1>;
-		bootph-pre-ram;
-	};
 };
 
 &{/soc@0} {
@@ -82,6 +93,31 @@
 	bootph-pre-ram;
 };
 #endif
+
+&osc_32k {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&clk_ext1 {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&clk_ext2 {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&clk_ext3 {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&clk_ext4 {
+	bootph-pre-ram;
+	bootph-all;
+};
 
 &spba1 {
 	bootph-pre-ram;

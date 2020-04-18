@@ -5,12 +5,13 @@
 
 #include "imx8mn-u-boot.dtsi"
 
-&pinctrl_reg_usdhc2_vmmc {
+&reg_usdhc2_vmmc {
 	bootph-pre-ram;
+	u-boot,off-on-delay-us = <20000>;
 };
 
-&reg_usdhc2_vmmc {
-	u-boot,off-on-delay-us = <20000>;
+&pinctrl_reg_usdhc2_vmmc {
+	bootph-pre-ram;
 };
 
 &pinctrl_uart2 {
@@ -59,16 +60,65 @@
 
 &usdhc1 {
 	bootph-pre-ram;
+	assigned-clocks = <&clk IMX8MN_CLK_USDHC1>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_400M>;
 };
 
 &usdhc2 {
 	bootph-pre-ram;
 	sd-uhs-sdr104;
 	sd-uhs-ddr50;
+	assigned-clocks = <&clk IMX8MN_CLK_USDHC2>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_400M>;
 };
 
 &usdhc3 {
 	bootph-pre-ram;
 	mmc-hs400-1_8v;
 	mmc-hs400-enhanced-strobe;
+	assigned-clocks = <&clk IMX8MN_CLK_USDHC3>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_400M>;
+};
+
+&tmu {
+	bootph-all;
+};
+
+&i2c1 {
+	bootph-pre-ram;
+};
+
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b} {
+	bootph-pre-ram;
+};
+
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b/regulators} {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c1_gpio {
+	bootph-pre-ram;
+};
+
+&pinctrl_pmic {
+	bootph-pre-ram;
+};
+
+&fec1 {
+	phy-reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
+};
+
+&ethphy0 {
+	vddio0: vddio-regulator {
+		regulator-name = "VDDIO";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
 };
