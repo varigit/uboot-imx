@@ -1261,7 +1261,7 @@
 	/* USB_1_OC# */
 	pinctrl_usb_1_oc_n: usb1ocngrp {
 		fsl,pins =
-			<MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC		0x1c4>;	/* SODIMM 157 */
+			<MX8MP_IOMUXC_GPIO1_IO13__USB1_OC		0x1c4>;	/* SODIMM 157 */
 	};
 
 	pinctrl_usb2_vbus: usb2vbusgrp {

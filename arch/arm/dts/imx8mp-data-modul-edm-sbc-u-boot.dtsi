@@ -193,7 +193,7 @@
 &iomuxc {
 	usb1-grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC		0x80
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OC		0x80
 		>;
 	};
 
