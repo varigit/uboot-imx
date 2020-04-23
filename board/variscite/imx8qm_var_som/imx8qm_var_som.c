@@ -80,16 +80,17 @@ int board_early_init_f(void)
 }
 
 enum {
-	SPEAR_MX8   =  1,
-	VAR_SOM_MX8 =  2,
+	SPEAR_MX8,
+	VAR_SOM_MX8,
+	UNKNOWN_BOARD,
 };
 
 static int get_board_id(void)
 {
 	struct var_eeprom eeprom;
-	static int board_id = -1;
+	static int board_id = UNKNOWN_BOARD;
 
-	if (board_id == -1) {
+	if (board_id == UNKNOWN_BOARD) {
 		if (!var_scu_eeprom_read_header(&eeprom) &&
 		    var_eeprom_is_valid(&eeprom) && (eeprom.somrev & 0x40))
 			board_id = SPEAR_MX8;
@@ -100,7 +101,7 @@ static int get_board_id(void)
 	return board_id;
 }
 
-#ifdef CONFIG_MULTI_DTB_FIT
+#if defined(CONFIG_MULTI_DTB_FIT) && !defined(CONFIG_SPL_BUILD)
 int board_fit_config_name_match(const char *name)
 {
 	int board_id = get_board_id();
