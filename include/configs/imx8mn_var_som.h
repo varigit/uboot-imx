@@ -124,6 +124,18 @@
 	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
 	"mmcpart=1\0" \
+	"m7_addr=0x7e0000\0" \
+	"m7_bin=hello_world.bin\0" \
+	"use_m7=no\0" \
+	"loadm7bin=load mmc ${mmcdev}:${mmcpart} ${m7_addr} ${bootdir}/${m7_bin}\0" \
+	"runm7bin=" \
+		"if test ${m7_addr} = 0x7e0000; then " \
+			"echo Booting M7 from TCM; " \
+		"else " \
+			"echo Booting M7 from DRAM; " \
+			"dcache flush; " \
+		"fi; " \
+		"bootaux ${m7_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size}\0 " \
@@ -195,6 +207,9 @@
 #define CONFIG_BOOTCOMMAND \
 	"run ramsize_check; " \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
+		   "if test ${use_m7} = yes && run loadm7bin; then " \
+			   "run runm7bin; " \
+		   "fi; " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
 		   "else " \
