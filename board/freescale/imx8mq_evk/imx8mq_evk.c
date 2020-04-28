@@ -318,3 +318,9 @@ int board_phys_sdram_size(phys_size_t *size)
 #endif
 	return 0;
 }
+
+#ifdef CONFIG_ANDROID_SUPPORT
+bool is_power_key_pressed(void) {
+	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
+}
+#endif
