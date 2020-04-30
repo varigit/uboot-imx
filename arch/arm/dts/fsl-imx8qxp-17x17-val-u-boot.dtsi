@@ -1,0 +1,133 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+/ {
+	aliases {
+		usbgadget0 = &usbg1;
+	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+		bootph-pre-ram;
+	};
+};
+
+&{/imx8qx-pm} {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&mu {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&clk {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&iomuxc {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&{/mu@5d1c0000/iomuxc/imx8qxp-val} {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pinctrl_lpuart0 {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1_100mhz {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1_200mhz {
+	bootph-pre-ram;
+};
+
+&pd_conn {
+	bootph-pre-ram;
+};
+
+&pd_dma {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pd_dma_lpuart0 {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch0 {
+	bootph-pre-ram;
+};
+
+&pd_conn_usbotg0 {
+	bootph-pre-ram;
+};
+
+&pd_conn_usbotg0_phy {
+	bootph-pre-ram;
+};
+
+&lpuart0 {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&usbmisc1 {
+	bootph-pre-ram;
+};
+
+&usbphy1 {
+	bootph-pre-ram;
+};
+
+&usbotg1 {
+	bootph-pre-ram;
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+};
+
+&fec1 {
+	phy-mode = "rgmii-id";
+};
+
+&fec2 {
+	phy-mode = "rgmii-id";
+};
+
+&ethphy0 {
+	vddio0: vddio-regulator {
+		regulator-name = "VDDIO";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+};
+
+&ethphy1 {
+	vddio1: vddio-regulator {
+		regulator-name = "VDDIO";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+};
