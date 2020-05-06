@@ -73,8 +73,6 @@ static struct fsl_esdhc_cfg usdhc_cfg[CONFIG_SYS_FSL_USDHC_NUM] = {
 	{USDHC2_BASE_ADDR, 0, 4},
 };
 
-#define USDHC1_CD_GPIO_SOM	IMX_GPIO_NR(0, 14)
-#define USDHC1_CD_GPIO_SPEAR	IMX_GPIO_NR(5, 22)
 #define USDHC1_PWR_GPIO_SPEAR	IMX_GPIO_NR(4, 7)
 
 static iomux_cfg_t emmc0[] = {
@@ -105,30 +103,11 @@ static iomux_cfg_t const usdhc1_pwr_pads_spear[] = {
 	SC_P_USDHC1_RESET_B | MUX_MODE_ALT(3) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
 };
 
-static iomux_cfg_t const usdhc1_cd_pads_som[] = {
-	SC_P_GPT0_CLK | MUX_MODE_ALT(3) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
-};
-
-static iomux_cfg_t const usdhc1_cd_pads_spear[] = {
-	SC_P_USDHC1_DATA7 | MUX_MODE_ALT(3) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
-};
-
 int board_mmc_init(bd_t *bis)
 {
 	int i, ret;
 	sc_ipc_t ipcHndl = 0;
-	iomux_cfg_t const *usdhc1_cd_pads;
-	int usdhc1_cd_gpio;
 	ipcHndl = gd->arch.ipc_channel_handle;
-
-	if (get_board_id() == SPEAR_MX8) {
-		usdhc1_cd_pads = usdhc1_cd_pads_spear;
-		usdhc1_cd_gpio = USDHC1_CD_GPIO_SPEAR;
-	}
-	else {
-		usdhc1_cd_pads = usdhc1_cd_pads_som;
-		usdhc1_cd_gpio = USDHC1_CD_GPIO_SOM;
-	}
 
 	/*
 	 * According to the board_mmc_init() the following map is done:
@@ -152,27 +131,17 @@ int board_mmc_init(bd_t *bis)
 			ret = sc_pm_set_resource_power_mode(ipcHndl, SC_R_SDHC_1, SC_PM_PW_MODE_ON);
 			if (ret != SC_ERR_NONE)
 				return ret;
-			ret = sc_pm_set_resource_power_mode(ipcHndl, SC_R_GPIO_0, SC_PM_PW_MODE_ON);
-			if (ret != SC_ERR_NONE)
-				return ret;
 			ret = sc_pm_set_resource_power_mode(ipcHndl, SC_R_GPIO_4, SC_PM_PW_MODE_ON);
-			if (ret != SC_ERR_NONE)
-				return ret;
-			ret = sc_pm_set_resource_power_mode(ipcHndl, SC_R_GPIO_5, SC_PM_PW_MODE_ON);
 			if (ret != SC_ERR_NONE)
 				return ret;
 
 			imx8_iomux_setup_multiple_pads(usdhc1_sd, ARRAY_SIZE(usdhc1_sd));
-			imx8_iomux_setup_multiple_pads(usdhc1_cd_pads, ARRAY_SIZE(usdhc1_cd_pads));
 			if (get_board_id() == SPEAR_MX8)
 				imx8_iomux_setup_multiple_pads(usdhc1_pwr_pads_spear,
 					ARRAY_SIZE(usdhc1_pwr_pads_spear));
 
 			init_clk_usdhc(1);
 			usdhc_cfg[i].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-
-			gpio_request(usdhc1_cd_gpio, "sd1_cd");
-			gpio_direction_input(usdhc1_cd_gpio);
 
 			if (get_board_id() == SPEAR_MX8) {
 				gpio_request(USDHC1_PWR_GPIO_SPEAR, "sd1_pwr");
@@ -200,19 +169,14 @@ int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 	int ret = 0;
-	int usdhc1_cd_gpio;
 
 	switch (cfg->esdhc_base) {
 	case USDHC1_BASE_ADDR:
 		ret = 1; /* eMMC */
 		break;
 	case USDHC2_BASE_ADDR:
-		if (get_board_id() == SPEAR_MX8)
-			usdhc1_cd_gpio = USDHC1_CD_GPIO_SPEAR;
-		else
-			usdhc1_cd_gpio = USDHC1_CD_GPIO_SOM;
-		ret = !gpio_get_value(usdhc1_cd_gpio);
-		break;
+		ret = 1;
+		return ret;
 	}
 
 	return ret;
