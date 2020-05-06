@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 NXP
- * Copyright 2019 Variscite Ltd.
+ * Copyright 2019-2020 Variscite Ltd.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -126,8 +126,6 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
-#define USDHC2_CD_GPIO			IMX_GPIO_NR(2, 12)
-#define USDHC2_CD_GPIO_SOM_REV11	IMX_GPIO_NR(1, 10)
 #define USDHC2_PWR_GPIO_DART 		IMX_GPIO_NR(2, 19)
 #define USDHC2_PWR_GPIO_SOM 		IMX_GPIO_NR(4, 22)
 #define USDHC3_PWR_GPIO 		IMX_GPIO_NR(3, 16)
@@ -168,14 +166,6 @@ static iomux_v3_cfg_t const usdhc2_pwr_pads_dart[] = {
 	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
 };
 
-static iomux_v3_cfg_t const usdhc2_cd_pads_dart[] = {
-	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const usdhc2_cd_pads_som_rev11[] = {
-	IMX8MM_PAD_GPIO1_IO10_GPIO1_IO10 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
-};
-
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC2_BASE_ADDR, 0, 4},
 	{USDHC3_BASE_ADDR, 0, 8},
@@ -185,22 +175,18 @@ int board_mmc_init(bd_t *bis)
 {
 	int i, ret;
 	int usdhc2_pwr_gpio;
+	int usdhc2_pwr_pads_size;
 	iomux_v3_cfg_t const *usdhc2_pwr_pads;
-	iomux_v3_cfg_t const *usdhc2_cd_pads;
 
 	if (get_board_id() == DART_MX8M_MINI) {
 		usdhc2_pwr_gpio = USDHC2_PWR_GPIO_DART;
 		usdhc2_pwr_pads = usdhc2_pwr_pads_dart;
-		usdhc2_cd_pads = usdhc2_cd_pads_dart;
+		usdhc2_pwr_pads_size = ARRAY_SIZE(usdhc2_pwr_pads_dart);
 	}
 	else {
 		usdhc2_pwr_gpio = USDHC2_PWR_GPIO_SOM;
 		usdhc2_pwr_pads = usdhc2_pwr_pads_som;
-
-		if (get_som_rev() == SOM_REV11)
-			usdhc2_cd_pads = usdhc2_cd_pads_som_rev11;
-		else
-			usdhc2_cd_pads = usdhc2_cd_pads_dart;
+		usdhc2_pwr_pads_size = ARRAY_SIZE(usdhc2_pwr_pads_som);
 	}
 
 	/*
@@ -216,9 +202,7 @@ int board_mmc_init(bd_t *bis)
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
 			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pwr_pads, ARRAY_SIZE(usdhc2_pwr_pads));
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_cd_pads, ARRAY_SIZE(usdhc2_cd_pads));
+				usdhc2_pwr_pads, usdhc2_pwr_pads_size);
 			gpio_request(usdhc2_pwr_gpio, "usdhc2_reset");
 			gpio_direction_output(usdhc2_pwr_gpio, 0);
 			mdelay(10);
@@ -250,23 +234,14 @@ int board_mmc_init(bd_t *bis)
 int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-	int usdhc2_cd_gpio, ret = 0;
+	int ret = 0;
 
 	switch (cfg->esdhc_base) {
 	case USDHC3_BASE_ADDR:
 		ret = 1;
 		break;
 	case USDHC2_BASE_ADDR:
-		if (get_board_id() == DART_MX8M_MINI)
-			usdhc2_cd_gpio = USDHC2_CD_GPIO;
-		else if (get_som_rev() == SOM_REV11)
-			usdhc2_cd_gpio = USDHC2_CD_GPIO_SOM_REV11;
-		else
-			usdhc2_cd_gpio = USDHC2_CD_GPIO;
-
-		gpio_request(usdhc2_cd_gpio, "usdhc2 cd");
-		gpio_direction_input(usdhc2_cd_gpio);
-		ret = !gpio_get_value(usdhc2_cd_gpio);
+		ret = 1;
 		return ret;
 	}
 
