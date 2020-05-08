@@ -10,7 +10,7 @@ config NOT_UUU_BUILD
 menuconfig FASTBOOT
 	bool "Fastboot support"
 	depends on USB_GADGET
-	default y if ARCH_SUNXI && USB_MUSB_GADGET
+	default y if ARCH_SUNXI && USB_MUSB_GADGET || ARCH_IMX8
 
 if FASTBOOT
 
