@@ -14,3 +14,14 @@ config IMX_SNPS_DDR_PHY_QB
 	depends on IMX_SNPS_DDR_PHY && !IMX_SNPS_DDR_PHY_QB_GEN
 	help
 	  Select the DDR PHY QuickBoot mode on i.MX9 SOC.
+
+config IMX_REDUCE_DMEM_PADDING
+	bool "Reduce DMEM padding to 4KB"
+	default n
+	---help---
+	DMEM firmware files are padded to 16KB, wasting precious space
+	in processor internal RAM (TMU). The actual size of these files
+	is less than 2KB, so padding them to 4KB is sufficient.
+
+	This changes the expected size of DMEM firmware.
+	It relies on boot image creation tools to generate 4KB padding.
