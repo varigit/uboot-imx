@@ -35,6 +35,7 @@
 		serial0 = &uart1;
 		serial1 = &uart2;
 		serial2 = &uart3;
+		serial3 = &uart4;
 		mmc0 = &usdhc1;
 		mmc1 = &usdhc2;
 		mmc2 = &usdhc3;
@@ -398,6 +399,18 @@
 		interrupt-parent = <&gpc>;
 		clocks = <&clk IMX8MN_CLK_UART2_ROOT>,
 			<&clk IMX8MN_CLK_UART2_ROOT>;
+		clock-names = "ipg", "per";
+		status = "disabled";
+	};
+
+	uart4: serial@30a60000 {
+		compatible = "fsl,imx8mm-uart",
+			     "fsl,imx6q-uart", "fsl,imx21-uart";
+		reg = <0x0 0x30a60000 0x0 0x10000>;
+		interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-parent = <&gpc>;
+		clocks = <&clk IMX8MN_CLK_UART4_ROOT>,
+			<&clk IMX8MN_CLK_UART4_ROOT>;
 		clock-names = "ipg", "per";
 		status = "disabled";
 	};
