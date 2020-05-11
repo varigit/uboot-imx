@@ -39,4 +39,8 @@ config IMX8M_DRAM_INLINE_ECC
 	help
 	  Select this config if you want to use inline ecc feature for
 	  imx8mp-evk board.
+
+config IMX8M_DDRPHY_FW_OFFSET
+	int "Offset of DDR PHY firmware from the end of the SPL image"
+	default 0
 endmenu
