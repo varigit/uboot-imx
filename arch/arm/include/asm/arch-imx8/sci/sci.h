@@ -91,6 +91,7 @@ void sc_misc_build_info(sc_ipc_t ipc, u32 *build, u32 *commit);
 int sc_misc_otp_fuse_read(sc_ipc_t ipc, u32 word, u32 *val);
 int sc_misc_get_temp(sc_ipc_t ipc, sc_rsrc_t resource, sc_misc_temp_t temp,
 			s16 *celsius, s8 *tenths);
+int sc_misc_board_ioctl(sc_ipc_t ipc, u32 *parm1, u32 *parm2, u32 *parm3);
 
 /* RM API */
 sc_bool_t sc_rm_is_memreg_owned(sc_ipc_t ipc, sc_rm_mr_t mr);

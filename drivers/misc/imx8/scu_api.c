@@ -384,6 +384,29 @@ int sc_misc_get_temp(sc_ipc_t ipc, sc_rsrc_t resource,
 	return ret;
 }
 
+int sc_misc_board_ioctl(sc_ipc_t ipc, u32 *parm1, u32 *parm2, u32 *parm3)
+{
+	struct udevice *dev = gd->arch.scu_dev;
+	struct sc_rpc_msg_s msg;
+	int size = sizeof(struct sc_rpc_msg_s);
+	int ret;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = (u8)(SC_RPC_SVC_MISC);
+	RPC_FUNC(&msg) = (u8)(MISC_FUNC_BOARD_IOCTL);
+	RPC_U32(&msg, 0U) = *parm1;
+	RPC_U32(&msg, 4U) = *parm2;
+	RPC_U32(&msg, 8U) = *parm3;
+	RPC_SIZE(&msg) = 4U;
+
+	ret = misc_call(dev, SC_FALSE, &msg, size, &msg, size);
+
+	*parm1 = RPC_U32(&msg, 0U);
+	*parm2 = RPC_U32(&msg, 4U);
+	*parm3 = RPC_U32(&msg, 8U);
+
+	return ret;
+}
 
 /* RM */
 sc_bool_t sc_rm_is_memreg_owned(sc_ipc_t ipc, sc_rm_mr_t mr)
