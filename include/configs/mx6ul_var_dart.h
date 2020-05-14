@@ -197,9 +197,7 @@
 			"setenv fdt_addr 0x84000000; " \
 			"setenv loadaddr 0x84600000; " \
 		"else " \
-			"if test $sdram_size -lt 512; then " \
-				"setenv cma_size cma=64MB; " \
-			"fi; " \
+			"setenv cma_size cma=64MB; " \
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
