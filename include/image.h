@@ -1811,6 +1811,10 @@ int fit_image_cipher_get_algo(const void *fit, int noffset, char **algo);
 
 struct cipher_algo *image_get_cipher_algo(const char *full_name);
 struct andr_image_data;
+struct boot_img_hdr_v3;
+struct vendor_boot_img_hdr_v3;
+int android_image_check_header_v3(const struct boot_img_hdr_v3 *hdr, const struct vendor_boot_img_hdr_v3 *vendor_hdr);
+int android_image_get_kernel_v3(const struct boot_img_hdr_v3 *hdr, const struct vendor_boot_img_hdr_v3 *vendor_hdr);
 
 /**
  * android_image_get_data() - Parse Android boot images
