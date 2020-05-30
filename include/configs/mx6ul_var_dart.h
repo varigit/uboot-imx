@@ -207,7 +207,12 @@
 			"fi; " \
 			"if test $board_name = VAR-SOM-6UL; then " \
 				"setenv som var-som; " \
-				"setenv carrier concerto-board; " \
+				"i2c dev 0; " \
+				"if i2c probe 0x20; then " \
+					"setenv carrier symphony-board; " \
+				"else " \
+					"setenv carrier concerto-board; " \
+				"fi; " \
 			"fi; " \
 			"if test $boot_dev = emmc || test $som_storage = emmc || " \
 			   "test $som_storage = none; then " \
