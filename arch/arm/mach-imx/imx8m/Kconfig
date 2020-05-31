@@ -84,6 +84,12 @@ config TARGET_IMX8MN_EVK
 	select SUPPORT_SPL
 	select IMX8M_DDR4
 
+config TARGET_IMX8MN_VAR_SOM
+	bool "imx8mn_var_som"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+
 endchoice
 
 source "board/freescale/imx8mq_evk/Kconfig"
@@ -92,5 +98,7 @@ source "board/freescale/imx8mq_aiy/Kconfig"
 source "board/freescale/imx8mm_evk/Kconfig"
 source "board/freescale/imx8mm_val/Kconfig"
 source "board/freescale/imx8mn_evk/Kconfig"
+
+source "board/variscite/imx8mn_var_som/Kconfig"
 
 endif

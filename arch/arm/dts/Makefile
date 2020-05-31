@@ -635,7 +635,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += fsl-imx8mq-evk.dtb \
 		fsl-imx8mm-ddr4-val.dtb \
 		fsl-imx8mm-evk.dtb \
 		fsl-imx8mn-ddr4-evk.dtb \
-		fsl-imx8mq-aiy.dtb
+		fsl-imx8mq-aiy.dtb \
+		fsl-imx8mn-var-som.dtb \
+		fsl-imx8mn-var-som-rev10.dtb
 
 dtb-$(CONFIG_RCAR_GEN2) += \
 	r8a7790-lager-u-boot.dtb \
