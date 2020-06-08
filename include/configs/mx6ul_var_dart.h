@@ -65,8 +65,8 @@
 	"nandboot=echo Booting from nand ...; " \
 		"run nandargs; " \
 		"run optargs; " \
-		"nand read ${loadaddr} 0x600000 0x7e0000; " \
-		"nand read ${fdt_addr} 0xde0000 0x20000; " \
+		"nand read ${loadaddr} 0x500000 0xbe0000; " \
+		"nand read ${fdt_addr} 0x10e0000 0x20000; " \
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0"
@@ -302,8 +302,8 @@
 #define MTDPARTS_DEFAULT	"mtdparts=nandflash-0:"\
 					"2m(spl),"\
 					"2m(u-boot),"\
-					"2m(u-boot-env),"\
-					"8m(kernel),"\
+					"1m(u-boot-env),"\
+					"12m(kernel),"\
 					"-(rootfs)"	/* ubifs */
 
 /* NAND stuff */
