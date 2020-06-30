@@ -21,6 +21,7 @@
 #define NAND_DEV	2
 #define QSPI_NOR_DEV	3
 #define ROM_API_DEV	4
+#define RAM_DEV	5
 
 /* The unit of second image offset number which provision by the fuse bits */
 #define SND_IMG_OFF_UNIT    (0x100000UL)
@@ -148,6 +149,12 @@ static int get_dev_container_size(void *dev, int dev_type, unsigned long offset,
 	}
 #endif
 
+#ifdef CONFIG_SPL_RAM_SUPPORT
+	if (dev_type == RAM_DEV)
+		memcpy(buf, (const void *)offset, CONTAINER_HDR_ALIGNMENT);
+#endif
+
+
 	ret = get_container_size((ulong)buf, header_length);
 
 	free(buf);
@@ -222,6 +229,8 @@ static unsigned long get_boot_device_offset(void *dev, int dev_type)
 			CONTAINER_HDR_NAND_OFFSET;
 	} else if (dev_type == QSPI_NOR_DEV) {
 		offset = CONTAINER_HDR_QSPI_OFFSET + 0x08000000;
+	} else if (dev_type == RAM_DEV) {
+		offset = (unsigned long)dev + CONTAINER_HDR_MMCSD_OFFSET;
 	} else {
 		printf("Not supported dev_type: %d\n", dev_type);
 	}
@@ -378,6 +387,20 @@ ulong spl_romapi_get_uboot_base(u32 image_offset, u32 rom_bt_dev)
 	end = ROUND(end, SZ_1K);
 
 	printf("Load image from 0x%lx by ROM_API\n", end);
+
+	return end;
+}
+#endif
+
+#ifdef CONFIG_SPL_RAM_SUPPORT
+unsigned long spl_ram_get_uboot_base(void)
+{
+	ulong end;
+
+	end = get_imageset_end((void *)CONFIG_SPL_LOAD_FIT_ADDRESS, RAM_DEV);
+	end = ROUND(end, SZ_1K);
+
+	printf("Load image from RAM 0x%lx\n", end);
 
 	return end;
 }
