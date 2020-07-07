@@ -8,4 +8,6 @@ obj-y += cpu.o iomux.o misc.o lowlevel_init.o lpcg.o clock.o
 obj-$(CONFIG_OF_SYSTEM_SETUP) += fdt.o
 obj-$(CONFIG_AHAB_BOOT) += ahab.o
 
+ifndef CONFIG_SPL_BUILD
 obj-$(CONFIG_IMX_SNVS_SEC_SC) += snvs_security_sc.o
+endif
