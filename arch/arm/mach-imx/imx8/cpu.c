@@ -1295,6 +1295,7 @@ static int get_owned_memreg(sc_rm_mr_t mr, sc_faddr_t *addr_start,
 	return -EINVAL;
 }
 
+#ifndef CONFIG_IMX8_BOARD_INIT_DRAM
 phys_size_t get_effective_memsize(void)
 {
 	sc_rm_mr_t mr;
@@ -1442,7 +1443,7 @@ int dram_init_banksize(void)
 	return 0;
 }
 
-static u64 get_block_attrs(sc_faddr_t addr_start)
+static u64 get_dram_block_attrs(sc_faddr_t addr_start)
 {
 	u64 attr = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) | PTE_BLOCK_NON_SHARE |
 		PTE_BLOCK_PXN | PTE_BLOCK_UXN;
@@ -1460,7 +1461,7 @@ static u64 get_block_attrs(sc_faddr_t addr_start)
 	return attr;
 }
 
-static u64 get_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end)
+static u64 get_dram_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end)
 {
 	sc_faddr_t end1, end2;
 
@@ -1477,6 +1478,10 @@ static u64 get_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end)
 
 	return (addr_end - addr_start + 1);
 }
+#else
+extern u64 get_dram_block_attrs(sc_faddr_t addr_start);
+extern u64 get_dram_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end);
+#endif
 
 #define MAX_PTE_ENTRIES 512
 #define MAX_MEM_MAP_REGIONS 16
@@ -1513,8 +1518,8 @@ void enable_caches(void)
 		if (!err) {
 			imx8_mem_map[i].virt = start;
 			imx8_mem_map[i].phys = start;
-			imx8_mem_map[i].size = get_block_size(start, end);
-			imx8_mem_map[i].attrs = get_block_attrs(start);
+			imx8_mem_map[i].size = get_dram_block_size(start, end);
+			imx8_mem_map[i].attrs = get_dram_block_attrs(start);
 			i++;
 		}
 	}
