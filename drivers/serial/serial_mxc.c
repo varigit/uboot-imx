@@ -215,7 +215,7 @@ static void _mxc_serial_setbrg(struct mxc_uart *base, unsigned long clk,
 #error "define CFG_MXC_UART_BASE to use the MXC UART driver"
 #endif
 
-#define mxc_base	((struct mxc_uart *)CFG_MXC_UART_BASE)
+struct mxc_uart *mxc_base = ((struct mxc_uart *)CFG_MXC_UART_BASE);
 
 static void mxc_serial_setbrg(void)
 {
