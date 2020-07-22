@@ -35,7 +35,25 @@
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #undef CONFIG_BOOTCOMMAND
 
+#define HW_ENV_SETTINGS \
+        "cmaargs=" \
+                "if test $sdram_size = 1024; then " \
+                        "setenv cmavar 320M@0x400M-0xb80M; " \
+                "else " \
+                        "setenv cmavar 800M@0x400M-0xb80M; " \
+                "fi; " \
+                "setenv bootargs ${bootargs} " \
+                        "cma=${cmavar};\0"
+
+#define BOOT_ENV_SETTINGS \
+        "bootcmd=" \
+                "run cmaargs; " \
+                "boota ${fastboot_dev}\0"
+
+
 #define CONFIG_EXTRA_ENV_SETTINGS		\
+	HW_ENV_SETTINGS 			\
+	BOOT_ENV_SETTINGS 			\
 	"splashpos=m,m\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
@@ -43,7 +61,6 @@
 		"init=/init " \
 		"consoleblank=0 " \
 		"androidboot.hardware=freescale " \
-		"cma=800M " \
 		"androidboot.force_normal_boot=1 " \
 		"firmware_class.path=/vendor/firmware " \
 		"transparent_hugepage=never " \
