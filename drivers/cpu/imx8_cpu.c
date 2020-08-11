@@ -72,6 +72,10 @@ static const char *get_imx_rev_str(u32 rev)
 			return "B";
 		case CHIP_REV_C:
 			return "C";
+		case CHIP_REV_A1:
+			return "A1";
+		case CHIP_REV_A2:
+			return "A2";
 		default:
 			return "?";
 		}
