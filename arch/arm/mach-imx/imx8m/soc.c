@@ -227,6 +227,7 @@ void enable_caches(void)
 	dcache_enable();
 }
 
+#ifndef CONFIG_IMX8M_BOARD_INIT_DRAM
 __weak int board_phys_sdram_size(phys_size_t *size)
 {
 	if (!size)
@@ -309,6 +310,7 @@ int dram_init_banksize(void)
 
 	return 0;
 }
+#endif
 
 phys_size_t get_effective_memsize(void)
 {
