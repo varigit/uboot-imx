@@ -46,6 +46,12 @@ config IMX_UNIQUE_ID
 	depends on IMX8MQ && IMX_HAB && !SECURE_STICKY_BITS_LOCKUP
 	default 0x0
 
+config IMX8M_BOARD_INIT_DRAM
+	bool
+	default n
+	help
+	 This option enables DRAM configuration in board code
+
 choice
 	prompt  "NXP i.MX8M board select"
 	optional
