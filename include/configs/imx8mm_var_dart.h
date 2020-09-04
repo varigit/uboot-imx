@@ -114,7 +114,8 @@
 	"m4_addr=0x7e0000\0" \
 	"m4_bin=hello_world.bin\0" \
 	"use_m4=no\0" \
-	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${m4_addr} ${bootdir}/${m4_bin}\0" \
+	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m4_bin}; " \
+		"cp.b ${loadaddr} ${m4_addr} ${filesize}\0" \
 	"runm4bin=" \
 		"if test ${m4_addr} = 0x7e0000; then " \
 			"echo Booting M4 from TCM; " \
