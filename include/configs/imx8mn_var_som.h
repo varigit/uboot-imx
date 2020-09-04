@@ -127,7 +127,8 @@
 	"m7_addr=0x7e0000\0" \
 	"m7_bin=hello_world.bin\0" \
 	"use_m7=no\0" \
-	"loadm7bin=load mmc ${mmcdev}:${mmcpart} ${m7_addr} ${bootdir}/${m7_bin}\0" \
+	"loadm7bin=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m7_bin}; " \
+		"cp.b ${loadaddr} ${m7_addr} ${filesize}\0" \
 	"runm7bin=" \
 		"if test ${m7_addr} = 0x7e0000; then " \
 			"echo Booting M7 from TCM; " \
