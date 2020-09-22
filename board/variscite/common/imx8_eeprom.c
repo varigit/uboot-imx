@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2018-2020 Variscite Ltd.
  *
@@ -61,31 +62,45 @@ int var_scu_eeprom_read_header(struct var_eeprom *e)
 #endif /* ARCH_IMX8 */
 
 #ifdef CONFIG_DM_I2C
-int var_eeprom_read_header(struct var_eeprom *e)
+static struct udevice *var_eeprom_init(void)
 {
 	int ret;
-	struct udevice *bus;
-	struct udevice *dev;
+	struct udevice *bus, *dev;
 
 	ret = uclass_get_device_by_seq(UCLASS_I2C, VAR_EEPROM_I2C_BUS, &bus);
 	if (ret) {
 		debug("%s: No bus %d\n", __func__, VAR_EEPROM_I2C_BUS);
-		return ret;
+		return NULL;
 	}
 
 	ret = dm_i2c_probe(bus, VAR_EEPROM_I2C_ADDR, 0, &dev);
 	if (ret) {
+		debug("%s: Can't find device id=0x%x, on bus %d\n",
+			__func__, VAR_EEPROM_I2C_ADDR, VAR_EEPROM_I2C_BUS);
+		return NULL;
+	}
+
+	return dev;
+}
+
+int var_eeprom_read_header(struct var_eeprom *e)
+{
+	int ret;
+	struct udevice *edev;
+
+	edev = var_eeprom_init();
+	if (!edev) {
 #ifdef CONFIG_ARCH_IMX8
 		debug("%s: calling SCU to read EEPROM\n", __func__);
 		return var_scu_eeprom_read_header(e);
 #else
 		debug("%s: I2C EEPROM probe failed\n", __func__);
-		return ret;
+		return -1;
 #endif
 	}
 
 	/* Read EEPROM header to memory */
-	ret = dm_i2c_read(dev, 0, (void *)e, sizeof(*e));
+	ret = dm_i2c_read(edev, 0, (void *)e, sizeof(*e));
 	if (ret) {
 		debug("%s: EEPROM read failed, ret=%d\n", __func__, ret);
 		return ret;
