@@ -273,4 +273,8 @@
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
 
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "imx8mq_var_dart_android.h"
+#endif
+
 #endif

@@ -41,6 +41,10 @@
 #include <trusty/libtipc.h>
 #endif
 
+#ifdef CONFIG_LZ4
+#include <lz4.h>
+#endif
+
 #include "fb_fsl_common.h"
 
 /* max kernel image size */
