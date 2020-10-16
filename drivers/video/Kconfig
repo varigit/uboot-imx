@@ -764,7 +764,7 @@ source "drivers/video/bridge/Kconfig"
 
 source "drivers/video/tegra20/Kconfig"
 
-source "drivers/video/imx/Kconfig"
+source "drivers/video/nxp/Kconfig"
 
 config VIDEO_MXS
 	bool "Enable video support on i.MX28/i.MX6UL/i.MX7 SoCs"
