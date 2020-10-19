@@ -792,6 +792,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mn-var-som.dtb \
 	imx8mn-var-som-rev10.dtb \
 	imx8mq-var-dart.dtb \
+	imx8mm-var-dart.dtb \
+	imx8mm-var-som.dtb \
+	imx8mm-var-som-rev10.dtb \
 	imx8mq-ddr3l-val.dtb \
 	imx8mq-ddr4-val.dtb \
 	imx8mq-evk.dtb \

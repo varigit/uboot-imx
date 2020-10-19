@@ -1,0 +1,5 @@
+#include "imx8mm-var-common-u-boot.dtsi"
+
+&uart1 {
+	u-boot,dm-spl;
+};

@@ -15,23 +15,23 @@
 
 /dts-v1/;
 
-#include "imx8mn-var-som.dts"
+#include "imx8mm-var-som.dts"
 
 / {
-	model = "Variscite VAR-SOM-MX8M-NANO Rev1.0";
+	model = "Variscite VAR-SOM-MX8M-MINI Rev1.0";
 };
 
 &iomuxc {
-	imx8mn-var-som {
-		pinctrl_usdhc2_gpio: usdhc2grpgpio {
+	imx8mm-var-som {
+		pinctrl_usdhc2_cd_rev10: usdhc2grpcd {
 			fsl,pins = <
-				MX8MN_IOMUXC_SD2_CD_B_GPIO2_IO12	0xc1
+				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
 			>;
 		};
 
 		pinctrl_typec: typecgrp {
 			fsl,pins = <
-				MX8MN_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x16
+				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x16
 			>;
 		};
 	};
@@ -55,4 +55,7 @@
 
 &usdhc2 {
 	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd_rev10>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd_rev10>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd_rev10>;
 };

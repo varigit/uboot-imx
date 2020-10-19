@@ -18,7 +18,7 @@
 #include "imx8mn.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX8MN";
+	model = "Variscite VAR-SOM-MX8M-NANO";
 	compatible = "variscite,imx8mn-var-som", "fsl,imx8mn";
 	chosen {
 		bootargs = "console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200";
