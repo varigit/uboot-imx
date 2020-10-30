@@ -950,7 +950,8 @@ AvbABFlowResult avb_flow_dual_uboot(AvbABOps* ab_ops,
 	/* Update stored rollback index only when the slot has been marked
 	 * as successful. Do this for every rollback index location.
 	*/
-	if (ab_data.slot_info[target_slot].successful_boot != 0) {
+	if ((ret == AVB_AB_FLOW_RESULT_OK) &&
+		(ab_data.slot_info[target_slot].successful_boot != 0)) {
 		for (n = 0; n < AVB_MAX_NUMBER_OF_ROLLBACK_INDEX_LOCATIONS; n++) {
 
 			rollback_index_value = slot_data->rollback_indexes[n];
@@ -1204,6 +1205,7 @@ AvbABFlowResult avb_ab_flow_fast(AvbABOps* ab_ops,
 
 			case AVB_SLOT_VERIFY_RESULT_OK:
 				slot_index_to_boot = target_slot;
+				ret = AVB_AB_FLOW_RESULT_OK;
 				n = 2;
 				break;
 
@@ -1283,7 +1285,8 @@ AvbABFlowResult avb_ab_flow_fast(AvbABOps* ab_ops,
 	/* Update stored rollback index only when the slot has been marked
 	 * as successful. Do this for every rollback index location.
 	*/
-	if (ab_data.slot_info[slot_index_to_boot].successful_boot != 0) {
+	if ((ret == AVB_AB_FLOW_RESULT_OK) &&
+		(ab_data.slot_info[slot_index_to_boot].successful_boot != 0)) {
 		for (n = 0; n < AVB_MAX_NUMBER_OF_ROLLBACK_INDEX_LOCATIONS; n++) {
 
 			rollback_index_value = slot_data[slot_index_to_boot]->rollback_indexes[n];
