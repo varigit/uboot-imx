@@ -1,0 +1,163 @@
+/*
+ * Copyright 2018-2019 NXP
+ * Copyright 2019-2020 Variscite Ltd.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+
+#include "imx8mn-var-som.dtsi"
+
+/ {
+	model = "Variscite VAR-SOM-MX8M-NANO";
+	compatible = "variscite,imx8mn-var-som", "fsl,imx8mn";
+	chosen {
+		bootargs = "console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200";
+		stdout-path = &uart4;
+	};
+
+	regulators {
+		reg_usdhc2_vmmc: regulator-usdhc2 {
+			compatible = "regulator-fixed";
+			regulator-name = "VSD_3V3";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+			startup-delay-us = <100>;
+			u-boot,off-on-delay-us = <12000>;
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl_i2c2: i2c2grp {
+		fsl,pins = <
+			MX8MN_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
+			MX8MN_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
+		>;
+	};
+
+	pinctrl_i2c4: i2c4grp {
+		fsl,pins = <
+			MX8MN_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
+			MX8MN_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
+		>;
+	};
+
+	pinctrl_i2c2_gpio: i2c2grp-gpio {
+		fsl,pins = <
+			MX8MN_IOMUXC_I2C2_SCL_GPIO5_IO16		0x1c3
+			MX8MN_IOMUXC_I2C2_SDA_GPIO5_IO17		0x1c3
+		>;
+	};
+
+	pinctrl_i2c4_gpio: i2c4grp-gpio {
+		fsl,pins = <
+			MX8MN_IOMUXC_I2C4_SCL_GPIO5_IO20		0x1c3
+			MX8MN_IOMUXC_I2C4_SDA_GPIO5_IO21		0x1c3
+		>;
+	};
+
+	pinctrl_uart4: uart4grp {
+		fsl,pins = <
+			MX8MN_IOMUXC_UART4_RXD_UART4_DCE_RX		0x49
+			MX8MN_IOMUXC_UART4_TXD_UART4_DCE_TX		0x49
+		>;
+	};
+
+	pinctrl_usdhc2: usdhc2grp {
+		fsl,pins = <
+			MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
+			MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
+			MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0		0x1d0
+			MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1		0x1d0
+			MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2		0x1d0
+			MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3		0x1d0
+			MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0x1d0
+		>;
+	};
+
+	pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
+		fsl,pins = <
+			MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
+			MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
+			MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0		0x1d4
+			MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1		0x1d4
+			MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2		0x1d4
+			MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3		0x1d4
+			MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0x1d0
+		>;
+	};
+
+	pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
+		fsl,pins = <
+			MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
+			MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
+			MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0		0x1d6
+			MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1		0x1d6
+			MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2		0x1d6
+			MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3		0x1d6
+			MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0x1d0
+		>;
+	};
+
+	pinctrl_usdhc2_gpio: usdhc2grpgpio {
+		fsl,pins = <
+			MX8MN_IOMUXC_SAI2_RXC_GPIO4_IO22		0x41
+			MX8MN_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x41
+		>;
+	};
+};
+
+&i2c2 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
+	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&i2c4 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c4>;
+	pinctrl-1 = <&pinctrl_i2c4_gpio>;
+	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&usbotg1 {
+	status = "okay";
+};
+
+ /* Console */
+&uart4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart4>;
+	status = "okay";
+};
+
+/* SD */
+&usdhc2 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
+	bus-width = <4>;
+	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
+	vmmc-supply = <&reg_usdhc2_vmmc>;
+	status = "okay";
+};
