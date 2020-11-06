@@ -77,6 +77,7 @@ int power_init_board(void)
 	/* BUCKxOUT_DVS0/1 control BUCK123 output */
 	pmic_reg_write(dev, PCA9450_BUCK123_DVS, 0x29);
 
+#ifdef CONFIG_IMX8M_LPDDR4
 	/*
 	 * Increase VDD_SOC to typical value 0.95V before first
 	 * DRAM access, set DVS1 to 0.85V for suspend.
@@ -98,8 +99,10 @@ int power_init_board(void)
 	 */
 
 	pmic_reg_write(dev, PCA9450_BUCK2OUT_DVS0, 0x1C);
+#elif defined(CONFIG_IMX8M_DDR4)
+	/* DDR4 runs at 3200MTS, uses default ND 0.85v for VDD_SOC and VDD_ARM */
+	pmic_reg_write(dev, PCA9450_BUCK1CTRL, 0x59);
 
-#ifdef CONFIG_IMX8M_DDR4
 	/* Set NVCC_DRAM to 1.2v for DDR4 */
 	pmic_reg_write(dev, PCA9450_BUCK6OUT, 0x18);
 #endif
