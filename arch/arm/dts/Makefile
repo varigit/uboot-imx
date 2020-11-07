@@ -792,7 +792,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mn-var-som-symphony.dtb \
 	imx8mn-var-som-rev10-symphony.dtb \
 	imx8mq-var-dart-customboard.dtb \
-	imx8mm-var-dart.dtb \
+	imx8mm-var-dart-customboard.dtb \
 	imx8mm-var-som.dtb \
 	imx8mm-var-som-rev10.dtb \
 	imx8mq-ddr3l-val.dtb \

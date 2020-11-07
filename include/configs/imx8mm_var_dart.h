@@ -108,7 +108,7 @@
 					"setenv fdt_file imx8mm-var-som.dtb; " \
 				"fi;" \
 			"else " \
-				"setenv fdt_file imx8mm-var-dart.dtb;" \
+				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
