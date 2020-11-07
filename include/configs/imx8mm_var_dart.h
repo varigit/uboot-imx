@@ -103,9 +103,9 @@
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
 				"if test $som_rev = som_rev10; then " \
-					"setenv fdt_file imx8mm-var-som-rev10.dtb; " \
+					"setenv fdt_file imx8mm-var-som-rev10-symphony.dtb; " \
 				"else " \
-					"setenv fdt_file imx8mm-var-som.dtb; " \
+					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
 				"fi;" \
 			"else " \
 				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
