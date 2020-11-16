@@ -170,8 +170,8 @@
 	"bootcmd=run nandargs; " \
 		"run optargs; " \
 		"if test ${use_m4} = yes; then run m4boot; fi; " \
-		"nand read ${loadaddr} 0x600000 0x7e0000;" \
-		"nand read ${fdt_addr} 0xde0000 0x20000;" \
+		"nand read ${loadaddr} 0x600000 0xbe0000;" \
+		"nand read ${fdt_addr} 0x11e0000 0x20000;" \
 		"bootz ${loadaddr} - ${fdt_addr}\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0"
@@ -328,7 +328,7 @@
 					"2m(spl),"\
 					"2m(u-boot),"\
 					"2m(u-boot_env),"\
-					"8m(kernel),"\
+					"12m(kernel),"\
 					"-(rootfs)"     /* ubifs */
 
 /* UBI/UBIFS support */
