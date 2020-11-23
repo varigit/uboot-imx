@@ -63,6 +63,7 @@ static inline int var_eeprom_is_valid(struct var_eeprom *ep)
 }
 
 extern int var_eeprom_read_header(struct var_eeprom *e);
+extern int var_scu_eeprom_read_header(struct var_eeprom *e);
 extern int var_eeprom_get_dram_size(struct var_eeprom *e, phys_size_t *size);
 extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
 extern int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
