@@ -48,7 +48,7 @@ static int var_scu_eeprom_read(u8 *buf, u32 size)
 	return ret;
 }
 
-static int var_scu_eeprom_read_header(struct var_eeprom *e)
+int var_scu_eeprom_read_header(struct var_eeprom *e)
 {
 	int ret;
 
