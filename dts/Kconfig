@@ -218,7 +218,7 @@ config MULTI_DTB_FIT
 
 
 config SPL_MULTI_DTB_FIT
-	depends on SPL_LOAD_FIT && SPL_OF_CONTROL && !SPL_OF_PLATDATA
+	depends on SPL_OF_CONTROL && !SPL_OF_PLATDATA
 	bool "Support embedding several DTBs in a FIT image for the SPL"
 	help
 	  This option provides the SPL with the ability to select its own
