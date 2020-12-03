@@ -34,7 +34,7 @@ endif
 
 obj-$(CONFIG_CI_UDC) += ci_udc.o
 
-obj-$(CONFIG_USB_ETHER) += ether.o
+obj-$(CONFIG_$(SPL_)USB_ETHER) += ether.o
 obj-$(CONFIG_USB_ETH_RNDIS) += rndis.o
 
 # Devices not related to the new gadget layer depend on CONFIG_USB_DEVICE
