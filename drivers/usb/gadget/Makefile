@@ -31,7 +31,7 @@ obj-$(CONFIG_USB_FUNCTION_SDP) += f_sdp.o
 obj-$(CONFIG_USB_FUNCTION_ROCKUSB) += f_rockusb.o
 endif
 endif
-ifdef CONFIG_USB_ETHER
+ifdef CONFIG_$(SPL_)USB_ETHER
 obj-y += ether.o
 obj-$(CONFIG_USB_ETH_RNDIS) += rndis.o
 obj-$(CONFIG_CI_UDC)	+= ci_udc.o
