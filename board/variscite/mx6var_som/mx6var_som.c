@@ -110,6 +110,22 @@ static bool is_solo_custom_board(void)
 	return ret;
 }
 
+/*
+ * Returns true if the carrier board is SymphonyBoard
+ */
+static bool is_symphony_board(void)
+{
+	bool ret;
+	int oldbus = i2c_get_bus_num();
+
+	i2c_set_bus_num(0);
+	/* Probing for extra PCA9534 present only on SymphonyBoard */
+	ret = (0 == i2c_probe(0x20));
+
+	i2c_set_bus_num(oldbus);
+	return ret;
+}
+
 static bool is_cpu_pop_packaged(void)
 {
 	struct src *src_regs = (struct src *)SRC_BASE_ADDR;
@@ -134,12 +150,13 @@ static inline bool is_dart_board(void)
  */
 static inline bool is_mx6_custom_board(void)
 {
-	return (!is_dart_board() && !is_solo_custom_board());
+	return (!is_dart_board() && !is_solo_custom_board() && !is_symphony_board());
 }
 
 enum current_board {
 	DART_BOARD,
 	SOLO_CUSTOM_BOARD,
+	SYMPHONY_BOARD,
 	MX6_CUSTOM_BOARD,
 };
 
@@ -149,6 +166,8 @@ static enum current_board get_board_indx(void)
 		return DART_BOARD;
 	if (is_solo_custom_board())
 		return SOLO_CUSTOM_BOARD;
+	if (is_symphony_board())
+		return SYMPHONY_BOARD;
 	if (is_mx6_custom_board())
 		return MX6_CUSTOM_BOARD;
 
@@ -1018,7 +1037,7 @@ static iomux_v3_cfg_t const usb_pads[][3*2] = {
 static void setup_usb(void)
 {
 	int board = get_board_indx();
-	if (board == MX6_CUSTOM_BOARD)
+	if ((board == SYMPHONY_BOARD) || (board == MX6_CUSTOM_BOARD))
 		return;
 
 	SETUP_IOMUX_PADS(usb_pads[board]);
@@ -1030,7 +1049,7 @@ static void setup_usb(void)
 
 int board_usb_phy_mode(int port)
 {
-	if (is_mx6_custom_board() && port == 0) {
+	if ((is_symphony_board() || is_mx6_custom_board()) && port == 0) {
 #if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_ENV_SUPPORT)
 		if (env_check("usbmode", "host"))
 			return USB_INIT_HOST;
@@ -1044,7 +1063,7 @@ int board_usb_phy_mode(int port)
 int board_ehci_power(int port, int on)
 {
 	int board = get_board_indx();
-	if (board == MX6_CUSTOM_BOARD)
+	if ((board == SYMPHONY_BOARD) || (board == MX6_CUSTOM_BOARD))
 		return 0; /* no power enable needed */
 
 	if (port > 1)
@@ -1335,6 +1354,8 @@ int board_late_init(void)
 		env_set("board_name", "DT6CUSTOM");
 	else if (is_solo_custom_board())
 		env_set("board_name", "SOLOCUSTOM");
+	else if (is_symphony_board())
+		env_set("board_name", "SYMPHONY");
 	else
 		env_set("board_name", "MX6CUSTOM");
 
