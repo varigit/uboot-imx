@@ -298,5 +298,8 @@
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
 
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "imx8qm_var_som_android.h"
+#endif
 
 #endif /* __IMX8QM_VAR_SOM_H */
