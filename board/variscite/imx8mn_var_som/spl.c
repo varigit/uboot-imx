@@ -192,6 +192,9 @@ int power_init_board(void)
 	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
 	pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
 
+	/* enable LDO5 - required to access I2C bus 3 */
+	pmic_reg_write(p, BD71837_LDO5_VOLT, 0xc0);
+
 	/* lock the PMIC regs */
 	pmic_reg_write(p, BD71837_REGLOCK, 0x11);
 
