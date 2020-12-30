@@ -249,19 +249,10 @@ int board_fit_config_name_match(const char *name)
 {
 	int id = get_board_id();
 
-	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-customboard")) {
+	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-customboard"))
 		return 0;
-	} else if (id == VAR_SOM_MX8M_MINI) {
-		struct var_eeprom *ep = VAR_EEPROM_DATA;
-		int rev = var_get_som_rev(ep);
-
-		if ((rev == SOM_REV_11) && !strcmp(name, "imx8mm-var-som-symphony"))
-			return 0;
-		else if ((rev == SOM_REV_10) && !strcmp(name, "imx8mm-var-som-rev10-symphony"))
-			return 0;
-		else
-			return -1;
-	}
+	else if ((id == VAR_SOM_MX8M_MINI) && !strcmp(name, "imx8mm-var-som-symphony"))
+		return 0;
 	else
 		return -1;
 }

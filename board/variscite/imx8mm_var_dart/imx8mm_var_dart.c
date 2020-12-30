@@ -130,12 +130,6 @@ static int setup_fec(void)
 #endif
 
 #ifdef CONFIG_CI_UDC
-#define USB_OTG1_ID_GPIO  IMX_GPIO_NR(1, 10)
-
-static iomux_v3_cfg_t const usb_pads[] = {
-	IMX8MM_PAD_GPIO1_IO10_GPIO1_IO10  | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
 int board_usb_init(int index, enum usb_init_type init)
 {
 	imx8m_usb_power(index, true);
@@ -149,39 +143,12 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 	return 0;
 }
-
-/* Used only on VAR-SOM-MX8M-MINI Rev1.0 (with extcon) */
-int board_ehci_usb_phy_mode(struct udevice *dev)
-{
-	if (dev->seq == 1)
-		return USB_INIT_HOST;
-	else
-		return gpio_get_value(USB_OTG1_ID_GPIO) ?
-			USB_INIT_DEVICE : USB_INIT_HOST;
-}
-
-static void setup_usb(void)
-{
-	struct var_eeprom *ep = VAR_EEPROM_DATA;
-	int som_rev = var_get_som_rev(ep);
-
-	if ((get_board_id() == VAR_SOM_MX8M_MINI) &&
-	    (som_rev == SOM_REV_10)) {
-		imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
-		gpio_request(USB_OTG1_ID_GPIO, "usb_otg1_id");
-		gpio_direction_input(USB_OTG1_ID_GPIO);
-	}
-}
 #endif
 
 int board_init(void)
 {
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
-#endif
-
-#ifdef CONFIG_CI_UDC
-	setup_usb();
 #endif
 
 	return 0;
