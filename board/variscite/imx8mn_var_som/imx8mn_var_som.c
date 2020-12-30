@@ -79,27 +79,6 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 	return 0;
 }
-
-#define USB_OTG1_ID_GPIO	IMX_GPIO_NR(1, 10)
-
-static iomux_v3_cfg_t const usb_pads[] = {
-	IMX8MN_PAD_GPIO1_IO10__GPIO1_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-/* Used only on VAR-SOM-MX8M-NANO Rev1.0 (with extcon) */
-int board_ehci_usb_phy_mode(struct udevice *dev)
-{
-	int id = gpio_get_value(USB_OTG1_ID_GPIO);
-
-	return id ? USB_INIT_DEVICE : USB_INIT_HOST;
-}
-
-static void setup_usb_rev10(void)
-{
-	imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
-	gpio_request(USB_OTG1_ID_GPIO, "usb_otg1_id");
-	gpio_direction_input(USB_OTG1_ID_GPIO);
-}
 #endif
 
 int board_init(void)
@@ -133,11 +112,6 @@ int board_late_init(void)
 	var_eeprom_print_prod_info(ep);
 
 	som_rev = var_get_som_rev(ep);
-
-#ifdef CONFIG_CI_UDC
-	if ((som_rev == SOM_REV_10))
-		setup_usb_rev10();
-#endif
 
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d",
 		(int) (gd->ram_size / 1024 / 1024));
