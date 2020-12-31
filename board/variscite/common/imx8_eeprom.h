@@ -62,15 +62,15 @@ static inline int var_eeprom_is_valid(struct var_eeprom *ep)
 	return 1;
 }
 
-extern int var_eeprom_read_header(struct var_eeprom *e);
-extern int var_scu_eeprom_read_header(struct var_eeprom *e);
-extern int var_eeprom_get_dram_size(struct var_eeprom *e, phys_size_t *size);
-extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
-extern int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
-extern void var_eeprom_print_prod_info(struct var_eeprom *e);
+int var_eeprom_read_header(struct var_eeprom *e);
+int var_scu_eeprom_read_header(struct var_eeprom *e);
+int var_eeprom_get_dram_size(struct var_eeprom *e, phys_size_t *size);
+int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
+int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
+void var_eeprom_print_prod_info(struct var_eeprom *e);
 
 #if defined(CONFIG_ARCH_IMX8M) && defined(CONFIG_SPL_BUILD)
-extern void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d);
+void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d);
 #endif
 
 #endif /* _MX8M_VAR_EEPROM_H_ */
