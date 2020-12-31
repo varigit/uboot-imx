@@ -102,7 +102,11 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
-				"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+				"if test $carrier_rev = legacy; then " \
+					"setenv fdt_file imx8mm-var-som-symphony-legacy.dtb; " \
+				"else " \
+					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+				"fi; " \
 			"else " \
 				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
 			"fi; " \
@@ -241,5 +245,10 @@
 
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
+
+/* Carrier board EEPROM */
+#define CARRIER_EEPROM_BUS_SOM		0x02
+#define CARRIER_EEPROM_BUS_DART		0x01
+#define CARRIER_EEPROM_ADDR		0x54
 
 #endif
