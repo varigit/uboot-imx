@@ -148,7 +148,11 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
+			"if test $carrier_rev = legacy; then " \
+				"setenv fdt_file imx8mn-var-som-symphony-legacy.dtb; " \
+			"else " \
+				"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
+			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
 		"echo fdt_file=${fdt_file}; " \
@@ -305,6 +309,10 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 
 #define CONFIG_OF_SYSTEM_SETUP
+
+/* Carrier board EEPROM */
+#define CARRIER_EEPROM_BUS		0x02
+#define CARRIER_EEPROM_ADDR		0x54
 
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mn_var_som_android.h"
