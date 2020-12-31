@@ -11,6 +11,7 @@
 #include <i2c.h>
 #include <asm/io.h>
 #include <cpu_func.h>
+#include <u-boot/crc.h>
 
 #ifdef CONFIG_ARCH_IMX8M
 #include <asm/arch-imx8m/ddr.h>
@@ -355,3 +356,100 @@ void var_eeprom_adjust_dram(struct var_eeprom *ep, struct dram_timing_info *d)
 	}
 }
 #endif
+
+#ifdef CONFIG_DM_I2C
+int var_carrier_eeprom_read(int bus_no, int addr, struct var_carrier_eeprom *ep)
+{
+	int ret;
+	struct udevice *bus;
+	struct udevice *dev;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, bus_no, &bus);
+	if (ret) {
+		debug("%s: No bus %d\n", __func__, bus_no);
+		return ret;
+	}
+
+	ret = dm_i2c_probe(bus, addr, 0, &dev);
+	if (ret) {
+		debug("%s: Carrier EEPROM I2C probe failed\n", __func__);
+		return ret;
+	}
+
+	/* Read EEPROM to memory */
+	ret = dm_i2c_read(dev, 0, (void *)ep, sizeof(*ep));
+	if (ret) {
+		debug("%s: Carrier EEPROM read failed, ret=%d\n", __func__, ret);
+		return ret;
+	}
+
+	return 0;
+}
+#else
+int var_carrier_eeprom_read(int bus_no, int addr, struct var_carrier_eeprom *ep)
+{
+	int ret;
+
+	/* Probe EEPROM */
+	i2c_set_bus_num(bus_no);
+	ret = i2c_probe(addr);
+	if (ret) {
+		debug("%s: Carrier EEPROM probe failed\n", __func__);
+		return ret;
+	}
+
+	/* Read EEPROM contents */
+	ret = i2c_read(addr, 0, 1, (uint8_t *)ep, sizeof(*ep));
+	if (ret) {
+		debug("%s: Carrier EEPROM read failed ret=%d\n", __func__, ret);
+		return ret;
+	}
+
+	return 0;
+}
+#endif
+
+int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
+{
+	u32 crc, crc_offset = offsetof(struct var_carrier_eeprom, crc);
+	u32 *crcp; /* Pointer to the CRC in the data read from the EEPROM */
+
+	if (htons(ep->magic) != VAR_CARRIER_EEPROM_MAGIC) {
+		debug("Invalid carrier EEPROM magic 0x%hx, expected 0x%hx\n",
+			htons(ep->magic), VAR_CARRIER_EEPROM_MAGIC);
+		return 0;
+	}
+
+	if (ep->struct_ver < 1) {
+		printf("Invalid carrier EEPROM version 0x%hx\n", ep->struct_ver);
+		return 0;
+	}
+
+	if (ep->struct_ver == 1)
+		return 1;
+
+	/* Only EEPROM structure above version 1 has CRC field */
+	crc = crc32(0, (void *)ep, crc_offset);
+	crcp = (void *)ep + crc_offset;
+	if (crc != (*crcp)) {
+		printf("Carrier EEPROM CRC mismatch (%08x != %08x)\n",
+			crc, be32_to_cpu(ep->crc));
+		return 0;
+	}
+
+	return 1;
+}
+
+/* Returns carrier board revision string via 'rev' argument.
+ * For legacy carrier board revisions the "legacy" string is returned.
+ * For new carrier board revisions the actual carrier revision is returned.
+ * Symphony-Board 1.4 and below are legacy, 1.4a and above are new.
+ * DT8MCustomBoard 1.4 and below are legacy, 2.0 and above are new.
+ */
+void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size)
+{
+	if (var_carrier_eeprom_is_valid(ep))
+		strncpy(rev, (const char *)ep->carrier_rev, size);
+	else
+		strncpy(rev, "legacy", size);
+}
