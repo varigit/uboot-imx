@@ -16,26 +16,6 @@
 		stdout-path = &lpuart0;
 	};
 
-	aliases {
-		usbhost1 = &usbh3;
-		usbgadget1 = &usbg1;
-	};
-
-	usbh3: usbh3 {
-		compatible = "Cadence,usb3-host";
-		cdns3,usb = <&usbotg3>;
-		dr_mode = "host";
-		status = "okay";
-		u-boot,dm-spl;
-	};
-
-	usbg1: usbg1 {
-		compatible = "fsl,imx27-usb-gadget";
-		chipidea,usb = <&usbotg1>;
-		dr_mode = "peripheral";
-		status = "okay";
-	};
-
 	regulators {
 		compatible = "simple-bus";
 		#address-cells = <1>;
@@ -222,6 +202,7 @@
 };
 
 &usbotg1 {
+	dr_mode = "host";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1>;
 	vbus-supply = <&reg_usb_otg1_vbus>;
