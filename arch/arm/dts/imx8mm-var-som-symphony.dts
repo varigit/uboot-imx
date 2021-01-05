@@ -57,12 +57,6 @@
 		>;
 	};
 
-	pinctrl_usdhc2_cd: usdhc2grpcd {
-		fsl,pins = <
-			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x1c0
-		>;
-	};
-
 	pinctrl_uart4: uart4grp {
 		fsl,pins = <
 			MX8MM_IOMUXC_UART4_RXD_UART4_DCE_RX		0x140
@@ -184,10 +178,10 @@
 /* SD */
 &usdhc2 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd>;
-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd>;
-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd>;
-	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&pinctrl_usdhc2>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
+	non-removable;
 	bus-width = <4>;
 	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";

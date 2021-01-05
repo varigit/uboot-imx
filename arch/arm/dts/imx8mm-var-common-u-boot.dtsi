@@ -91,10 +91,6 @@
 	u-boot,dm-spl;
 };
 
-&pinctrl_usdhc2_cd {
-	u-boot,dm-spl;
-};
-
 &pinctrl_usdhc2 {
 	u-boot,dm-spl;
 };
