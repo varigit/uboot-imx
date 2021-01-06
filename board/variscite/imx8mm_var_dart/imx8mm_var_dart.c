@@ -225,6 +225,8 @@ int board_late_init(void)
 	struct var_eeprom eeprom;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	int id = get_board_id();
+	struct var_carrier_eeprom carrier_eeprom;
+	char carrier_rev[16] = {0};
 
 	var_eeprom_read_header(&eeprom);
 
@@ -243,6 +245,10 @@ int board_late_init(void)
 			env_set("som_rev", "som_rev10");
 		else
 			env_set("som_rev", "som_rev11");
+
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+		env_set("carrier_rev", carrier_rev);
 	}
 	else if (id == DART_MX8M_MINI)
 		env_set("board_name", "DART-MX8M-MINI");
