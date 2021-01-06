@@ -303,16 +303,8 @@ int board_fit_config_name_match(const char *name)
 
 	if ((id == DART_MX8M_MINI) && !strcmp(name, "fsl-imx8mm-var-dart"))
 		return 0;
-	else if (id == VAR_SOM_MX8M_MINI) {
-		int rev = get_som_rev();
-
-		if ((rev == SOM_REV11) && !strcmp(name, "fsl-imx8mm-var-som"))
-			return 0;
-		else if ((rev == SOM_REV10) && !strcmp(name, "fsl-imx8mm-var-som-rev10"))
-			return 0;
-		else
-			return -1;
-	}
+	else if (id == VAR_SOM_MX8M_MINI && !strcmp(name, "fsl-imx8mm-var-som"))
+		return 0;
 	else
 		return -1;
 }
