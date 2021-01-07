@@ -103,6 +103,13 @@
 			>;
 		};
 
+		pinctrl_i2c3_gpio: i2c3grp-gpio {
+			fsl,pins = <
+				MX8MM_IOMUXC_I2C3_SCL_GPIO5_IO18		0x1c3
+				MX8MM_IOMUXC_I2C3_SDA_GPIO5_IO19		0x1c3
+			>;
+		};
+
 		pinctrl_pmic: pmicirq {
 			fsl,pins = <
 				MX8MM_IOMUXC_SD1_DATA6_GPIO2_IO8		0x41
@@ -218,6 +225,7 @@
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
+	u-boot,dm-pre-reloc;
 	status = "okay";
 
 	pmic: bd71837@4b {
@@ -378,8 +386,11 @@
 
 &i2c3 {
 	clock-frequency = <100000>;
-	pinctrl-names = "default";
+	pinctrl-names = "default", "gpio";
 	pinctrl-0 = <&pinctrl_i2c3>;
+	pinctrl-1 = <&pinctrl_i2c3_gpio>;
+	scl-gpios = <&gpio5 18 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 19 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };
 
