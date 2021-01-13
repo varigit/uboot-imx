@@ -18,7 +18,7 @@
 #include "fsl-imx8mm.dtsi"
 
 / {
-	model = "Variscite DART-MX8MM board";
+	model = "Variscite DART-MX8M-MINI board";
 	compatible = "variscite,imx8mm-var-dart", "fsl,imx8mm";
 
 	aliases {

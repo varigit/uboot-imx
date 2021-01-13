@@ -18,7 +18,7 @@
 #include "fsl-imx8mm.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX8MM board";
+	model = "Variscite VAR-SOM-MX8M-MINI board";
 	compatible = "variscite,imx8mm-var-som", "fsl,imx8mm";
 
 	aliases {
