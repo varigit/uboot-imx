@@ -1,0 +1,133 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2017-2018 NXP
+ * Copyright 2019-2020 Variscite Ltd.
+ */
+
+/dts-v1/;
+
+#include "fsl-imx8qxp.dtsi"
+
+/ {
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_ethphy0: regulator-ethphy0 {
+			compatible = "regulator-fixed";
+			regulator-name = "reg_ethphy0";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio1 28 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+			regulator-off-in-suspend;
+		};
+	};
+};
+
+&A35_0 {
+	u-boot,dm-pre-reloc;
+};
+
+&fec1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec1>;
+	phy-mode = "rgmii";
+	phy-handle = <&ethphy0>;
+	fsl,ar8031-phy-fixup;
+	fsl,magic-packet;
+	status = "okay";
+	phy-supply = <&reg_ethphy0>;
+	phy-reset-gpios = <&gpio1 2 GPIO_ACTIVE_LOW>;
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy0: ethernet-phy@4 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <4>;
+		};
+		ethphy1: ethernet-phy@5 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <5>;
+		};
+	};
+};
+
+&i2c0 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpi2c0>;
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	imx8qxp-var-som {
+		pinctrl_fec1: fec1grp {
+			fsl,pins = <
+				SC_P_COMP_CTL_GPIO_1V8_3V3_ENET_ENETB0_PAD	0x000014a0
+				SC_P_COMP_CTL_GPIO_1V8_3V3_ENET_ENETB1_PAD	0x000014a0
+				SC_P_ENET0_MDC_CONN_ENET0_MDC			0x06000020
+				SC_P_ENET0_MDIO_CONN_ENET0_MDIO			0x06000020
+				SC_P_ENET0_RGMII_TX_CTL_CONN_ENET0_RGMII_TX_CTL	0x00000061
+				SC_P_ENET0_RGMII_TXC_CONN_ENET0_RGMII_TXC	0x00000061
+				SC_P_ENET0_RGMII_TXD0_CONN_ENET0_RGMII_TXD0	0x00000061
+				SC_P_ENET0_RGMII_TXD1_CONN_ENET0_RGMII_TXD1	0x00000061
+				SC_P_ENET0_RGMII_TXD2_CONN_ENET0_RGMII_TXD2	0x00000061
+				SC_P_ENET0_RGMII_TXD3_CONN_ENET0_RGMII_TXD3	0x00000061
+				SC_P_ENET0_RGMII_RXC_CONN_ENET0_RGMII_RXC	0x00000061
+				SC_P_ENET0_RGMII_RX_CTL_CONN_ENET0_RGMII_RX_CTL	0x00000061
+				SC_P_ENET0_RGMII_RXD0_CONN_ENET0_RGMII_RXD0	0x00000061
+				SC_P_ENET0_RGMII_RXD1_CONN_ENET0_RGMII_RXD1	0x00000061
+				SC_P_ENET0_RGMII_RXD2_CONN_ENET0_RGMII_RXD2	0x00000061
+				SC_P_ENET0_RGMII_RXD3_CONN_ENET0_RGMII_RXD3	0x00000061
+				SC_P_MIPI_DSI0_GPIO0_01_LSIO_GPIO1_IO28		0x06000021
+				SC_P_SPI2_SDI_LSIO_GPIO1_IO02			0x06000021
+			>;
+		};
+
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+				SC_P_COMP_CTL_GPIO_1V8_3V3_GPIORHB_PAD		0x000514a0
+			>;
+		};
+
+		pinctrl_lpi2c0: lpi2c0grp {
+			fsl,pins = <
+				SC_P_MIPI_CSI0_GPIO0_00_ADMA_I2C0_SCL		0x06000021
+				SC_P_MIPI_CSI0_GPIO0_01_ADMA_I2C0_SDA		0x06000021
+			>;
+		};
+
+		pinctrl_usdhc1: usdhc1grp {
+			fsl,pins = <
+				SC_P_EMMC0_CLK_CONN_EMMC0_CLK			0x06000041
+				SC_P_EMMC0_CMD_CONN_EMMC0_CMD			0x00000021
+				SC_P_EMMC0_DATA0_CONN_EMMC0_DATA0		0x00000021
+				SC_P_EMMC0_DATA1_CONN_EMMC0_DATA1		0x00000021
+				SC_P_EMMC0_DATA2_CONN_EMMC0_DATA2		0x00000021
+				SC_P_EMMC0_DATA3_CONN_EMMC0_DATA3		0x00000021
+				SC_P_EMMC0_DATA4_CONN_EMMC0_DATA4		0x00000021
+				SC_P_EMMC0_DATA5_CONN_EMMC0_DATA5		0x00000021
+				SC_P_EMMC0_DATA6_CONN_EMMC0_DATA6		0x00000021
+				SC_P_EMMC0_DATA7_CONN_EMMC0_DATA7		0x00000021
+				SC_P_EMMC0_STROBE_CONN_EMMC0_STROBE		0x00000041
+			>;
+		};
+	};
+};
+
+&usdhc1 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc1>;
+	pinctrl-1 = <&pinctrl_usdhc1>;
+	pinctrl-2 = <&pinctrl_usdhc1>;
+	bus-width = <8>;
+	non-removable;
+	status = "okay";
+};
