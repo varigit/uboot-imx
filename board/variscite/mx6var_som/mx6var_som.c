@@ -164,10 +164,10 @@ static enum current_board get_board_indx(void)
 {
 	if (is_dart_board())
 		return DART_BOARD;
-	if (is_solo_custom_board())
-		return SOLO_CUSTOM_BOARD;
 	if (is_symphony_board())
 		return SYMPHONY_BOARD;
+	if (is_solo_custom_board())
+		return SOLO_CUSTOM_BOARD;
 	if (is_mx6_custom_board())
 		return MX6_CUSTOM_BOARD;
 
@@ -1352,10 +1352,10 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (is_dart_board())
 		env_set("board_name", "DT6CUSTOM");
-	else if (is_solo_custom_board())
-		env_set("board_name", "SOLOCUSTOM");
 	else if (is_symphony_board())
 		env_set("board_name", "SYMPHONY");
+	else if (is_solo_custom_board())
+		env_set("board_name", "SOLOCUSTOM");
 	else
 		env_set("board_name", "MX6CUSTOM");
 
