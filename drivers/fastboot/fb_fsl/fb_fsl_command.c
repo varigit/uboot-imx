@@ -404,7 +404,7 @@ static FbLockState do_fastboot_unlock(bool force)
 			char *serial = get_serial();
 			status = trusty_verify_secure_unlock(fastboot_buf_addr,
 								fastboot_bytes_received,
-								serial, 16);
+								(uint8_t *)serial, 16);
 			if (status < 0) {
 				printf("verify secure unlock credential fail due Trusty return %d\n", status);
 				return FASTBOOT_LOCK_ERROR;
@@ -929,11 +929,18 @@ void fastboot_acmd_complete(void)
  */
 static void run_acmd(char *cmd_parameter, char *response)
 {
-        if (!cmd_parameter) {
-                pr_err("missing slot suffix\n");
-                fastboot_fail("missing command", response);
-                return;
-        }
+	if (!cmd_parameter) {
+		pr_err("missing slot suffix\n");
+		fastboot_fail("missing command", response);
+		return;
+	}
+
+	if (strlen(cmd_parameter) >= sizeof(g_a_cmd_buff)) {
+		pr_err("input acmd is too long\n");
+		fastboot_fail("too long command", response);
+		return;
+	}
+
 	strcpy(g_a_cmd_buff, cmd_parameter);
 	fastboot_okay(NULL, response);
 }
