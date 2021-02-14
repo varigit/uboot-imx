@@ -74,8 +74,8 @@
 #define M4_BOOT_ENV \
 	"m4_0_image=m4_0.bin\0" \
 	"m4_1_image=m4_1.bin\0" \
-	"loadm4image_0=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m4_0_image}\0" \
-	"loadm4image_1=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m4_1_image}\0" \
+	"loadm4image_0=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m4_0_image}\0" \
+	"loadm4image_1=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m4_1_image}\0" \
 	"m4boot_0=run loadm4image_0; dcache flush; bootaux ${loadaddr} 0\0" \
 	"m4boot_1=run loadm4image_1; dcache flush; bootaux ${loadaddr} 1\0" \
 
@@ -108,6 +108,20 @@
 	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
 	"mmcpart=1\0" \
+	"m40_addr=0x88000000\0" \
+	"m40_bin=hello_world_m40.bin\0" \
+	"use_m40=no\0" \
+	"loadm40bin=load mmc ${mmcdev}:${mmcpart} ${m40_addr} ${bootdir}/${m40_bin}\0" \
+	"runm40bin=" \
+		"dcache flush; " \
+		"bootaux ${m40_addr} 0;\0" \
+	"m41_addr=0x88800000\0" \
+	"m41_bin=hello_world_m41.bin\0" \
+	"use_m41=no\0" \
+	"loadm41bin=load mmc ${mmcdev}:${mmcpart} ${m41_addr} ${bootdir}/${m41_bin}\0" \
+	"runm41bin=" \
+		"dcache flush; " \
+		"bootaux ${m41_addr} 1;\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} earlycon " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootfstype=ext4 rootwait rw\0 " \
@@ -203,6 +217,12 @@
 
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
+		   "if test ${use_m40} = yes && run loadm40bin; then " \
+			   "run runm40bin; " \
+		   "fi; " \
+		   "if test ${use_m41} = yes && run loadm41bin; then " \
+			   "run runm41bin; " \
+		   "fi; " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
 		   "else " \
