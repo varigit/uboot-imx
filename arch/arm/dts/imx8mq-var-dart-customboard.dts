@@ -11,7 +11,7 @@
 
 / {
 	model = "Variscite DART-MX8M";
-	compatible = "fsl,imx8mq-evk", "fsl,imx8mq";
+	compatible = "fsl,imx8mq-var-dart", "fsl,imx8mq";
 
 	chosen {
 		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
