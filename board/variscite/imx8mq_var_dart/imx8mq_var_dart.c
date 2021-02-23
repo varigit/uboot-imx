@@ -26,6 +26,12 @@ extern int var_setup_mac(struct var_eeprom *eeprom);
 
 DECLARE_GLOBAL_DATA_PTR;
 
+enum {
+	DART_CARRIER_REV_1,
+	DART_CARRIER_REV_2,
+	DART_CARRIER_REV_UNDEF,
+};
+
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
 
@@ -158,11 +164,37 @@ int board_init(void)
 	return 0;
 }
 
+#define GPIO_PAD_CTRL (PAD_CTL_PUE | PAD_CTL_DSE1)
+#define DART_CARRIER_DETECT_GPIO IMX_GPIO_NR(3, 14)
+
+static iomux_v3_cfg_t const dart_carrier_detect_pads[] = {
+	IMX8MQ_PAD_NAND_DQS__GPIO3_IO14 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
+};
+
+static int var_detect_dart_carrier_rev(void)
+{
+	static int dart_carrier_rev = DART_CARRIER_REV_UNDEF;
+
+	imx_iomux_v3_setup_multiple_pads(dart_carrier_detect_pads,
+				ARRAY_SIZE(dart_carrier_detect_pads));
+
+	gpio_request(DART_CARRIER_DETECT_GPIO, "dart_carrier_detect");
+	gpio_direction_input(DART_CARRIER_DETECT_GPIO);
+
+	if (gpio_get_value(DART_CARRIER_DETECT_GPIO))
+		dart_carrier_rev = DART_CARRIER_REV_1;
+	else
+		dart_carrier_rev = DART_CARRIER_REV_2;
+
+	return dart_carrier_rev;
+}
+
 #define SDRAM_SIZE_STR_LEN 5
 int board_late_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
+	int carrier_rev = var_detect_dart_carrier_rev();
 
 #ifdef CONFIG_FEC_MXC
 	var_setup_mac(ep);
@@ -170,8 +202,13 @@ int board_late_init(void)
 	var_eeprom_print_prod_info(ep);
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "IMX8MQ-VAR-DART");
+	env_set("board_name", "DART-MX8M");
 	env_set("board_rev", "iMX8MQ");
+
+	if (carrier_rev == DART_CARRIER_REV_2)
+		env_set("carrier_rev", "dt8m-2.x");
+	else
+		env_set("carrier_rev", "legacy");
 #endif
 
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int) (gd->ram_size / 1024 / 1024));
