@@ -116,10 +116,10 @@
 		"fi;\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if gpio input 12; then " \
-				"setenv fdt_file imx8mq-var-dart-cb12.dtb; " \
+			"if test $carrier_rev = legacy; then " \
+				"setenv fdt_file imx8mq-var-dart-dt8mcustomboard-legacy.dtb; " \
 			"else " \
-				"setenv fdt_file imx8mq-var-dart.dtb;" \
+				"setenv fdt_file imx8mq-var-dart-dt8mcustomboard.dtb; " \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
