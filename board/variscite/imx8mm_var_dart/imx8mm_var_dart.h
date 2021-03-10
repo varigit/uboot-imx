@@ -10,6 +10,8 @@ enum {
 enum {
 	SOM_REV_10,
 	SOM_REV_11,
+	SOM_REV_12,
+	SOM_REV_13,
 	UNKNOWN_REV
 };
 
