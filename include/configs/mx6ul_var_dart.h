@@ -149,6 +149,7 @@
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
+	"carrier=undefined\0" \
 	"fdt_file=undefined\0" \
 	"fdt_addr=0x83000000\0" \
 	"fdt_high=0xffffffff\0" \
@@ -203,15 +204,19 @@
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = DART-6UL; then " \
 				"setenv som var-dart; " \
-				"setenv carrier 6ulcustomboard; " \
+				"if test $carrier = undefined; then " \
+					"setenv carrier 6ulcustomboard; " \
+				"fi; " \
 			"fi; " \
 			"if test $board_name = VAR-SOM-6UL; then " \
 				"setenv som var-som; " \
-				"i2c dev 0; " \
-				"if i2c probe 0x20; then " \
-					"setenv carrier symphony-board; " \
-				"else " \
-					"setenv carrier concerto-board; " \
+				"if test $carrier = undefined; then " \
+					"i2c dev 0; " \
+					"if i2c probe 0x20; then " \
+						"setenv carrier symphony-board; " \
+					"else " \
+						"setenv carrier concerto-board; " \
+					"fi; " \
 				"fi; " \
 			"fi; " \
 			"if test $boot_dev = emmc || test $som_storage = emmc || " \
