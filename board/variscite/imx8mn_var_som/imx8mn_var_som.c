@@ -92,10 +92,18 @@ int board_init(void)
 
 int var_get_som_rev(struct var_eeprom *ep)
 {
-	if (ep->somrev == 0)
+	switch (ep->somrev) {
+	case 0:
 		return SOM_REV_10;
-	else
+	case 1:
 		return SOM_REV_11;
+	case 2:
+		return SOM_REV_12;
+	case 3:
+		return SOM_REV_13;
+	default:
+		return UNKNOWN_REV;
+	}
 }
 
 #define SDRAM_SIZE_STR_LEN 5
@@ -115,17 +123,27 @@ int board_late_init(void)
 
 	som_rev = var_get_som_rev(ep);
 
+	printf("board_late_init: som_rev=%d\n", som_rev);
+
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d",
 		(int) (gd->ram_size / 1024 / 1024));
 	env_set("sdram_size", sdram_size_str);
 
 	env_set("board_name", "VAR-SOM-MX8M-NANO");
-
-	if (som_rev == SOM_REV_10)
+	switch (som_rev) {
+	case SOM_REV_10:
 		env_set("som_rev", "som_rev10");
-	else
+		break;
+	case SOM_REV_11:
 		env_set("som_rev", "som_rev11");
-
+		break;
+	case SOM_REV_12:
+		env_set("som_rev", "som_rev12");
+		break;
+	case SOM_REV_13:
+		env_set("som_rev", "som_rev13");
+		break;
+	}
 	var_carrier_eeprom_read(CARRIER_EEPROM_BUS, CARRIER_EEPROM_ADDR, &carrier_eeprom);
 	var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
 	env_set("carrier_rev", carrier_rev);
