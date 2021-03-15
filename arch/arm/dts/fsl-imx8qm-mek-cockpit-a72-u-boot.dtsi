@@ -1,0 +1,188 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2020 NXP
+ */
+
+/ {
+
+	aliases {
+		usbhost1 = &usbh3;
+		usbgadget0 = &usbg1;
+	};
+
+	usbh3: usbh3 {
+		compatible = "Cadence,usb3-host";
+		dr_mode = "host";
+		cdns3,usb = <&usbotg3>;
+		status = "okay";
+	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+		bootph-pre-ram;
+	};
+};
+
+&{/imx8qm-pm} {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&mu {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&clk {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&iomuxc {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&{/regulators} {
+	bootph-pre-ram;
+};
+
+&{/mu@5d1d0000/iomuxc/imx8qm-mek} {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pinctrl_lpuart2 {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1_100mhz {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1_200mhz {
+	bootph-pre-ram;
+};
+
+&pd_lsio {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio1 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio2 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio4 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio5 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_flexspi0 {
+	bootph-pre-ram;
+};
+
+&pd_conn {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch0 {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch1 {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch2 {
+	bootph-pre-ram;
+};
+
+&pd_dma {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pd_dma_lpuart2 {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&pd_conn_usbotg0 {
+	bootph-pre-ram;
+};
+
+&pd_conn_usbotg0_phy {
+	bootph-pre-ram;
+};
+
+&pd_conn_usb2 {
+	bootph-pre-ram;
+};
+
+&pd_conn_usb2_phy {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&lpuart2 {
+	bootph-some-ram;
+	bootph-pre-ram;
+};
+
+&usbmisc1 {
+	bootph-pre-ram;
+};
+
+&usbphy1 {
+	bootph-pre-ram;
+};
+
+&usbotg1 {
+	bootph-pre-ram;
+};
+
+&usbotg3 {
+	bootph-pre-ram;
+};
+
+&usbphynop1 {
+	bootph-pre-ram;
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+};
+
+&wu {
+	bootph-pre-ram;
+};
