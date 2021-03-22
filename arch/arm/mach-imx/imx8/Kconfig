@@ -88,6 +88,12 @@ config PSCI_BOARD_REBOOT
 config IMX8_TRUSTY_XEN
 	bool "Support Trusty Xen feature"
 
+config IMX8_BOARD_INIT_DRAM
+        bool
+        default n
+        help
+         This option enables DRAM configuration in board code
+
 choice
 	prompt "i.MX8 board select"
 	optional
