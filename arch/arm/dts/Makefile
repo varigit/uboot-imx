@@ -794,6 +794,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-evk.dtb \
 	imx8mp-var-dart.dtb \
 	imx8mp-var-som.dtb \
+	imx8mm-var-dart-customboard.dtb \
+	imx8mm-var-som-symphony.dtb \
 	imx8mm-ddr4-ab2.dtb \
 	imx8mm-ab2.dtb \
 	imx8mn-ddr4-ab2.dtb \
