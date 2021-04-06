@@ -18,10 +18,8 @@
 
 #ifdef CONFIG_SYS_MALLOC_LEN
 #undef CONFIG_SYS_MALLOC_LEN
-#define CONFIG_SYS_MALLOC_LEN           (32 * SZ_1M)
+#define CONFIG_SYS_MALLOC_LEN           (64 * SZ_1M)
 #endif
-
-//#define CONFIG_ANDROID_RECOVERY
 
 #define CONFIG_SERIAL_TAG
 
@@ -35,10 +33,11 @@
 	"bootargs=" \
 		"init=/init " \
 		"consoleblank=0 " \
-		"androidboot.hardware=freescale " \
-		"androidboot.force_normal_boot=1 " \
+		"androidboot.hardware=nxp " \
 		"cma=800M@0x400M-0xb80M " \
 		"firmware_class.path=/vendor/firmware " \
+		"loop.max_part=7 " \
+		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
 /* Enable mcu firmware flash */
@@ -72,6 +71,17 @@
 #define NS_ARCH_ARM64 1
 #endif
 
-#define AVB_AB_I_UNDERSTAND_LIBAVB_AB_IS_DEPRECATED
+/* Enable CONFIG_ANDROID_LOW_MEMORY to config 1GB ddr */
+#ifdef  CONFIG_ANDROID_LOW_MEMORY
+#undef  PHYS_SDRAM_SIZE
+#define PHYS_SDRAM_SIZE 0x40000000 /* 1GB DDR */
+#endif
 
-#endif /* __MX8MM_VAR_DART_ANDROID_H */
+#ifdef CONFIG_IMX8M_4G_LPDDR4
+#undef PHYS_SDRAM_SIZE
+#define PHYS_SDRAM_SIZE          0xC0000000 /* 3GB */
+#define PHYS_SDRAM_2             0x100000000
+#define PHYS_SDRAM_2_SIZE        0x40000000 /* 1GB */
+#endif
+
+#endif /*__MX8MM_VAR_DART_ANDROID_H */

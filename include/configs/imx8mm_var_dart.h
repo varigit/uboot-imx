@@ -258,4 +258,5 @@
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mm_var_dart_android.h"
 #endif
+
 #endif
