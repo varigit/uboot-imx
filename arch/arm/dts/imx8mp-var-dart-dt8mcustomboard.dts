@@ -29,6 +29,13 @@
 		reg = <0x21>;
 		gpio-controller;
 		#gpio-cells = <2>;
+
+		eth1_phy_rst_hog {
+			gpio-hog;
+			gpios = <0 0>;
+			output-high;
+			line-name = "eth1_phy_rst";
+		};
 	};
 };
 
@@ -37,6 +44,8 @@
 		ethphy1: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <1>;
+			at803x,eee-disabled;
+			at803x,vddio-1p8v;
 			eee-broken-1000t;
 		};
 	};
@@ -47,9 +56,6 @@
 	pinctrl-0 = <&pinctrl_fec>;
 	phy-mode = "rgmii";
 	phy-handle = <&ethphy1>;
-	phy-reset-gpios = <&pca6408_2 0 GPIO_ACTIVE_LOW>;
-	phy-reset-duration = <10>;
-	phy-reset-post-delay = <100>;
 	status = "okay";
 };
 
