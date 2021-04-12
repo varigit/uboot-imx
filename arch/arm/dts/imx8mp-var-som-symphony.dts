@@ -13,6 +13,10 @@
 		stdout-path = &uart2;
 	};
 
+	aliases {
+		gpio5 = &pca9534;
+	};
+
 	reg_usdhc2_vmmc: regulator-usdhc2-vmmc {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
