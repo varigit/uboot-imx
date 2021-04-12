@@ -157,7 +157,7 @@
 	pinctrl-0 = <&pinctrl_fec>;
 	phy-mode = "rgmii";
 	phy-handle = <&ethphy1>;
-	status = "okay";
+	status = "disabled";
 };
 
 &iomuxc {
