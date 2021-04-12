@@ -9,6 +9,11 @@
 
 / {
 	model = "Variscite DART-MX8M-PLUS on DT8MCustomBoard 2.0 and above";
+
+	aliases {
+		gpio5 = &pca6408_1;
+		gpio6 = &pca6408_2;
+	};
 };
 
 &i2c4 {
