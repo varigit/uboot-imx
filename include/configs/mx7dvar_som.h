@@ -133,7 +133,7 @@
 	"mmcbootpart=1\0" \
 	"mmcrootpart=2\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/mmcblk${mmcblk}p${mmcrootpart} rootwait rw\0 " \
+		"root=/dev/mmcblk${mmcblk}p${mmcrootpart} rootwait rw ${cma_size}\0 " \
 	"loadbootenv=" \
 		"load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${bootenv}\0" \
 	"importbootenv=echo Importing environment from mmc ...; " \
@@ -166,8 +166,9 @@
 
 #define NAND_BOOT_ENV_SETTINGS \
 	"nandargs=setenv bootargs console=${console},${baudrate} ubi.mtd=4 " \
-		"root=ubi0:rootfs rootfstype=ubifs rw\0" \
-	"bootcmd=run nandargs; " \
+		"root=ubi0:rootfs rootfstype=ubifs rw ${cma_size}\0" \
+	"bootcmd=run ramsize_check; " \
+		"run nandargs; " \
 		"run optargs; " \
 		"if test ${use_m4} = yes; then run m4boot; fi; " \
 		"nand read ${loadaddr} 0x600000 0xbe0000;" \
@@ -182,6 +183,7 @@
 #else
 #define BOOT_ENV_SETTINGS       MMC_BOOT_ENV_SETTINGS
 #define CONFIG_BOOTCOMMAND \
+	"run ramsize_check; " \
 	"mmc dev ${mmcdev};" \
 	"if test ${use_m4} = yes; then run m4boot; fi; " \
 	"mmc dev ${mmcdev}; if mmc rescan; then " \
@@ -225,7 +227,7 @@
 	"m4bootdata="__stringify(CONFIG_SYS_AUXCORE_BOOTDATA)"\0" \
 	"m4boot=if run loadm4image; then dcache flush; bootaux ${m4bootdata}; fi\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs rw " \
+		"root=/dev/nfs rw ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs; " \
@@ -250,6 +252,12 @@
 			"fi; " \
 		"else " \
 			"bootz; " \
+		"fi;\0" \
+	"ramsize_check="\
+		"if test $sdram_size -lt 256; then " \
+			"setenv cma_size cma=32MB; " \
+		"else " \
+			"setenv cma_size cma=64MB; " \
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \

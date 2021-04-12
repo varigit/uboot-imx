@@ -506,10 +506,12 @@ int mmc_map_to_kernel_blk(int dev_no)
 	return dev_no;
 }
 
+#define SDRAM_SIZE_STR_LEN 5
 void board_late_mmc_init(void)
 {
 	char cmd[32];
 	u32 dev_no = mmc_get_env_dev();
+	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 
 	if (!env_check("mmcautodetect", "yes"))
 		return;
@@ -521,6 +523,9 @@ void board_late_mmc_init(void)
 
 	sprintf(cmd, "mmc dev %d", dev_no);
 	run_command(cmd, 0);
+
+	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int) (gd->ram_size / 1024 / 1024));
+	env_set("sdram_size", sdram_size_str);
 }
 
 static void check_emmc(void)
