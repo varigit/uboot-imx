@@ -6,16 +6,8 @@
  */
 
 / {
-
 	aliases {
 		usbgadget0 = &usbg1;
-	};
-
-	usbg1: usbg1 {
-		compatible = "fsl,imx27-usb-gadget";
-		dr_mode = "peripheral";
-		chipidea,usb = <&usbotg1>;
-		status = "okay";
 	};
 
 	firmware {
@@ -24,24 +16,18 @@
 			method = "smc";
 		};
 	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
 };
 
 &{/soc@0} {
 	u-boot,dm-pre-reloc;
 	u-boot,dm-spl;
-};
-
-&clk {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-	/delete-property/ assigned-clocks;
-	/delete-property/ assigned-clock-parents;
-	/delete-property/ assigned-clock-rates;
-};
-
-&osc_24m {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
 };
 
 &aips1 {
@@ -57,9 +43,12 @@
 	u-boot,dm-spl;
 };
 
-&iomuxc {
+&clk {
 	u-boot,dm-spl;
 	u-boot,dm-pre-reloc;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
 };
 
 &gpio1 {
@@ -79,6 +68,28 @@
 };
 
 &gpio5 {
+	u-boot,dm-spl;
+};
+
+&iomuxc {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&osc_24m {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl_uart4 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc3 {
 	u-boot,dm-spl;
 };
 
@@ -102,16 +113,4 @@
 	assigned-clocks = <&clk IMX8MN_CLK_USDHC3>;
 	assigned-clock-rates = <400000000>;
 	assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_400M>;
-};
-
-&pinctrl_uart4 {
-	u-boot,dm-spl;
-};
-
-&pinctrl_usdhc2 {
-	u-boot,dm-spl;
-};
-
-&pinctrl_usdhc3 {
-	u-boot,dm-spl;
 };

@@ -149,9 +149,9 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $som_rev = som_rev10; then " \
-				"setenv fdt_file imx8mn-var-som-rev10.dtb; " \
+				"setenv fdt_file imx8mn-var-som-rev10-symphony.dtb; " \
 			"else " \
-				"setenv fdt_file imx8mn-var-som.dtb; " \
+				"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
 			"fi;" \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
