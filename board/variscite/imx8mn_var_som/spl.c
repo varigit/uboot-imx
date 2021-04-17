@@ -213,18 +213,7 @@ void spl_board_init(void)
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
 {
-	int rev;
-	struct var_eeprom *ep = VAR_EEPROM_DATA;
-
-	rev = var_get_som_rev(ep);
-	if ((rev == SOM_REV_11) && !strcmp(name, "imx8mn-var-som-symphony")) {
-		return 0;
-	}
-	else if ((rev == SOM_REV_10) && !strcmp(name, "imx8mn-var-som-rev10-symphony")) {
-		return 0;
-	}
-	else
-		return -1;
+	return 0;
 }
 #endif
 

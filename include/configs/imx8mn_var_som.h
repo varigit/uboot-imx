@@ -148,11 +148,7 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if test $som_rev = som_rev10; then " \
-				"setenv fdt_file imx8mn-var-som-rev10-symphony.dtb; " \
-			"else " \
-				"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
-			"fi;" \
+			"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
 		"echo fdt_file=${fdt_file}; " \
