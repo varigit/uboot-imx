@@ -151,6 +151,13 @@ config TARGET_IMX8MN_DDR4_AB2
 	select SUPPORT_SPL
 	select IMX8M_DDR4
 
+config TARGET_IMX8MN_VAR_SOM
+	bool "imx8mn_var_som"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+	select IMX8M_BOARD_INIT_DRAM
+
 config TARGET_VERDIN_IMX8MM
        bool "Support Toradex Verdin iMX8M Mini module"
        select IMX8MM
@@ -166,6 +173,7 @@ source "board/freescale/imx8mm_evk/Kconfig"
 source "board/freescale/imx8mm_val/Kconfig"
 source "board/freescale/imx8mn_evk/Kconfig"
 source "board/freescale/imx8mp_evk/Kconfig"
+source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/variscite/imx8mp_var_dart/Kconfig"
 source "board/variscite/imx8mm_var_dart/Kconfig"
