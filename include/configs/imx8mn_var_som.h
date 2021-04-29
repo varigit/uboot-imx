@@ -26,14 +26,9 @@
 
 #ifdef CONFIG_SPL_BUILD
 #define CONFIG_SPL_WATCHDOG_SUPPORT
-#define CONFIG_SPL_POWER_SUPPORT
 #define CONFIG_SPL_DRIVERS_MISC_SUPPORT
-#define CONFIG_SPL_I2C_SUPPORT
 #define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/armv8/u-boot-spl.lds"
 #define CONFIG_SPL_STACK		0x95fff0
-#define CONFIG_SPL_LIBCOMMON_SUPPORT
-#define CONFIG_SPL_LIBGENERIC_SUPPORT
-#define CONFIG_SPL_GPIO_SUPPORT
 #define CONFIG_SPL_BSS_START_ADDR	0x00950000
 #define CONFIG_SPL_BSS_MAX_SIZE		0x2000	/* 8 KB */
 #define CONFIG_SYS_SPL_MALLOC_START	0x00940000
@@ -53,12 +48,6 @@
 #define CONFIG_POWER_BD71837
 
 #define CONFIG_SYS_I2C
-#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
-#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
-#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
-#define CONFIG_SYS_I2C_MXC_I2C4		/* enable I2C bus 4 */
-
-#define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #endif /* CONFIG_SPL_BUILD */
 
@@ -67,9 +56,6 @@
 #define CONFIG_FASTBOOT_USB_DEV 0
 
 #define CONFIG_REMAKE_ELF
-
-#define CONFIG_BOARD_EARLY_INIT_F
-#define CONFIG_BOARD_LATE_INIT
 
 #undef CONFIG_CMD_EXPORTENV
 #undef CONFIG_CMD_IMPORTENV
@@ -81,10 +67,6 @@
 /* ENET Config */
 #if defined(CONFIG_FEC_MXC)
 #define CONFIG_BOOTP_SERVERIP
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_MII
-#define CONFIG_MII
 #define CONFIG_ETHPRIME			"FEC"
 
 #define CONFIG_FEC_XCV_TYPE		RGMII
@@ -92,10 +74,6 @@
 #ifndef CONFIG_CMD_NET
 #define CONFIG_CMD_NET
 #endif
-#define CONFIG_PHY_GIGE
-
-#define CONFIG_PHYLIB
-#define CONFIG_PHY_ATHEROS
 #endif
 
 /* UUU environment variables */
@@ -251,7 +229,6 @@
 
 #define CONFIG_BAUDRATE			115200
 
-#define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART4_BASE_ADDR
 
 /* Monitor Command Prompt */
@@ -266,29 +243,19 @@
 #define CONFIG_IMX_BOOTAUX
 
 /* USDHC configs */
-#define CONFIG_CMD_MMC
-#define CONFIG_FSL_ESDHC_IMX
 #define CONFIG_FSL_USDHC
 
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_SYS_FSL_ESDHC_ADDR	0
 
-#define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
-
-#define CONFIG_MXC_GPIO
 #ifndef CONFIG_MXC_OCOTP
 #define CONFIG_MXC_OCOTP
 #endif
-#define CONFIG_CMD_FUSE
 
 /* I2C configs */
 #ifndef CONFIG_DM_I2C
 #define CONFIG_SYS_I2C
 #endif
-#define CONFIG_SYS_I2C_MXC_I2C1		/* enable I2C bus 1 */
-#define CONFIG_SYS_I2C_MXC_I2C2		/* enable I2C bus 2 */
-#define CONFIG_SYS_I2C_MXC_I2C3		/* enable I2C bus 3 */
-#define CONFIG_SYS_I2C_MXC_I2C4		/* enable I2C bus 4 */
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
@@ -307,8 +274,6 @@
 
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
-
-#define CONFIG_OF_SYSTEM_SETUP
 
 /* Carrier board EEPROM */
 #define CARRIER_EEPROM_BUS		0x02

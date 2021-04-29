@@ -56,12 +56,13 @@
 		"init=/init " \
 		"androidboot.console=ttymxc3 " \
 		"consoleblank=0 " \
-		"androidboot.hardware=freescale " \
+		"androidboot.hardware=nxp " \
 		"firmware_class.path=/vendor/firmware " \
 		"loop.max_part=7 " \
 		"androidboot.primary_display=imx-drm " \
 		"galcore.contiguousSize=33554432 " \
 		"androidboot.wificountrycode=US " \
+		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
 
