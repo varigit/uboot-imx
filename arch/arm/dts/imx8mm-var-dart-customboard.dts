@@ -136,6 +136,21 @@
 	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
 	status = "okay";
+
+	pca9534: gpio@21 {
+				status = "okay";
+				compatible = "nxp,pca9534";
+				reg = <0x21>;
+				gpio-controller;
+				#gpio-cells = <2>;
+
+				ft5x06_ts_hog {
+						gpio-hog;
+						gpios = <4 GPIO_ACTIVE_HIGH>;
+						output-high;
+						line-name = "touch_rst";
+				};
+		};
 };
 
 &uart1 { /* console */
