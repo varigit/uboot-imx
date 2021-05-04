@@ -115,7 +115,7 @@
 	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"ramsize_check="\
 		"if test $sdram_size -le 1024; then " \
-			"setenv cma_size cma=640M@2400M; " \
+			"setenv cma_size cma=480M@2400M; " \
 		"else " \
 			"setenv cma_size cma=960M@2400M; " \
 		"fi;\0" \
@@ -223,13 +223,13 @@
 #define CONFIG_SYS_SDRAM_BASE		0x80000000
 #define PHYS_SDRAM_1			0x80000000
 #define PHYS_SDRAM_2			0x880000000
-#define DEFAULT_SDRAM_SIZE		(2048ULL * SZ_1M)
+#define DEFAULT_SDRAM_SIZE		(1024ULL * SZ_1M)
 
-#define CONFIG_SYS_MEMTEST_START	0xA0000000
+#define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE + (DEFAULT_SDRAM_SIZE >> 1)
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (DEFAULT_SDRAM_SIZE >> 2))
 
 /* EEPROM */
-#define VAR_EEPROM_DRAM_START		(CONFIG_SYS_MEMTEST_START + (DEFAULT_SDRAM_SIZE >> 1))
+#define VAR_EEPROM_DRAM_START		CONFIG_SYS_MEMTEST_END
 
 /* Serial */
 #define CONFIG_BAUDRATE			115200
