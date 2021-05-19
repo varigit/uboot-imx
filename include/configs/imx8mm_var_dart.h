@@ -67,7 +67,7 @@
 	"bootdir=/boot\0"	\
 	"script=boot.scr\0" \
 	"image=Image.gz\0" \
-	"console=ttymxc0,115200\0" \
+	"console=undefined\0" \
 	"img_addr=0x42000000\0"			\
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
@@ -92,7 +92,15 @@
 		"fi; " \
 		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console} " \
+	"setconsole=" \
+		"if test $console = undefined; then " \
+			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
+				"setenv console ttymxc3,115200; " \
+			"else " \
+				"setenv console ttymxc0,115200; " \
+			"fi; " \
+		"fi; \0" \
+	"mmcargs=run setconsole; setenv bootargs console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size}\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
@@ -136,7 +144,7 @@
 		"else " \
 			"echo wait for boot; " \
 		"fi;\0" \
-	"netargs=setenv bootargs console=${console} " \
+	"netargs=run setconsole; setenv bootargs console=${console} " \
 		"root=/dev/nfs ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
