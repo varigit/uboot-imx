@@ -257,7 +257,6 @@ int board_late_init(void)
 
 	if (id == VAR_SOM_MX8M_MINI) {
 		env_set("board_name", "VAR-SOM-MX8M-MINI");
-		env_set("console", "ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200");
 		if (get_som_rev() == SOM_REV10)
 			env_set("som_rev", "som_rev10");
 		else
