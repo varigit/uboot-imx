@@ -254,10 +254,12 @@
 			"bootz; " \
 		"fi;\0" \
 	"ramsize_check="\
-		"if test $sdram_size -lt 256; then " \
+		"if test $sdram_size -lt 512; then " \
 			"setenv cma_size cma=32MB; " \
-		"else " \
+		"elif test $sdram_size -lt 1024; then " \
 			"setenv cma_size cma=64MB; " \
+		"else " \
+			"setenv cma_size cma=128MB; " \
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
