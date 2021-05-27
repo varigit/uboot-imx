@@ -35,10 +35,11 @@
 	"bootargs=" \
 		"init=/init " \
 		"consoleblank=0 " \
-		"androidboot.hardware=freescale " \
-		"androidboot.force_normal_boot=1 " \
+		"androidboot.hardware=nxp " \
 		"cma=800M@0x400M-0xb80M " \
 		"firmware_class.path=/vendor/firmware " \
+		"swiotlb=65536 " \
+		"loop.max_part=7 " \
 		"transparent_hugepage=never\0"
 
 /* Enable mcu firmware flash */
