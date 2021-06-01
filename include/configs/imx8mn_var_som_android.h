@@ -65,6 +65,13 @@
 		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
+/* Enable mcu firmware flash */
+#ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
+#define ANDROID_MCU_FRIMWARE_DEV_TYPE DEV_MMC
+#define ANDROID_MCU_FIRMWARE_START 0x500000
+#define ANDROID_MCU_FIRMWARE_SIZE  0x40000
+#define ANDROID_MCU_FIRMWARE_HEADER_STACK 0x20020000
+#endif
 
 #if !defined(CONFIG_IMX_TRUSTY_OS) || !defined(CONFIG_DUAL_BOOTLOADER)
 #undef CONFIG_FSL_CAAM_KB
