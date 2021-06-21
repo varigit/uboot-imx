@@ -69,6 +69,27 @@
 &pinctrl_usdhc0 {
 	bootph-pre-ram;
 };
+
+&crypto {
+	bootph-pre-ram;
+};
+
+&sec_jr0 {
+	bootph-pre-ram;
+};
+
+&sec_jr1 {
+	bootph-pre-ram;
+};
+
+&sec_jr2 {
+	bootph-pre-ram;
+};
+
+&sec_jr3 {
+	bootph-pre-ram;
+};
+
 &usbotg1 {
 	compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb", "fsl,imx27-usb";
 };
