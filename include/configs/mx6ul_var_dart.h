@@ -194,9 +194,11 @@
 	"usbnet_hostaddr=f8:dc:7a:00:00:01\0" \
 	"ramsize_check="\
 		"if test $sdram_size -lt 256; then " \
-			"setenv cma_size cma=32MB; " \
+			"setenv cma_size cma=16MB; " \
 			"setenv fdt_addr 0x84000000; " \
 			"setenv loadaddr 0x84600000; " \
+		"elif test $sdram_size -lt 512; then " \
+			"setenv cma_size cma=32MB; " \
 		"else " \
 			"setenv cma_size cma=64MB; " \
 		"fi;\0" \
