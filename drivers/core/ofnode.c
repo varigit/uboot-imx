@@ -1793,7 +1793,7 @@ int ofnode_read_bootscript_flash(u64 *bootscr_flash_offset,
 	return 0;
 }
 
-ofnode ofnode_get_phy_node(ofnode node)
+ofnode ofnode_get_phy_node_index(ofnode node, int index)
 {
 	/* DT node properties that reference a PHY node */
 	static const char * const phy_handle_str[] = {
@@ -1808,10 +1808,15 @@ ofnode ofnode_get_phy_node(ofnode node)
 
 	for (i = 0; i < ARRAY_SIZE(phy_handle_str); i++)
 		if (!ofnode_parse_phandle_with_args(node, phy_handle_str[i],
-						    NULL, 0, 0, &args))
+						    NULL, 0, index, &args))
 			break;
 
 	return args.node;
+}
+
+ofnode ofnode_get_phy_node(ofnode node)
+{
+	return ofnode_get_phy_node_index(node, 0);
 }
 
 phy_interface_t ofnode_read_phy_mode(ofnode node)
