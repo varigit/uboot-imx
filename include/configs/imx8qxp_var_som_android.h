@@ -53,12 +53,13 @@
 		"init=/init " \
 		"androidboot.console=ttyLP3 " \
 		"consoleblank=0 " \
-		"androidboot.hardware=freescale " \
+		"androidboot.hardware=nxp " \
 		"firmware_class.path=/vendor/firmware " \
 		"loop.max_part=7 " \
 		"androidboot.fbTileSupport=enable " \
 		"androidboot.primary_display=imx-drm " \
-		"androidboot.wificountrycode=US " \
+		"androidboot.wificountrycode=CN " \
+		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
 #define AVB_AB_I_UNDERSTAND_LIBAVB_AB_IS_DEPRECATED
