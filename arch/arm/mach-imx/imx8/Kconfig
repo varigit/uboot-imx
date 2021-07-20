@@ -139,6 +139,13 @@ config TARGET_IMX8QM_ROM7720_A1
 	select SUPPORT_SPL
 	select IMX8QM
 
+config TARGET_IMX8QM_VAR_SOM
+	bool "Support Variscite VAR-SOM-MX8 board"
+	select BOARD_LATE_INIT
+	select SUPPORT_SPL
+	select IMX8QM
+	select IMX8_BOARD_INIT_DRAM
+
 config TARGET_IMX8QXP_MEK
 	bool "Support i.MX8QXP MEK board"
 	select BOARD_LATE_INIT
@@ -200,6 +207,7 @@ source "board/toradex/apalis-imx8/Kconfig"
 source "board/toradex/colibri-imx8x/Kconfig"
 source "board/siemens/capricorn/Kconfig"
 source "board/variscite/imx8qxp_var_som/Kconfig"
+source "board/variscite/imx8qm_var_som/Kconfig
 
 config SNVS_SEC_SC
 	bool "Support SNVS configuration"
