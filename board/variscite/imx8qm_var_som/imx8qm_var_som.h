@@ -4,6 +4,9 @@
  * SPDX-License-Identifier:     GPL-2.0+
  */
 
+#define VENDOR 10
+#define FIRMWARE 15
+
 int var_get_board_id(struct var_eeprom *ep);
 
 enum {

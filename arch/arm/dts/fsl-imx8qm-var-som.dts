@@ -147,6 +147,12 @@
 				SC_P_GPT1_CAPTURE_LSIO_GPIO0_IO18		0x06000048
 			>;
 		};
+
+		pinctrl_backlight: backlightgrp {
+			fsl,pins = <
+				SC_P_LVDS0_GPIO00_LSIO_GPIO1_IO04		0x00000020
+			>;
+		};
 	};
 };
 
@@ -173,7 +179,7 @@
 };
 
 &gpio1 {
-	status = "okay";
+	status = "disabled";
 };
 
 &gpio2 {
@@ -301,6 +307,53 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpuart0>;
 	status = "okay";
+};
+
+&dpu1 {
+	status = "okay";
+};
+
+
+&gpio1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_backlight>;
+
+	lvds_backlight_hog {
+		gpio-hog;
+		gpios = <1 4>;
+		output-high;
+		line-name = "lvds_backlight";
+	};
+};
+
+&ldb1_phy {
+	status = "okay";
+};
+
+&ldb1 {
+	status = "okay";
+
+	lvds-channel@0 {
+		fsl,data-mapping = "jeida";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		display-timings {
+			native-mode = <&timing0>;
+
+			timing0: timing0 {
+				clock-frequency = <35714000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <40>;
+				hfront-porch = <40>;
+				vback-porch = <29>;
+				vfront-porch = <13>;
+				hsync-len = <48>;
+				vsync-len = <3>;
+			};
+		};
+	};
 };
 
 &tsens {

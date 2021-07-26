@@ -286,17 +286,28 @@
 #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 #endif
 
+/* Video */
 #ifdef CONFIG_DM_VIDEO
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_SPLASH_SCREEN
-#define CONFIG_SPLASH_SCREEN_ALIGN
-#define CONFIG_CMD_BMP
 #define CONFIG_BMP_16BPP
 #define CONFIG_BMP_24BPP
 #define CONFIG_BMP_32BPP
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
+#define CONFIG_IMX_VIDEO_SKIP
 #endif
 
+/* Splash screen */
+#ifdef CONFIG_SPLASH_SCREEN
+#define CONFIG_CMD_BMP
+#define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SOURCE
+#define CONFIG_HIDE_LOGO_VERSION
+#endif
+
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "imx8qm_var_som_android.h"
+#endif
 
 #endif /* __IMX8QM_VAR_SOM_H */
