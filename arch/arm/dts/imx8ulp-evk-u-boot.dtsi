@@ -69,6 +69,8 @@
 
 &usdhc0 {
 	bootph-pre-ram;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
 };
 
 &pinctrl_usdhc0 {
