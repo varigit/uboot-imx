@@ -393,9 +393,6 @@ config LOAD_KEY_FROM_RPMB
 	default n
 	depends on IMX_TRUSTY_OS
 
-config USE_EMMC_BOOT_PART
-	bool "Use userdata eMMC partition for bootloader"
-
 endmenu
 
 menu "Hashing Support"

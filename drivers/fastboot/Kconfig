@@ -216,6 +216,10 @@ config FASTBOOT_CMD_OEM_FORMAT
 	  relies on the env variable partitions to contain the list of
 	  partitions as required by the gpt command.
 
+config USE_EMMC_BOOT_PART
+	bool "Use userdata eMMC partition for bootloader"
+	default n
+
 endif # FASTBOOT
 
 endmenu
