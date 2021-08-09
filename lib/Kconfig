@@ -384,9 +384,6 @@ config TRUSTY_UNLOCK_PERMISSION
 config VIRTUAL_AB_SUPPORT
 	bool "Support virtual AB update"
 
-config USE_EMMC_BOOT_PART
-	bool "Use userdata eMMC partition for bootloader"
-
 endmenu
 
 menu "Hashing Support"
