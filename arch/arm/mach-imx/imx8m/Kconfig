@@ -207,6 +207,13 @@ config TARGET_PHYCORE_IMX8MP
 	select IMX8MP
         select SUPPORT_SPL
 	select IMX8M_LPDDR4
+
+config TARGET_IMX8MP_VAR_DART
+	bool "Support Variscite DART-MX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select IMX8M_BOARD_INIT_DRAM
 endchoice
 
 source "board/freescale/imx8mq_evk/Kconfig"
@@ -223,5 +230,6 @@ source "board/beacon/imx8mm/Kconfig"
 source "board/beacon/imx8mn/Kconfig"
 source "board/phytec/phycore_imx8mm/Kconfig"
 source "board/phytec/phycore_imx8mp/Kconfig"
+source "board/variscite/imx8mp_var_dart/Kconfig"
 
 endif

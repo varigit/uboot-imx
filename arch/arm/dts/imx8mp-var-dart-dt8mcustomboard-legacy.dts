@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2019 NXP
+ * Copyright 2020-2021 Variscite Ltd.
+ */
+
+#include "imx8mp-var-dart-dt8mcustomboard.dts"
+
+/ {
+	model = "Variscite DART-MX8M-PLUS on DT8MCustomBoard 1.4 and below";
+
+	aliases {
+		/delete-property/ gpio5;
+		/delete-property/ gpio6;
+	};
+};
+
+&i2c4 {
+        /delete-node/ gpio@20;
+        /delete-node/ gpio@21;
+};
