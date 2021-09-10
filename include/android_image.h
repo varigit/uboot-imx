@@ -26,6 +26,13 @@
 #define ANDR_VENDOR_BOOT_ARGS_SIZE 2048
 #define ANDR_VENDOR_BOOT_NAME_SIZE 16
 
+#define VENDOR_RAMDISK_TYPE_NONE 0
+#define VENDOR_RAMDISK_TYPE_PLATFORM 1
+#define VENDOR_RAMDISK_TYPE_RECOVERY 2
+#define VENDOR_RAMDISK_TYPE_DLKM 3
+#define VENDOR_RAMDISK_NAME_SIZE 32
+#define VENDOR_RAMDISK_TABLE_ENTRY_BOARD_ID_SIZE 16
+
 #define BOOTCONFIG_MAGIC "#BOOTCONFIG\n"
 #define BOOTCONFIG_MAGIC_SIZE 12
 #define BOOTCONFIG_SIZE_SIZE 4
@@ -402,6 +409,83 @@ struct vendor_boot_img_hdr_v3 {
  *    contained outside boot and vendor boot partitions), otherwise
  *    jump to kernel_addr
  */
+struct boot_img_hdr_v4 {
+    // Must be BOOT_MAGIC.
+    uint8_t magic[ANDR_BOOT_MAGIC_SIZE];
+
+    uint32_t kernel_size; /* size in bytes */
+    uint32_t ramdisk_size; /* size in bytes */
+
+    // Operating system version and security patch level.
+    // For version "A.B.C" and patch level "Y-M-D":
+    //   (7 bits for each of A, B, C; 7 bits for (Y-2000), 4 bits for M)
+    //   os_version = A[31:25] B[24:18] C[17:11] (Y-2000)[10:4] M[3:0]
+    uint32_t os_version;
+
+#if __cplusplus
+    void SetOsVersion(unsigned major, unsigned minor, unsigned patch) {
+        os_version &= ((1 << 11) - 1);
+        os_version |= (((major & 0x7f) << 25) | ((minor & 0x7f) << 18) | ((patch & 0x7f) << 11));
+    }
+
+    void SetOsPatchLevel(unsigned year, unsigned month) {
+        os_version &= ~((1 << 11) - 1);
+        os_version |= (((year - 2000) & 0x7f) << 4) | ((month & 0xf) << 0);
+    }
+#endif
+
+    uint32_t header_size;
+
+    uint32_t reserved[4];
+
+    // Version of the boot image header.
+    uint32_t header_version;
+
+    uint8_t cmdline[ANDR_BOOT_ARGS_SIZE + ANDR_BOOT_EXTRA_ARGS_SIZE];
+
+    uint32_t signature_size; /* size in bytes */
+} __attribute__((packed));
+
+struct vendor_boot_img_hdr_v4 {
+    // Must be ANDR_VENDOR_BOOT_MAGIC.
+    uint8_t magic[ANDR_VENDOR_BOOT_MAGIC_SIZE];
+
+    // Version of the vendor boot image header.
+    uint32_t header_version;
+
+    uint32_t page_size; /* flash page size we assume */
+
+    uint32_t kernel_addr; /* physical load addr */
+    uint32_t ramdisk_addr; /* physical load addr */
+
+    uint32_t vendor_ramdisk_size; /* size in bytes */
+
+    uint8_t cmdline[ANDR_VENDOR_BOOT_ARGS_SIZE];
+
+    uint32_t tags_addr; /* physical addr for kernel tags (if required) */
+    uint8_t name[ANDR_VENDOR_BOOT_NAME_SIZE]; /* asciiz product name */
+
+    uint32_t header_size;
+
+    uint32_t dtb_size; /* size in bytes for DTB image */
+    uint64_t dtb_addr; /* physical load address for DTB image */
+
+    uint32_t vendor_ramdisk_table_size; /* size in bytes for the vendor ramdisk table */
+    uint32_t vendor_ramdisk_table_entry_num; /* number of entries in the vendor ramdisk table */
+    uint32_t vendor_ramdisk_table_entry_size; /* size in bytes for a vendor ramdisk table entry */
+    uint32_t bootconfig_size; /* size in bytes for the bootconfig section */
+} __attribute__((packed));
+
+struct vendor_ramdisk_table_entry_v4 {
+    uint32_t ramdisk_size; /* size in bytes for the ramdisk image */
+    uint32_t ramdisk_offset; /* offset to the ramdisk image in vendor ramdisk section */
+    uint32_t ramdisk_type; /* type of the ramdisk */
+    uint8_t ramdisk_name[VENDOR_RAMDISK_NAME_SIZE]; /* asciiz ramdisk name */
+
+    // Hardware identifiers describing the board, soc or platform which this
+    // ramdisk is intended to be loaded on.
+    uint32_t board_id[VENDOR_RAMDISK_TABLE_ENTRY_BOARD_ID_SIZE];
+} __attribute__((packed));
 
 /* Private struct */
 struct andr_image_data {
