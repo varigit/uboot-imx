@@ -214,6 +214,10 @@ config TARGET_IMX8MP_VAR_DART
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 	select IMX8M_BOARD_INIT_DRAM
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
 endchoice
 
 source "board/freescale/imx8mq_evk/Kconfig"
