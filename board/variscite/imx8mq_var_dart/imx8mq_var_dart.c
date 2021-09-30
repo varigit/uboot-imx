@@ -95,6 +95,13 @@ static struct dwc3_device dwc3_device_data = {
 	.power_down_scale = 2,
 };
 
+ulong board_get_usable_ram_top(ulong total_size)
+{
+	unsigned long top = CONFIG_SYS_SDRAM_BASE + (unsigned long) SZ_1G;
+
+	return (gd->ram_top > top) ? top : gd->ram_top;
+}
+
 int usb_gadget_handle_interrupts(void)
 {
 	dwc3_uboot_handle_interrupt(0);
