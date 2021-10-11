@@ -123,7 +123,7 @@
 		"dcache flush; " \
 		"bootaux ${m41_addr} 1;\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} earlycon " \
+	"mmcargs=setenv bootargs console=${console},${baudrate} earlycon som_wifi=${som_wifi} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootfstype=ext4 rootwait rw\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \

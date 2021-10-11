@@ -153,6 +153,12 @@ int board_late_init(void)
 		memcpy(ep, &eeprom, sizeof(*ep));
 	}
 
+	if(ep->features & 0x1) {
+		env_set("som_wifi", "yes");
+	} else {
+		env_set("som_wifi", "no");
+	}
+
 #if IS_ENABLED(CONFIG_FEC_MXC)
 	var_setup_mac(ep);
 #endif
