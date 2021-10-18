@@ -245,3 +245,27 @@ int board_late_init(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_ANDROID_RECOVERY
+
+#define BACK_KEY IMX_GPIO_NR(4, 6)
+#define BACK_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
+
+static iomux_v3_cfg_t const back_pads[] = {
+	IMX8MM_PAD_SAI1_RXD4_GPIO4_IO6 | MUX_PAD_CTRL(BACK_PAD_CTRL),
+};
+
+int is_recovery_key_pressing(void)
+{
+	imx_iomux_v3_setup_multiple_pads(back_pads, ARRAY_SIZE(back_pads));
+	gpio_request(BACK_KEY, "BACK");
+	gpio_direction_input(BACK_KEY);
+	if (gpio_get_value(BACK_KEY) == 0) { /* BACK key is low assert */
+		printf("Recovery key pressed\n");
+		return 1;
+	}
+	return 0;
+}
+#endif /*CONFIG_ANDROID_RECOVERY*/
+#endif /*CONFIG_FSL_FASTBOOT*/
