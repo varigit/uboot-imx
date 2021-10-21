@@ -153,7 +153,7 @@ int board_late_init(void)
 		memcpy(ep, &eeprom, sizeof(*ep));
 	}
 
-	if(ep->features & 0x1) {
+	if(ep->features & VAR_EEPROM_F_WIFI) {
 		env_set("som_wifi", "yes");
 	} else {
 		env_set("som_wifi", "no");
