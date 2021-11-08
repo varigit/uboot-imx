@@ -228,6 +228,12 @@ int board_late_init(void)
 	else if (gd->board_type == BOARD_SPEAR_MX8)
 		env_set("board_name", "SPEAR-MX8");
 	env_set("board_rev", "iMX8QM");
+
+	if (eeprom.features & VAR_EEPROM_F_MX8Q_SOC_ID) {
+		env_set("soc_id", "imx8qp");
+	} else {
+		env_set("soc_id", "imx8qm");
+	}
 #endif
 
 	env_set("sec_boot", "no");
