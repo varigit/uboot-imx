@@ -3,6 +3,7 @@
  * Copyright 2019 NXP
  * Copyright 2020-2021 Variscite Ltd.
  */
+#include "imx8mp-sec-def.h"
 
 / {
 	wdt-reboot {
@@ -16,6 +17,32 @@
 			compatible = "linaro,optee-tz";
 			method = "smc";
 		};
+	};
+
+	mcu_rdc {
+		compatible = "imx8m,mcu_rdc";
+			    /* rdc config when MCU starts
+			     * memory:
+			     *   TCM    --> Only Domian 1 can access (0x7E0000~0x81FFFF)
+			     *   DDR    --> Only Domian 1 can access (0x80000000~0x81000000)
+			     * end.
+			     */
+		start-config = <
+			    RDC_MEM_REGION 22 TCM_START TCM_END MEM_D1_ACCESS
+			    RDC_MEM_REGION 39 M4_DDR_START M4_DDR_END MEM_D1_ACCESS
+			    0x0      0x0            0x0  0x0 0x0
+			  >;
+			    /* rdc config when MCU stops
+			     * memory:
+			     *   TCM    --> domain 0/1 can access (0x7E0000~0x81FFFF)
+			     *   DDR    --> domain 0/1 can access (0x80000000~0x81000000)
+			     * end.
+			     */
+		stop-config = <
+			    RDC_MEM_REGION 22 TCM_START TCM_END MEM_D0D1_ACCESS
+			    RDC_MEM_REGION 39 M4_DDR_START M4_DDR_END MEM_D0D1_ACCESS
+			    0x0      0x0            0x0  0x0 0x0
+			  >;
 	};
 };
 
