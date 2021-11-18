@@ -310,7 +310,6 @@ int dram_init_banksize(void)
 
 	return 0;
 }
-#endif
 
 phys_size_t get_effective_memsize(void)
 {
@@ -340,6 +339,7 @@ phys_size_t get_effective_memsize(void)
 		return PHYS_SDRAM_SIZE;
 	}
 }
+#endif
 
 static u32 get_cpu_variant_type(u32 type)
 {
