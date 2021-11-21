@@ -6,9 +6,9 @@
  * Generated code from MX8M_DDR_tool
  *
  * Align with uboot version:
- * imx_v2018.03_4.14.78_1.0.0_ga ~ imx_v2018.04_4.19.35_1.1.0_ga
- * For imx_v2019.04_5.4.x and above version:
- * please replace #include <asm/arch/imx8m_ddr.h> with #include <asm/arch/ddr.h>
+ * imx_v2019.04_5.4.x and above version
+ * For imx_v2018.03_4.14.78_1.0.0_ga ~ imx_v2018.04_4.19.35_1.1.0_ga:
+ * please replace #include <asm/arch/ddr.h> with #include <asm/arch/imx8m_ddr.h>
  */
 
 #include <linux/kernel.h>
@@ -31,7 +31,7 @@ static struct dram_cfg_param ddr_ddrc_cfg[] = {
 	{ 0x3d4000e8, 0x660048 },
 	{ 0x3d4000ec, 0x160048 },
 	{ 0x3d400100, 0x2028222a },
-	{ 0x3d400104, 0x807bf },
+	{ 0x3d400104, 0x8083f },
 	{ 0x3d40010c, 0xe0e000 },
 	{ 0x3d400110, 0x12040a12 },
 	{ 0x3d400114, 0x2050f0f },
@@ -465,7 +465,6 @@ static struct dram_cfg_param ddr_fsp0_2d_cfg[] = {
 	{ 0x54008, 0x61 },
 	{ 0x54009, 0xc8 },
 	{ 0x5400b, 0x2 },
-	{ 0x5400d, 0x100 },
 	{ 0x5400f, 0x100 },
 	{ 0x54010, 0x1f7f },
 	{ 0x54012, 0x310 },
