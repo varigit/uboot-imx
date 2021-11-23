@@ -8,14 +8,15 @@
 #define __IMX8MM_VAR_DART_H
 
 #include <linux/sizes.h>
+#include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
 #include "imx_env.h"
 
+#define CONFIG_SYS_BOOTM_LEN		(32 * SZ_1M)
 #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		SZ_512K
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
-#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	1
 #define CONFIG_SYS_UBOOT_BASE	\
 	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
 
@@ -33,7 +34,11 @@
 
 #define CONFIG_POWER
 #define CONFIG_POWER_I2C
+#if defined(CONFIG_IMX8M_LPDDR4) && defined(CONFIG_TARGET_IMX8MM_EVK)
+#define CONFIG_POWER_PCA9450
+#else
 #define CONFIG_POWER_BD71837
+#endif
 
 #define CONFIG_SYS_I2C
 
@@ -258,4 +263,5 @@
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mm_var_dart_android.h"
 #endif
+
 #endif
