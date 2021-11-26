@@ -1,6 +1,6 @@
 /*
  * Copyright 2020 NXP
- * Copyright 2020 Variscite Ltd.
+ * Copyright 2021 Variscite Ltd.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -8,20 +8,13 @@
 #ifndef __MX8MM_VAR_DART_ANDROID_H
 #define __MX8MM_VAR_DART_ANDROID_H
 
-#define CONFIG_CMD_READ
 
-#define CONFIG_ANDROID_AB_SUPPORT
-#ifdef CONFIG_ANDROID_AB_SUPPORT
-#define CONFIG_SYSTEM_RAMDISK_SUPPORT
-#endif
 #define FSL_FASTBOOT_FB_DEV "mmc"
 
 #ifdef CONFIG_SYS_MALLOC_LEN
 #undef CONFIG_SYS_MALLOC_LEN
-#define CONFIG_SYS_MALLOC_LEN           (32 * SZ_1M)
+#define CONFIG_SYS_MALLOC_LEN           (64 * SZ_1M)
 #endif
-
-//#define CONFIG_ANDROID_RECOVERY
 
 #define CONFIG_SERIAL_TAG
 
@@ -35,22 +28,20 @@
 	"bootargs=" \
 		"init=/init " \
 		"consoleblank=0 " \
-		"androidboot.hardware=freescale " \
-		"androidboot.force_normal_boot=1 " \
+		"androidboot.hardware=nxp " \
 		"cma=800M@0x400M-0xb80M " \
 		"firmware_class.path=/vendor/firmware " \
+		"loop.max_part=7 " \
+		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
 /* Enable mcu firmware flash */
 #ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
 #define ANDROID_MCU_FRIMWARE_DEV_TYPE DEV_MMC
 #define ANDROID_MCU_FIRMWARE_START 0x500000
-#define ANDROID_MCU_FIRMWARE_SIZE  0x40000
+#define ANDROID_MCU_OS_PARTITION_SIZE 0x40000
+#define ANDROID_MCU_FIRMWARE_SIZE  0x20000
 #define ANDROID_MCU_FIRMWARE_HEADER_STACK 0x20020000
-#endif
-
-#if !defined(CONFIG_IMX_TRUSTY_OS) || !defined(CONFIG_DUAL_BOOTLOADER)
-#undef CONFIG_FSL_CAAM_KB
 #endif
 
 #ifdef CONFIG_DUAL_BOOTLOADER
@@ -70,8 +61,20 @@
 #define KEYSLOT_HWPARTITION_ID 2
 #define KEYSLOT_BLKS             0x1FFF
 #define NS_ARCH_ARM64 1
+
 #endif
 
-#define AVB_AB_I_UNDERSTAND_LIBAVB_AB_IS_DEPRECATED
+/* Enable CONFIG_IMX8M_1G_MEMORY  to config 1GB ddr */
+#ifdef CONFIG_IMX8M_1G_MEMORY
+#undef  PHYS_SDRAM_SIZE
+#define PHYS_SDRAM_SIZE 0x40000000 /* 1GB DDR */
+#endif
 
-#endif /* __MX8MM_VAR_DART_ANDROID_H */
+#ifdef CONFIG_IMX8M_4G_LPDDR4
+#undef PHYS_SDRAM_SIZE
+#define PHYS_SDRAM_SIZE          0xC0000000 /* 3GB */
+#define PHYS_SDRAM_2             0x100000000
+#define PHYS_SDRAM_2_SIZE        0x40000000 /* 1GB */
+#endif
+
+#endif /*__MX8MM_VAR_DART_ANDROID_H */
