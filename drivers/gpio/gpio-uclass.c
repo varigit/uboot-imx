@@ -312,7 +312,9 @@ int gpio_hog_probe_all(void)
 			if (ret) {
 				printf("Failed to probe device %s err: %d\n",
 				       dev->name, ret);
-				retval = ret;
+				if (!dev_read_bool(dev, "gpio-hog-optional")) {
+					retval = ret;
+				}
 			}
 		}
 	}
