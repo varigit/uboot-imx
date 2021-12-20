@@ -227,9 +227,9 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8; then " \
-				"setenv fdt_file fsl-imx8qm-var-som.dtb; " \
+				"setenv fdt_file ${soc_id}-var-som.dtb; " \
 			"else " \
-				"setenv fdt_file fsl-imx8qm-var-spear.dtb;" \
+				"setenv fdt_file ${soc_id}-var-spear.dtb;" \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
