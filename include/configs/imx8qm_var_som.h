@@ -124,11 +124,11 @@
 
 #define JAILHOUSE_ENV \
 	"jh_mmcboot=" \
-		"setenv fdt_file fsl-imx8qm-var-som-root.dtb;"\
+		"setenv fdt_file fsl-${soc_id}-var-som-root.dtb;"\
 		"setenv boot_os 'scu_rm dtb ${fdt_addr}; booti ${loadaddr} - ${fdt_addr};'; " \
 		"run mmcboot; \0" \
 	"jh_netboot=" \
-		"setenv fdt_file fsl-imx8qm-var-som-root.dtb;"\
+		"setenv fdt_file fsl-${soc_id}-var-som-root.dtb;"\
 		"setenv boot_os 'scu_rm dtb ${fdt_addr}; booti ${loadaddr} - ${fdt_addr};'; " \
 		"run netboot; \0"
 
@@ -138,8 +138,8 @@
             "xenlinux_bootargs= \0" \
             "xenlinux_console=hvc0 earlycon=xen\0" \
             "xenlinux_addr=0x92000000\0" \
-	    "dom0fdt_file=fsl-imx8qm-var-som-dom0.dtb\0" \
             "xenboot_common=" \
+                "setenv dom0fdt_file fsl-${soc_id}-var-som-dom0.dtb;"\
                 "${get_cmd} ${loadaddr} xen;" \
                 "${get_cmd} ${fdt_addr} ${dom0fdt_file};" \
                 "if ${get_cmd} ${hdp_addr} ${hdp_file}; then; hdp load ${hdp_addr}; fi;" \
@@ -227,9 +227,9 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8; then " \
-				"setenv fdt_file ${soc_id}-var-som.dtb; " \
+				"setenv fdt_file fsl-${soc_id}-var-som.dtb; " \
 			"else " \
-				"setenv fdt_file ${soc_id}-var-spear.dtb;" \
+				"setenv fdt_file fsl-${soc_id}-var-spear.dtb;" \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
