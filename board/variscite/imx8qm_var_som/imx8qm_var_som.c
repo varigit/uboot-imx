@@ -171,7 +171,6 @@ int board_late_init(void)
 		env_set("board_name", "VAR-SOM-MX8");
 	else if (board_id == SPEAR_MX8)
 		env_set("board_name", "SPEAR-MX8");
-	env_set("board_rev", "iMX8QM");
 
 	if (ep->features & VAR_EEPROM_F_MX8Q_SOC_ID) {
 		env_set("soc_id", "imx8qp");
