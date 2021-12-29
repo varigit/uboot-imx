@@ -8,6 +8,7 @@
 #define __IMX8QM_VAR_SOM_H
 
 #include <linux/sizes.h>
+#include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
 #include "imx_env.h"
 
@@ -23,13 +24,11 @@
   * So 3rd container image may start from 0x8281000
  */
 #define CONFIG_SYS_UBOOT_BASE 0x08281000
-#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION             0
 
 #define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/armv8/u-boot-spl.lds"
 #define CONFIG_SPL_STACK		0x013fff0
 #define CONFIG_SPL_BSS_START_ADDR      0x00130000
 #define CONFIG_SPL_BSS_MAX_SIZE		0x1000	/* 4 KB */
-#define CONFIG_SYS_SPL_MALLOC_START	0x82200000
 #define CONFIG_SYS_SPL_MALLOC_SIZE     0x80000	/* 512 KB */
 #define CONFIG_MALLOC_F_ADDR		0x00138000
 
@@ -39,9 +38,13 @@
 
 #endif
 
-#define CONFIG_REMAKE_ELF
+#ifdef CONFIG_TARGET_IMX8QM_MEK_A53_ONLY
+#define IMX_HDMI_FIRMWARE_LOAD_ADDR (CONFIG_SYS_SDRAM_BASE + SZ_64M)
+#define IMX_HDMITX_FIRMWARE_SIZE 0x20000
+#define IMX_HDMIRX_FIRMWARE_SIZE 0x20000
+#endif
 
-#define CONFIG_BOARD_EARLY_INIT_F
+#define CONFIG_REMAKE_ELF
 
 #define CONFIG_CMD_READ
 
@@ -56,8 +59,9 @@
 
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
-#define CONFIG_ENV_OVERWRITE
-
+#define CONFIG_PCIE_IMX
+#define CONFIG_CMD_PCI
+#define CONFIG_PCI_SCAN_SHOW
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #define CONFIG_FEC_XCV_TYPE             RGMII
@@ -263,10 +267,18 @@
 
 #define DEFAULT_SDRAM_SIZE             (4096ULL * SZ_1M)
 
-#define VAR_EEPROM_DRAM_START          CONFIG_SYS_MEMTEST_END 
+/*
+ * Defined only to fix compilation errors
+ *
+ * Variscite get DDR memory size from eeprom without to use the defines:
+ * PHYS_SDRAM_1_SIZE and PHYS_SDRAM_2_SIZE
+ * However the compilation of arch/arm/mach-imx/imx8/cpu.c file generate 
+ * the errors: ‘PHYS_SDRAM_1_SIZE’ and ‘PHYS_SDRAM_2_SIZE’ undeclared
+*/
+#define PHYS_SDRAM_1_SIZE		0x40000000	/* 1 GB */
+#define PHYS_SDRAM_2_SIZE		0x40000000	/* 1 GB */
 
-#define CONFIG_SYS_MEMTEST_START    0xA0000000
-#define CONFIG_SYS_MEMTEST_END	    (CONFIG_SYS_MEMTEST_START + ((DEFAULT_SDRAM_SIZE ) >> 2))
+#define VAR_EEPROM_DRAM_START          CONFIG_SYS_MEMTEST_END 
 
 /* Serial */
 #define CONFIG_BAUDRATE			115200
@@ -309,7 +321,6 @@
 /* Video */
 #ifdef CONFIG_DM_VIDEO
 #define CONFIG_VIDEO_LOGO
-#define CONFIG_SPLASH_SCREEN
 #define CONFIG_BMP_16BPP
 #define CONFIG_BMP_24BPP
 #define CONFIG_BMP_32BPP
@@ -320,8 +331,6 @@
 
 /* Splash screen */
 #ifdef CONFIG_SPLASH_SCREEN
-#define CONFIG_CMD_BMP
-#define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_SPLASH_SOURCE
 #define CONFIG_HIDE_LOGO_VERSION
 #endif

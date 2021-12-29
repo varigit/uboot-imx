@@ -6,6 +6,7 @@
  */
 #include <common.h>
 #include <malloc.h>
+#include <env.h>
 #include <errno.h>
 #include <netdev.h>
 #include <fsl_ifc.h>
@@ -20,7 +21,7 @@
 #include <asm/arch/sci/sci.h>
 #include <asm/arch/imx8-pins.h>
 #include <dm.h>
-#include <imx8_hsio.h>
+#include <dt-bindings/soc/imx8_hsio.h>
 #include <usb.h>
 #include <asm/arch/iomux.h>
 #include <asm/arch/sys_proto.h>
@@ -55,22 +56,21 @@ static void setup_iomux_uart(void)
 
 int board_early_init_f(void)
 {
+	sc_pm_clock_rate_t rate = SC_80MHZ;
 	int ret;
 
+	/* When start u-boot in XEN VM, directly return */
+	if (IS_ENABLED(CONFIG_XEN)) {
+		writel(0xF53535F5, (void __iomem *)0x80000000);
+		return 0;
+	}
+
 	/* Set UART0 clock root to 80 MHz */
-	ret = sc_pm_setup_uart(SC_R_UART_0, SC_80MHZ);
+	ret = sc_pm_setup_uart(SC_R_UART_0, rate);
 	if (ret)
 		return ret;
 
 	setup_iomux_uart();
-
-/* Dual bootloader feature will require CAAM access, but JR0 and JR1 will be
- * assigned to seco for imx8, use JR3 instead.
- */
-#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_DUAL_BOOTLOADER)
-	sc_pm_set_resource_power_mode(-1, SC_R_CAAM_JR3, SC_PM_PW_MODE_ON);
-	sc_pm_set_resource_power_mode(-1, SC_R_CAAM_JR3_OUT, SC_PM_PW_MODE_ON);
-#endif
 
 	return 0;
 }
@@ -117,7 +117,7 @@ void board_quiesce_devices(void)
 		"dma_lpuart0",
 	};
 
-	power_off_pd_devices(power_on_devices, ARRAY_SIZE(power_on_devices));
+	imx8_power_off_pd_devices(power_on_devices, ARRAY_SIZE(power_on_devices));
 }
 
 /*
@@ -130,7 +130,7 @@ void reset_cpu(ulong addr)
 }
 
 #ifdef CONFIG_OF_BOARD_SETUP
-int ft_board_setup(void *blob, bd_t *bd)
+int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	return 0;
 }
