@@ -8,6 +8,7 @@
 #define __IMX8QXP_VAR_SOM_H
 
 #include <linux/sizes.h>
+#include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
 
 #include "imx_env.h"
@@ -23,7 +24,6 @@
   * So 3rd container image may start from 0x8181000
  */
 #define CONFIG_SYS_UBOOT_BASE 			0x08181000
-#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	0
 
 #define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/armv8/u-boot-spl.lds"
 #define CONFIG_SPL_STACK		0x013fff0
@@ -41,20 +41,10 @@
 
 #define CONFIG_REMAKE_ELF
 
-#define CONFIG_BOARD_EARLY_INIT_F
-
 #define CONFIG_CMD_READ
 
 /* Flat Device Tree Definitions */
 #define CONFIG_OF_BOARD_SETUP
-
-#undef CONFIG_CMD_EXPORTENV
-#undef CONFIG_CMD_IMPORTENV
-#undef CONFIG_CMD_IMLS
-
-#undef CONFIG_CMD_CRC32
-
-#define CONFIG_ENV_OVERWRITE
 
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
@@ -209,12 +199,9 @@
 
 #define CONFIG_SYS_INIT_SP_ADDR		0x80200000
 
-#define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
-
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
 /* USDHC1 is for eMMC, USDHC2 is for SD on carrier board */
-#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 
 /* Size of malloc() pool */
@@ -225,8 +212,16 @@
 #define PHYS_SDRAM_2			0x880000000
 #define DEFAULT_SDRAM_SIZE		(2048ULL * SZ_1M)
 
-#define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE + (DEFAULT_SDRAM_SIZE >> 1)
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (DEFAULT_SDRAM_SIZE >> 2))
+/*
+ * Defined only to fix compilation errors
+ *
+ * Variscite get DDR memory size from eeprom without to use the defines:
+ * PHYS_SDRAM_1_SIZE and PHYS_SDRAM_2_SIZE
+ * However the compilation of arch/arm/mach-imx/imx8/cpu.c file generate 
+ * the errors: ‘PHYS_SDRAM_1_SIZE’ and ‘PHYS_SDRAM_2_SIZE’ undeclared
+*/
+#define PHYS_SDRAM_1_SIZE		0x40000000	/* 1 GB */
+#define PHYS_SDRAM_2_SIZE		0x40000000	/* 1 GB */
 
 /* EEPROM */
 #define VAR_EEPROM_DRAM_START		0x83000000
@@ -272,13 +267,11 @@
 #endif
 
 #define CONFIG_FEC_XCV_TYPE		RGMII
-#define FEC_QUIRK_ENET_MAC
 #define PHY_ANEG_TIMEOUT		20000
 
 /* Video */
 #ifdef CONFIG_DM_VIDEO
 #define CONFIG_VIDEO_LOGO
-#define CONFIG_SPLASH_SCREEN
 #define CONFIG_BMP_16BPP
 #define CONFIG_BMP_24BPP
 #define CONFIG_BMP_32BPP
@@ -289,8 +282,6 @@
 
 /* Splash screen */
 #ifdef CONFIG_SPLASH_SCREEN
-#define CONFIG_CMD_BMP
-#define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_SPLASH_SOURCE
 #define CONFIG_HIDE_LOGO_VERSION
 #endif
