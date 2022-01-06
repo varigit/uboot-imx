@@ -259,13 +259,6 @@ static iomux_v3_cfg_t const back_pads[] = {
 
 int is_recovery_key_pressing(void)
 {
-	imx_iomux_v3_setup_multiple_pads(back_pads, ARRAY_SIZE(back_pads));
-	gpio_request(BACK_KEY, "BACK");
-	gpio_direction_input(BACK_KEY);
-	if (gpio_get_value(BACK_KEY) == 0) { /* BACK key is low assert */
-		printf("Recovery key pressed\n");
-		return 1;
-	}
 	return 0;
 }
 #endif /*CONFIG_ANDROID_RECOVERY*/
