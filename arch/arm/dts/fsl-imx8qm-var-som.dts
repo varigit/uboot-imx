@@ -320,7 +320,7 @@
 
 	lvds_backlight_hog {
 		gpio-hog;
-		gpios = <1 4>;
+		gpios = <4 GPIO_ACTIVE_HIGH>;
 		output-high;
 		line-name = "lvds_backlight";
 	};
