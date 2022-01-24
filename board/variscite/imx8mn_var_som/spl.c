@@ -99,7 +99,7 @@ static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC3_BASE_ADDR, 0, 8},
 };
 
-int board_mmc_init(bd_t *bis)
+int board_mmc_init(struct bd_info *bis)
 {
 	int i, ret;
 
@@ -175,28 +175,28 @@ int power_init_board(void)
 	pmic_probe(p);
 
 	/* decrease RESET key long push time from the default 10s to 10ms */
-	pmic_reg_write(p, BD71837_PWRONCONFIG1, 0x0);
+	pmic_reg_write(p, BD718XX_PWRONCONFIG1, 0x0);
 
 	/* unlock the PMIC regs */
-	pmic_reg_write(p, BD71837_REGLOCK, 0x1);
+	pmic_reg_write(p, BD718XX_REGLOCK, 0x1);
 
 	/* Set VDD_ARM to typical value 0.85v for 1.2Ghz */
-	pmic_reg_write(p, BD71837_BUCK2_VOLT_RUN, 0xf);
+	pmic_reg_write(p, BD718XX_BUCK2_VOLT_RUN, 0xf);
 
 	/* Set VDD_SOC/VDD_DRAM to typical value 0.85v for nominal mode */
-	pmic_reg_write(p, BD71837_BUCK1_VOLT_RUN, 0xf);
+	pmic_reg_write(p, BD718XX_BUCK1_VOLT_RUN, 0xf);
 
 	/* Set VDD_SOC 0.85v for suspend */
-	pmic_reg_write(p, BD71837_BUCK1_VOLT_SUSP, 0xf);
+	pmic_reg_write(p, BD718XX_BUCK1_VOLT_SUSP, 0xf);
 
 	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
-	pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
+	pmic_reg_write(p, BD718XX_4TH_NODVS_BUCK_VOLT, 0x28);
 
 	/* enable LDO5 - required to access I2C bus 3 */
-	pmic_reg_write(p, BD71837_LDO5_VOLT, 0xc0);
+	pmic_reg_write(p, BD718XX_LDO5_VOLT, 0xc0);
 
 	/* lock the PMIC regs */
-	pmic_reg_write(p, BD71837_REGLOCK, 0x11);
+	pmic_reg_write(p, BD718XX_REGLOCK, 0x11);
 
 	return 0;
 }
@@ -268,15 +268,6 @@ void board_init_f(ulong dummy)
 	spl_dram_init();
 
 	board_init_r(NULL, 0);
-}
-
-int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-	puts("resetting ...\n");
-
-	reset_cpu(WDOG1_BASE_ADDR);
-
-	return 0;
 }
 
 #ifdef CONFIG_SPL_MMC_SUPPORT
