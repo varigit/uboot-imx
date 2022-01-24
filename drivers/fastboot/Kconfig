@@ -267,6 +267,10 @@ config FASTBOOT_CMD_OEM_BOOTBUS
 	  Add support for the "oem bootbus" command from a client. This set
 	  the mmc boot configuration for the selecting eMMC device.
 
+config USE_EMMC_BOOT_PART
+	bool "Use userdata eMMC partition for bootloader"
+	default n
+
 endif # FASTBOOT
 
 endmenu
