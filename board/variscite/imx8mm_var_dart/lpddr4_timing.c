@@ -1,10 +1,14 @@
 /*
- * Copyright 2018 NXP
+ * Copyright 2019 NXP
  *
  * SPDX-License-Identifier:	GPL-2.0+
  *
  * Generated code from MX8M_DDR_tool
- * Align with uboot-imx_v2018.03_4.14.78_1.0.0_ga
+ *
+ * Align with uboot version:
+ * imx_v2019.04_5.4.x and above version
+ * For imx_v2018.03_4.14.78_1.0.0_ga ~ imx_v2018.04_4.19.35_1.1.0_ga:
+ * please replace #include <asm/arch/ddr.h> with #include <asm/arch/imx8m_ddr.h>
  */
 
 #include <linux/kernel.h>
@@ -203,8 +207,8 @@ static struct dram_cfg_param ddr_ddrphy_cfg[] = {
 	{ 0x220024, 0x1ab },
 	{ 0x2003a, 0x0 },
 	{ 0x20056, 0x3 },
-	{ 0x120056, 0xa },
-	{ 0x220056, 0xa },
+	{ 0x120056, 0x3 },
+	{ 0x220056, 0x3 },
 	{ 0x1004d, 0xe00 },
 	{ 0x1014d, 0xe00 },
 	{ 0x1104d, 0xe00 },
@@ -323,6 +327,7 @@ static struct dram_cfg_param ddr_ddrphy_cfg[] = {
 	{ 0x2200ca, 0x24 },
 };
 
+
 /* P0 message block parameter for training firmware */
 static struct dram_cfg_param ddr_fsp0_cfg[] = {
 	{ 0xd0000, 0x0 },
@@ -333,7 +338,6 @@ static struct dram_cfg_param ddr_fsp0_cfg[] = {
 	{ 0x54008, 0x131f },
 	{ 0x54009, 0xc8 },
 	{ 0x5400b, 0x2 },
-	{ 0x5400d, 0x100 },
 	{ 0x54012, 0x310 },
 	{ 0x54019, 0x2dd4 },
 	{ 0x5401a, 0x31 },
@@ -373,7 +377,6 @@ static struct dram_cfg_param ddr_fsp1_cfg[] = {
 	{ 0x54008, 0x121f },
 	{ 0x54009, 0xc8 },
 	{ 0x5400b, 0x2 },
-	{ 0x5400d, 0x100 },
 	{ 0x54012, 0x310 },
 	{ 0x54019, 0x84 },
 	{ 0x5401a, 0x31 },
@@ -413,7 +416,6 @@ static struct dram_cfg_param ddr_fsp2_cfg[] = {
 	{ 0x54008, 0x121f },
 	{ 0x54009, 0xc8 },
 	{ 0x5400b, 0x2 },
-	{ 0x5400d, 0x100 },
 	{ 0x54012, 0x310 },
 	{ 0x54019, 0x84 },
 	{ 0x5401a, 0x31 },
