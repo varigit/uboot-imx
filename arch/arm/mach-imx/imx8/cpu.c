@@ -192,10 +192,10 @@ int arch_auxiliary_core_up(u32 core_id, ulong boot_private_data)
 
 	printf("Power on M4 and MU\n");
 
-	if (sc_pm_set_resource_power_mode(-1, core_rsrc, SC_PM_PW_MODE_ON) != SC_ERR_NONE)
+	if (sc_pm_set_resource_power_mode(-1, core_rsrc, SC_PM_PW_MODE_ON))
 		return -EIO;
 
-	if (sc_pm_set_resource_power_mode(-1, mu_rsrc, SC_PM_PW_MODE_ON) != SC_ERR_NONE)
+	if (sc_pm_set_resource_power_mode(-1, mu_rsrc, SC_PM_PW_MODE_ON))
 		return -EIO;
 
 	printf("Copy M4 image from 0x%lx to TCML 0x%lx\n", addr, (ulong)tcml_addr);
@@ -204,7 +204,7 @@ int arch_auxiliary_core_up(u32 core_id, ulong boot_private_data)
 		memcpy((void *)tcml_addr, (void *)addr, tcm_size);
 
 	printf("Start M4 %u\n", core_id);
-	if (sc_pm_cpu_start(-1, core_rsrc, true, tcml_addr) != SC_ERR_NONE)
+	if (sc_pm_cpu_start(-1, core_rsrc, true, tcml_addr))
 		return -EIO;
 
 	printf("bootaux complete\n");
@@ -247,18 +247,18 @@ int arch_auxiliary_core_up(u32 core_id, ulong boot_private_data)
 
 	printf("Power on aux core %d\n", core_id);
 
-	if (sc_pm_set_resource_power_mode(-1, core_rsrc, SC_PM_PW_MODE_ON) != SC_ERR_NONE)
+	if (sc_pm_set_resource_power_mode(-1, core_rsrc, SC_PM_PW_MODE_ON))
 		return -EIO;
 
 	if (mu_rsrc != SC_R_NONE) {
-		if (sc_pm_set_resource_power_mode(-1, mu_rsrc, SC_PM_PW_MODE_ON) != SC_ERR_NONE)
+		if (sc_pm_set_resource_power_mode(-1, mu_rsrc, SC_PM_PW_MODE_ON))
 			return -EIO;
 	}
 
 	if (core_id == 1) {
 		struct power_domain pd;
 
-		if (sc_pm_clock_enable(-1, core_rsrc, SC_PM_CLK_PER, true, false) != SC_ERR_NONE) {
+		if (sc_pm_clock_enable(-1, core_rsrc, SC_PM_CLK_PER, true, false)) {
 			printf("Error enable clock\n");
 			return -EIO;
 		}
@@ -291,7 +291,7 @@ int arch_auxiliary_core_up(u32 core_id, ulong boot_private_data)
 
 	printf("Start %s\n", core_id == 0 ? "M4" : "HIFI");
 
-	if (sc_pm_cpu_start(-1, core_rsrc, true, aux_core_ram) != SC_ERR_NONE)
+	if (sc_pm_cpu_start(-1, core_rsrc, true, aux_core_ram))
 		return -EIO;
 
 	printf("bootaux complete\n");
@@ -318,7 +318,7 @@ int arch_auxiliary_core_check_up(u32 core_id)
 		return 0;
 	}
 
-	if (sc_pm_get_resource_power_mode(-1, core_rsrc, &power_mode) != SC_ERR_NONE)
+	if (sc_pm_get_resource_power_mode(-1, core_rsrc, &power_mode))
 		return 0;
 
 	if (power_mode != SC_PM_PW_MODE_OFF)
@@ -1038,7 +1038,7 @@ struct udevice * board_imx_vservice_find_mu(struct udevice *dev)
 	}
 
 	err = sc_rm_get_resource_owner(-1, resource_id, &resource_part);
-	if (err != SC_ERR_NONE) {
+	if (err) {
 		printf("%s get resource [%d] owner error: %d\n", __func__, resource_id, err);
 		return NULL;
 	}
@@ -1047,7 +1047,7 @@ struct udevice * board_imx_vservice_find_mu(struct udevice *dev)
 
 	/* MU8 for communication between M4_0 and u-boot, MU9 for M4_1 and u-boot */
 	err = sc_rm_get_resource_owner(-1, SC_R_M4_0_PID0, &m4_parts[0]);
-	if (err != SC_ERR_NONE) {
+	if (err) {
 		printf("%s get resource [%d] owner error: %d\n", __func__, SC_R_M4_0_PID0, err);
 		return NULL;
 	}
@@ -1061,7 +1061,7 @@ struct udevice * board_imx_vservice_find_mu(struct udevice *dev)
 
 	if (is_imx8qm()) {
 		err = sc_rm_get_resource_owner(-1, SC_R_M4_1_PID0, &m4_parts[1]);
-		if (err != SC_ERR_NONE) {
+		if (err) {
 			printf("%s get resource [%d] owner error: %d\n", __func__, SC_R_M4_1_PID0, err);
 			return NULL;
 		}

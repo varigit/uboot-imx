@@ -194,7 +194,7 @@ static int imx8_power_domain_off_parentnodes(struct power_domain *power_domain)
 	struct imx8_power_domain_priv *ppriv;
 	struct imx8_power_domain_priv *child_ppriv;
 	struct imx8_power_domain_plat *pdata;
-	sc_err_t ret;
+	int ret;
 	struct power_domain parent_pd;
 
 	if (device_get_uclass_id(parent) == UCLASS_POWER_DOMAIN) {
