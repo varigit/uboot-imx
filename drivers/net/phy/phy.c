@@ -1016,6 +1016,7 @@ struct phy_device *phy_connect(struct mii_dev *bus, int addr,
 		phydev = phy_connect_gmii2rgmii(bus, dev, interface);
 #endif
 
+	mdelay(20);
 	if (!phydev)
 		phydev = phy_find_by_mask(bus, mask, interface);
 
