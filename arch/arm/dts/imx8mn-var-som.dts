@@ -438,6 +438,7 @@
 	phy-supply = <&reg_eth_phy>;
 	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 	phy-reset-duration = <10>;
+	phy-reset-post-delay = <100>;
 	status = "okay";
 
 	mdio {
