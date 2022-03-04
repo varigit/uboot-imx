@@ -114,7 +114,7 @@ int board_late_init(void)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_carrier_eeprom carrier_eeprom;
-	char carrier_rev[16] = {0};
+	char carrier_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_FEC_MXC
 	var_setup_mac(ep);
