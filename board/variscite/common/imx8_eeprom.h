@@ -53,12 +53,13 @@ struct __attribute__((packed)) var_eeprom
 
 #define VAR_CARRIER_EEPROM_MAGIC	0x5643 /* == HEX("VC") */
 
+#define CARRIER_REV_LEN 16
 struct __attribute__((packed)) var_carrier_eeprom
 {
-	u16 magic;		/* 00-0x00 - magic number		*/
-	u8 struct_ver;		/* 01-0x01 - EEPROM structure version	*/
-	u8 carrier_rev[16];	/* 02-0x02 - carrier board revision	*/
-	u32 crc;		/* 10-0x0a - checksum			*/
+	u16 magic;                          /* 00-0x00 - magic number		*/
+	u8 struct_ver;                      /* 01-0x01 - EEPROM structure version	*/
+	u8 carrier_rev[CARRIER_REV_LEN];    /* 02-0x02 - carrier board revision	*/
+	u32 crc;                            /* 10-0x0a - checksum			*/
 };
 
 static inline int var_eeprom_is_valid(struct var_eeprom *ep)
