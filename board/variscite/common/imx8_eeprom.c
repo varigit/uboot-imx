@@ -397,7 +397,6 @@ int var_carrier_eeprom_read(int bus_no, int addr, struct var_carrier_eeprom *ep)
 int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
 {
 	u32 crc, crc_offset = offsetof(struct var_carrier_eeprom, crc);
-	u32 *crcp; /* Pointer to the CRC in the data read from the EEPROM */
 
 	if (htons(ep->magic) != VAR_CARRIER_EEPROM_MAGIC) {
 		debug("Invalid carrier EEPROM magic 0x%hx, expected 0x%hx\n",
@@ -415,8 +414,8 @@ int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
 
 	/* Only EEPROM structure above version 1 has CRC field */
 	crc = crc32(0, (void *)ep, crc_offset);
-	crcp = (void *)ep + crc_offset;
-	if (crc != (*crcp)) {
+
+	if (crc != ep->crc) {
 		printf("Carrier EEPROM CRC mismatch (%08x != %08x)\n",
 			crc, be32_to_cpu(ep->crc));
 		return 0;
