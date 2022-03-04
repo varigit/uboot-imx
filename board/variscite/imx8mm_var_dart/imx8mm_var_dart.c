@@ -163,30 +163,6 @@ int board_init(void)
 	return 0;
 }
 
-#define DART_CARRIER_DETECT_GPIO IMX_GPIO_NR(3, 14)
-
-static iomux_v3_cfg_t const dart_carrier_detect_pads[] = {
-	IMX8MM_PAD_NAND_DQS_GPIO3_IO14 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
-};
-
-static int var_detect_dart_carrier_rev(void)
-{
-	static int dart_carrier_rev = DART_CARRIER_REV_UNDEF;
-
-	imx_iomux_v3_setup_multiple_pads(dart_carrier_detect_pads,
-				ARRAY_SIZE(dart_carrier_detect_pads));
-
-	gpio_request(DART_CARRIER_DETECT_GPIO, "dart_carrier_detect");
-	gpio_direction_input(DART_CARRIER_DETECT_GPIO);
-
-	if (gpio_get_value(DART_CARRIER_DETECT_GPIO))
-		dart_carrier_rev = DART_CARRIER_REV_1;
-	else
-		dart_carrier_rev = DART_CARRIER_REV_2;
-
-	return dart_carrier_rev;
-}
-
 #define SDRAM_SIZE_STR_LEN 5
 int board_late_init(void)
 {
@@ -229,15 +205,11 @@ int board_late_init(void)
 		env_set("carrier_rev", carrier_rev);
 	}
 	else if (id == DART_MX8M_MINI) {
-
-		int carrier_rev = var_detect_dart_carrier_rev();
-
 		env_set("board_name", "DART-MX8M-MINI");
 
-		if (carrier_rev == DART_CARRIER_REV_2)
-			env_set("carrier_rev", "dt8m-2.x");
-		else
-			env_set("carrier_rev", "legacy");
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+		env_set("carrier_rev", carrier_rev);
 	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
