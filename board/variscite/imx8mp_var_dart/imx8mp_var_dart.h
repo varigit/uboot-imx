@@ -13,6 +13,11 @@ enum {
 	DART_CARRIER_REV_UNDEF,
 };
 
+/* Carrier board EEPROM */
+#define CARRIER_EEPROM_BUS_SOM		0x03
+#define CARRIER_EEPROM_BUS_DART		0x01
+#define CARRIER_EEPROM_ADDR		0x54
+
 int var_detect_board_id(void);
 int var_detect_dart_carrier_rev(void);
 

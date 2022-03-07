@@ -150,14 +150,27 @@ void spl_board_init(void)
 int board_fit_config_name_match(const char *name)
 {
 	int board_id = var_detect_board_id();
+	struct var_carrier_eeprom carrier_eeprom;
+	static char carrier_rev_eeprom[CARRIER_REV_LEN] = {0};
 
 	if (board_id == BOARD_ID_DART) {
-		int carrier_rev = var_detect_dart_carrier_rev();
+		int carrier_rev_gpio;
 
-		if ((carrier_rev == DART_CARRIER_REV_1) &&
+		/* Read DT8MCustomboard version from EEPROM */
+		if (!carrier_rev_eeprom[0]) {
+			var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+			var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev_eeprom, sizeof(carrier_rev_eeprom));
+		}
+
+		if (strcmp(carrier_rev_eeprom, "legacy") && !strcmp(name, "imx8mp-var-dart-dt8mcustomboard"))
+			return 0;
+
+		/* DT8MCustomboard EEPROM is not initialized, fallback to GPIO detection. */
+		carrier_rev_gpio = var_detect_dart_carrier_rev();
+		if ((carrier_rev_gpio == DART_CARRIER_REV_1) &&
 			!strcmp(name, "imx8mp-var-dart-dt8mcustomboard-legacy"))
 			return 0;
-		else if ((carrier_rev == DART_CARRIER_REV_2) &&
+		else if ((carrier_rev_gpio == DART_CARRIER_REV_2) &&
 			!strcmp(name, "imx8mp-var-dart-dt8mcustomboard"))
 			return 0;
 	}
@@ -181,6 +194,19 @@ struct i2c_pads_info i2c_pads_dart = {
 		.i2c_mode = MX8MP_PAD_I2C1_SDA__I2C1_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gpio_mode = MX8MP_PAD_I2C1_SDA__GPIO5_IO15 | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gp = IMX_GPIO_NR(5, 15),
+	},
+};
+
+struct i2c_pads_info i2c1_pads_dart = {
+	.scl = {
+		.i2c_mode = MX8MP_PAD_I2C2_SCL__I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX8MP_PAD_I2C2_SCL__GPIO5_IO16 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(5, 16),
+	},
+	.sda = {
+		.i2c_mode = MX8MP_PAD_I2C2_SDA__I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX8MP_PAD_I2C2_SDA__GPIO5_IO17 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(5, 17),
 	},
 };
 
@@ -240,6 +266,12 @@ void board_init_f(ulong dummy)
 	else
 		setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pads_som);
 #endif
+
+	if (var_detect_board_id() == BOARD_ID_DART) {
+		/* I2C Bus 1 initialization */
+		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c1_pads_dart);
+	}
+
 	/* PMIC initialization */
 	power_init_board();
 
