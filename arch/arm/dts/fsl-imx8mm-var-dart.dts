@@ -18,7 +18,7 @@
 #include "fsl-imx8mm.dtsi"
 
 / {
-	model = "Varicsite DART-MX8MM";
+	model = "Varicsite DART-MX8M-MINI";
 	compatible = "variscite,imx8mm-var-dart", "fsl,imx8mm";
 
 	chosen {
