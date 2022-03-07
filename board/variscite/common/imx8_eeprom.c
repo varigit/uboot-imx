@@ -368,7 +368,7 @@ void var_eeprom_adjust_dram(struct var_eeprom *ep, struct dram_timing_info *d)
 }
 #endif
 
-#ifdef CONFIG_DM_I2C
+#if CONFIG_IS_ENABLED(DM_I2C)
 int var_carrier_eeprom_read(int bus_no, int addr, struct var_carrier_eeprom *ep)
 {
 	int ret;
