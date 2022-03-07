@@ -167,6 +167,7 @@
 			"booti; " \
 		"fi;\0"
 
+#undef CONFIG_BOOTCOMMAND
 #define CONFIG_BOOTCOMMAND \
 	"run ramsize_check; " \
 	"mmc dev ${mmcdev}; "\
@@ -200,7 +201,6 @@
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 #define CONFIG_ENV_OVERWRITE
-#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		SZ_32M
@@ -210,9 +210,6 @@
 #define DEFAULT_SDRAM_SIZE		(512 * SZ_1M) /* 512MB Minimum DDR4, see get_dram_size */
 #define VAR_EEPROM_DRAM_START          (CONFIG_SYS_MEMTEST_START + \
 					(DEFAULT_SDRAM_SIZE >> 1))
-
-#define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (DEFAULT_SDRAM_SIZE >> 1))
 
 #define CONFIG_MXC_UART_BASE		UART1_BASE_ADDR
 
@@ -243,7 +240,6 @@
 /* USB configs */
 #ifndef CONFIG_SPL_BUILD
 #define CONFIG_CMD_USB
-#define CONFIG_USB_STORAGE
 #define CONFIG_USBD_HS
 
 #define CONFIG_CMD_USB_MASS_STORAGE
