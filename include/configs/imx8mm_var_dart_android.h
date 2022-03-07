@@ -29,7 +29,7 @@
 		"init=/init " \
 		"consoleblank=0 " \
 		"androidboot.hardware=nxp " \
-		"cma=800M@0x400M-0xb80M " \
+		"cma=960M@0x400M-0x1000M " \
 		"firmware_class.path=/vendor/firmware " \
 		"loop.max_part=7 " \
 		"androidboot.vendor.sysrq=1 " \
