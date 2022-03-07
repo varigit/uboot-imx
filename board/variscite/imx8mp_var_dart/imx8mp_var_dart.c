@@ -90,6 +90,7 @@ static iomux_v3_cfg_t const dart_carrier_detect_pads[] = {
 	MX8MP_PAD_NAND_DQS__GPIO3_IO14 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
 };
 
+/* Detect DT8MCustomboard version for versions < 3.0 */
 int var_detect_dart_carrier_rev(void)
 {
 	static int dart_carrier_rev = DART_CARRIER_REV_UNDEF;
@@ -339,6 +340,8 @@ int board_late_init(void)
 	int board_id;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	struct var_carrier_eeprom carrier_eeprom;
+	char carrier_rev_eeprom[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
@@ -356,16 +359,26 @@ int board_late_init(void)
 	if (board_id == BOARD_ID_SOM) {
 		env_set("board_name", "VAR-SOM-MX8M-PLUS");
 		env_set("console", "ttymxc1,115200");
+
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev_eeprom, sizeof(carrier_rev_eeprom));
+		env_set("carrier_rev", carrier_rev_eeprom);
 	}
 	else if (board_id == BOARD_ID_DART) {
-		int carrier_rev = var_detect_dart_carrier_rev();
+		int carrier_rev_gpio = var_detect_dart_carrier_rev();
 
 		env_set("board_name", "DART-MX8M-PLUS");
 
-		if (carrier_rev == DART_CARRIER_REV_2)
-			env_set("dart_carrier_rev", "dt8m-2.x");
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev_eeprom, sizeof(carrier_rev_eeprom));
+
+		/* Read DT8MCustomboard version from EEPROM. Fallback to GPIO detection if EEPROM not initialized */
+		if (strcmp(carrier_rev_eeprom, "legacy"))
+			env_set("carrier_rev", carrier_rev_eeprom);
+		else if (carrier_rev_gpio == DART_CARRIER_REV_2)
+			env_set("carrier_rev", "dt8m-2.x");
 		else
-			env_set("dart_carrier_rev", "legacy");
+			env_set("carrier_rev", "legacy");
 	}
 
 	var_setup_mac(ep);
