@@ -163,10 +163,8 @@
 			"fi; " \
 		"else " \
 			"booti; " \
-		"fi;\0"
-
-#undef CONFIG_BOOTCOMMAND
-#define CONFIG_BOOTCOMMAND \
+		"fi;\0" \
+	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 	"run ramsize_check; " \
 	"mmc dev ${mmcdev}; "\
 	"if mmc rescan; then " \
@@ -237,7 +235,6 @@
 
 /* USB configs */
 #ifndef CONFIG_SPL_BUILD
-#define CONFIG_CMD_USB
 #define CONFIG_USBD_HS
 
 #define CONFIG_CMD_USB_MASS_STORAGE
