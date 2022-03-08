@@ -175,9 +175,8 @@
 			"fi; " \
 		"else " \
 			"booti; " \
-		"fi;\0"
-
-#define CONFIG_BOOTCOMMAND \
+		"fi;\0" \
+	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 	"run ramsize_check; " \
 	"mmc dev ${mmcdev}; " \
 	"if mmc rescan; then " \
@@ -213,7 +212,6 @@
 
 /* Default ENV offset is 4MB for SD/EMMC/FSPI, but NAND uses 60MB offset, overridden by env_get_offset */
 #define CONFIG_ENV_SECT_SIZE		(64 * 1024)
-#define CONFIG_SYS_MMC_ENV_DEV		1 /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
@@ -222,10 +220,6 @@
 #define PHYS_SDRAM			0x40000000
 #define DEFAULT_SDRAM_SIZE 			(512 * SZ_1M) /* 512MB Minimum DDR4, see get_dram_size */
 #define VAR_EEPROM_DRAM_START           (PHYS_SDRAM + (DEFAULT_SDRAM_SIZE >> 1))
-
-#define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + \
-					(DEFAULT_SDRAM_SIZE >> 1))
 
 #define CONFIG_BAUDRATE			115200
 
@@ -260,8 +254,6 @@
 
 /* USB configs */
 #ifndef CONFIG_SPL_BUILD
-#define CONFIG_CMD_USB
-#define CONFIG_USB_STORAGE
 #define CONFIG_USBD_HS
 
 #define CONFIG_CMD_USB_MASS_STORAGE
