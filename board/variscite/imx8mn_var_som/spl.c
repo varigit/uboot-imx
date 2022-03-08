@@ -8,6 +8,7 @@
 #include <common.h>
 #include <cpu_func.h>
 #include <hang.h>
+#include <init.h>
 #include <spl.h>
 #include <asm/io.h>
 #include <asm/mach-imx/iomux-v3.h>
@@ -23,6 +24,7 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <fsl_esdhc_imx.h>
 #include <mmc.h>
+#include <linux/delay.h>
 
 #include "../common/imx8_eeprom.h"
 #include "imx8mn_var_som.h"

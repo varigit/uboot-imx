@@ -6,6 +6,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <asm/mach-imx/iomux-v3.h>
