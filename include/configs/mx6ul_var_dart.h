@@ -304,10 +304,10 @@
 
 /*
  * Partitions layout for NAND is:
- *     mtd0: 2M       (spl) First boot loader
- *     mtd1: 2M       (u-boot)
- *     mtd2: 2M       (u-boot env.)
- *     mtd3: 8M       (kernel, dtb)
+ *     mtd0:  2M      (spl) First boot loader
+ *     mtd1:  2M      (u-boot)
+ *     mtd2:  1M      (u-boot env.)
+ *     mtd3: 12M      (kernel, dtb)
  *     mtd4: left     (rootfs)
  */
 /* Default mtd partition table */
