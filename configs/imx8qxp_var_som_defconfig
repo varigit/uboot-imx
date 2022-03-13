@@ -22,7 +22,7 @@ CONFIG_SPL=y
 CONFIG_IMX_BOOTAUX=y
 CONFIG_SPL_LOAD_IMX_CONTAINER=y
 CONFIG_IMX_CONTAINER_CFG="board/variscite/imx8qxp_var_som/uboot-container.cfg"
-CONFIG_DEFAULT_DEVICE_TREE="fsl-imx8qxp-var-som-symphony"
+CONFIG_DEFAULT_DEVICE_TREE="imx8qxp-var-som-symphony"
 CONFIG_OF_SYSTEM_SETUP=y
 CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/variscite/imx8qxp_var_som/imximage.cfg"
 CONFIG_BOOTDELAY=1

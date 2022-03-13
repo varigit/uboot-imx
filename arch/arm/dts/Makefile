@@ -854,7 +854,7 @@ dtb-$(CONFIG_ARCH_IMX8) += \
 	imx8-giedi.dtb \
 	imx8qm-var-som-symphony.dtb \
 	imx8qm-var-spear-sp8customboard.dtb \
-	fsl-imx8qxp-var-som-symphony.dtb
+	imx8qxp-var-som-symphony.dtb
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-evk.dtb \
