@@ -137,9 +137,9 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8; then " \
-				"setenv fdt_file ${soc_id}-var-som.dtb; " \
+				"setenv fdt_file ${soc_id}-var-som-symphony.dtb; " \
 			"else " \
-				"setenv fdt_file ${soc_id}-var-spear.dtb;" \
+				"setenv fdt_file ${soc_id}-var-spear-sp8customboard.dtb; " \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \

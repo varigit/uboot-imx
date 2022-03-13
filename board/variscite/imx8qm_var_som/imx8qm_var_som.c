@@ -90,9 +90,9 @@ int board_fit_config_name_match(const char *name)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 
 	board_id = var_get_board_id(ep);
-	if ((board_id == SPEAR_MX8) && !strcmp(name, "fsl-imx8qm-var-spear"))
+	if ((board_id == SPEAR_MX8) && !strcmp(name, "fsl-imx8qm-var-spear-sp8customboard"))
 		return 0;
-	else if ((board_id == VAR_SOM_MX8) && !strcmp(name, "fsl-imx8qm-var-som"))
+	else if ((board_id == VAR_SOM_MX8) && !strcmp(name, "fsl-imx8qm-var-som-symphony"))
 		return 0;
 	else
 		return -1;
