@@ -11,6 +11,40 @@
 
 #include "../common/imx8_eeprom.h"
 
+#define AR803x_PHY_ID_1			0x4d
+#define ADIN1300_PHY_ID_1		0x283
+#define ADIN1300_EXT_REG_PTR		0x10
+#define ADIN1300_EXT_REG_DATA		0x11
+#define ADIN1300_GE_RGMII_CFG		0xff23
+
+int board_phy_config(struct phy_device *phydev)
+{
+	u32 phy_id_1;
+
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
+
+	phy_id_1 = (phydev->phy_id >> 16);
+
+	/* Use mii register 0x2 to determine if AR8033 or ADIN1300 */
+	switch(phy_id_1) {
+	case AR803x_PHY_ID_1:
+		printf("AR8033 PHY detected at addr %d\n", phydev->addr);
+		break;
+	case ADIN1300_PHY_ID_1:
+		printf("ADIN1300 PHY detected at addr %d\n", phydev->addr);
+		/* ADIN1300 Disable RGMII RX clock delay (enabled by default) */
+		phy_write(phydev, MDIO_DEVAD_NONE, ADIN1300_EXT_REG_PTR, ADIN1300_GE_RGMII_CFG);
+		phy_write(phydev, MDIO_DEVAD_NONE, ADIN1300_EXT_REG_DATA, 0xe01);
+	break;
+	default:
+		printf("%s: unknown phy_id 0x%x at addr %d\n", __func__, phy_id_1, phydev->addr);
+		break;
+	}
+
+	return 0;
+}
+
 #if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP)
 
 #define CHAR_BIT 8
