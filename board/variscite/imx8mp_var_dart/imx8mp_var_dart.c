@@ -23,6 +23,7 @@
 #include <dwc3-uboot.h>
 #include <power/regulator.h>
 #include <linux/delay.h>
+#include <mmc.h>
 
 #include "../common/imx8_eeprom.h"
 #include "imx8mp_var_dart.h"
