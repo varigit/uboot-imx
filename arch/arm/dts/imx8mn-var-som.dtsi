@@ -53,9 +53,12 @@
 		ethphy0: ethernet-phy@0 {
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <4>;
-			at803x,led-act-blind-workaround;
-			at803x,eee-okay;
-			at803x,vddio-1p8v;
+			vddio-supply = <&vddio>;
+
+			vddio: vddio-regulator {
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+			};
 		};
 	};
 };
