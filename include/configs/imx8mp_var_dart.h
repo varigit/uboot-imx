@@ -121,7 +121,7 @@
 			"if test $board_name = VAR-SOM-MX8M-PLUS; then " \
 				"setenv fdt_file imx8mp-var-som-symphony.dtb; " \
 			"else " \
-				"if test $dart_carrier_rev = legacy; then " \
+				"if test $carrier_rev = legacy; then " \
 					"setenv fdt_file imx8mp-var-dart-dt8mcustomboard-legacy.dtb;" \
 				"else " \
 					"setenv fdt_file imx8mp-var-dart-dt8mcustomboard.dtb;" \
