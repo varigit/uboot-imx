@@ -22,7 +22,7 @@ CONFIG_SPL=y
 CONFIG_IMX_BOOTAUX=y
 CONFIG_SPL_LOAD_IMX_CONTAINER=y
 CONFIG_IMX_CONTAINER_CFG="board/freescale/imx8qm_mek/uboot-container.cfg"
-CONFIG_DEFAULT_DEVICE_TREE="imx8qm-var-som-symphony"
+CONFIG_DEFAULT_DEVICE_TREE="imx8qm-var-spear-sp8customboard"
 CONFIG_FIT=y
 CONFIG_OF_SYSTEM_SETUP=y
 CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/imx8qm_mek/imximage.cfg"
