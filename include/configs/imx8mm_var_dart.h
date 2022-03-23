@@ -59,6 +59,21 @@
 #define FEC_QUIRK_ENET_MAC
 #endif
 
+#ifdef CONFIG_DISTRO_DEFAULTS
+#define BOOT_TARGET_DEVICES(func) \
+       func(USB, usb, 0) \
+       func(MMC, mmc, 1)
+
+#include <config_distro_bootcmd.h>
+/* redefine BOOTENV_EFI_SET_FDTFILE_FALLBACK to use Variscite function to load fdt */
+#undef BOOTENV_EFI_SET_FDTFILE_FALLBACK
+#define BOOTENV_EFI_SET_FDTFILE_FALLBACK \
+	"setenv efi_dtb_prefixes; " \
+	"run loadfdt; "
+#else
+#define BOOTENV
+#endif
+
 #define CONFIG_MFG_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x43800000\0" \
@@ -70,10 +85,14 @@
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	CONFIG_MFG_ENV_SETTINGS \
 	"bootdir=/boot\0"	\
-	"script=boot.scr\0" \
+	BOOTENV \
+	"scriptaddr=0x43500000\0" \
+	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
+	"bsp_script=boot.scr\0" \
 	"image=Image.gz\0" \
 	"console=ttymxc0,115200\0" \
 	"img_addr=0x42000000\0"			\
+	"fdt_addr_r=0x43000000\0" \
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
@@ -86,6 +105,7 @@
 	"m4_addr=0x7e0000\0" \
 	"m4_bin=hello_world.bin\0" \
 	"use_m4=no\0" \
+	"dfu_alt_info=mmc 2=1 raw 0x42 0x1000 mmcpart\0" \
 	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m4_bin}; " \
 		"cp.b ${loadaddr} ${m4_addr} ${filesize}; " \
 		"echo Init rsc_table region memory; " \
@@ -101,7 +121,7 @@
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size}\0 " \
-	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
+	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bsp_script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
@@ -185,6 +205,7 @@
 	"else " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;"
+
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
