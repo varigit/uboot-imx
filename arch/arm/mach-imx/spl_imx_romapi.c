@@ -12,6 +12,8 @@
 #include <linux/libfdt.h>
 #include <spl.h>
 #include <asm/arch/sys_proto.h>
+#include <asm/cache.h>
+#include <malloc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -56,6 +58,39 @@ static ulong spl_romapi_read_seekable(struct spl_load_info *load,
 				      ulong offset, ulong byte,
 				      void *buf)
 {
+	/* Handle corner case for ocram 0x980000 to 0x98ffff ecc region, ROM does not allow to access it */
+	if (is_imx8mp()) {
+		ulong ret;
+		void *new_buf;
+		if (((ulong)buf >= 0x980000 && (ulong)buf <= 0x98ffff)) {
+			new_buf = memalign(ARCH_DMA_MINALIGN, byte);
+			if (!new_buf) {
+				printf("Fail to allocate read buffer\n");
+				return 0;
+			}
+			ret = spl_romapi_raw_seekable_read(offset, byte, new_buf);
+			memcpy(buf, new_buf, ret);
+			free(new_buf);
+			return ret;
+		} else if ((ulong)(buf + byte) >= 0x980000 && (ulong)(buf + byte) <= 0x98ffff) {
+			u32 over_size = (ulong)(buf + byte) - 0x97ffff;
+			int pagesize = spl_get_bl_len(load);
+			over_size = (over_size + pagesize - 1) / pagesize * pagesize;
+
+			ret = spl_romapi_raw_seekable_read(offset, byte - over_size, buf);
+			new_buf = memalign(ARCH_DMA_MINALIGN, over_size);
+			if (!new_buf) {
+				printf("Fail to allocate read buffer\n");
+				return 0;
+			}
+
+			ret += spl_romapi_raw_seekable_read(offset + byte - over_size, over_size, new_buf);
+			memcpy(buf + byte - over_size, new_buf, ret);
+			free(new_buf);
+			return ret;
+		}
+	}
+
 	return spl_romapi_raw_seekable_read(offset, byte, buf);
 }
 
