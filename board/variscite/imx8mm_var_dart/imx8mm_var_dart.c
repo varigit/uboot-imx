@@ -230,10 +230,16 @@ int board_late_init(void)
 	else if (board_id == DART_MX8M_MINI) {
 
 		int carrier_rev = var_detect_dart_carrier_rev();
+		char carrier_rev_eeprom[16] = {0};
 
 		env_set("board_name", "DART-MX8M-MINI");
 
-		if (carrier_rev == DART_CARRIER_REV_2)
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev_eeprom, sizeof(carrier_rev_eeprom));
+
+		if (strcmp(carrier_rev_eeprom, "legacy"))
+			env_set("carrier_rev", carrier_rev_eeprom);
+		else if (carrier_rev == DART_CARRIER_REV_2)
 			env_set("carrier_rev", "dt8m-2.x");
 		else
 			env_set("carrier_rev", "legacy");
