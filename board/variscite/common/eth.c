@@ -5,31 +5,56 @@
 
 #include "../common/imx8_eeprom.h"
 
+#define AR803x_PHY_ID_1		0x4d
 #define AR803x_PHY_DEBUG_ADDR_REG	0x1d
 #define AR803x_PHY_DEBUG_DATA_REG	0x1e
-
 #define AR803x_DEBUG_REG_5		0x05
-#define AR803x_DEBUG_REG_0		0x00
-
 #define AR803x_DEBUG_REG_0		0x00
 #define AR803x_DEBUG_REG_31		0x1f
 #define AR803x_VDDIO_1P8V_EN		0x8
 
+#define ADIN1300_PHY_ID_1		0x283
+#define ADIN1300_EXT_REG_PTR		0x10
+#define ADIN1300_EXT_REG_DATA		0x11
+#define ADIN1300_GE_RGMII_CFG		0xff23
+
+
 int board_phy_config(struct phy_device *phydev)
 {
-	/* Disable RGMII RX clock delay (enabled by default) */
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
-		  AR803x_DEBUG_REG_0);
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG, 0);
-
-	/* Enable 1.8V VDDIO voltage */
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
-		  AR803x_DEBUG_REG_31);
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG,
-		AR803x_VDDIO_1P8V_EN);
+	u32 phy_id_1;
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
+
+	phy_id_1 = (phydev->phy_id >> 16);
+
+	/* Use mii register 0x2 to determine if AR8033 or ADIN1300 */
+	switch(phy_id_1) {
+	case AR803x_PHY_ID_1:
+		printf("AR8033 PHY detected at addr %d\n", phydev->addr);
+
+		/* Disable RGMII RX clock delay (enabled by default) */
+		phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
+			AR803x_DEBUG_REG_0);
+		phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG, 0);
+
+		/* Enable 1.8V VDDIO voltage */
+		phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
+			AR803x_DEBUG_REG_31);
+		phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG,
+			AR803x_VDDIO_1P8V_EN);
+
+		break;
+	case ADIN1300_PHY_ID_1:
+		printf("ADIN1300 PHY detected at addr %d\n", phydev->addr);
+		/* ADIN1300 Disable RGMII RX clock delay (enabled by default) */
+		phy_write(phydev, MDIO_DEVAD_NONE, ADIN1300_EXT_REG_PTR, ADIN1300_GE_RGMII_CFG);
+		phy_write(phydev, MDIO_DEVAD_NONE, ADIN1300_EXT_REG_DATA, 0xe01);
+	break;
+	default:
+		printf("%s: unknown phy_id 0x%x at addr %d\n", __func__, phy_id_1, phydev->addr);
+		break;
+	}
 
 	return 0;
 }
