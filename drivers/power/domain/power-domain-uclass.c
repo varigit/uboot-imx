@@ -155,6 +155,15 @@ static int dev_power_domain_ctrl(struct udevice *dev, bool on)
 	struct power_domain pd;
 	int i, count, ret = 0;
 
+#ifdef CONFIG_IMX8QM
+	/*
+	 * usbotg1: workaround to fix usb stop failure on IMX8QM
+	 */
+	if ((strcmp(dev->name, "usb_hub") == 0) && on==0) {
+		return (ret);
+	}
+#endif
+
 	count = dev_count_phandle_with_args(dev, "power-domains",
 					    "#power-domain-cells", 0);
 	for (i = 0; i < count; i++) {
