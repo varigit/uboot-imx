@@ -653,17 +653,32 @@ static int setup_fec(int fec_id)
 	gpio_direction_output(phy_rst_gpio, 0);
 	mdelay(10);
 	gpio_direction_output(phy_rst_gpio, 1);
+	mdelay(20);
 
 	return 0;
 }
 
+#define AR8033_PHY_ID 	0x004dd074
+#define ADIN1300_PHY_ID	0x0283bc30
+
 int board_phy_config(struct phy_device *phydev)
 {
+	switch (phydev->phy_id) {
+	case AR8033_PHY_ID:
+		printf("AR8033 PHY detected at addr %d\n", phydev->addr);
 #ifndef CONFIG_DM_ETH
-	/* Enable RGMII Tx clock delay */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
+		/* Enable RGMII Tx clock delay */
+		phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
+		phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
 #endif
+		break;
+	case ADIN1300_PHY_ID:
+		printf("ADIN1300 PHY detected at addr %d\n", phydev->addr);
+		break;
+	default:
+		printf("%s: unknown phy_id 0x%x at addr %d\n", __func__, phydev->phy_id, phydev->addr);
+		break;
+	}
 
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
