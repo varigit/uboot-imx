@@ -5,35 +5,6 @@
 
 #include "../common/imx8_eeprom.h"
 
-#define AR803x_PHY_DEBUG_ADDR_REG	0x1d
-#define AR803x_PHY_DEBUG_DATA_REG	0x1e
-
-#define AR803x_DEBUG_REG_5		0x05
-#define AR803x_DEBUG_REG_0		0x00
-
-#define AR803x_DEBUG_REG_0		0x00
-#define AR803x_DEBUG_REG_31		0x1f
-#define AR803x_VDDIO_1P8V_EN		0x8
-
-int board_phy_config(struct phy_device *phydev)
-{
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-
-	/* Disable RGMII RX clock delay (enabled by default) */
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
-		  AR803x_DEBUG_REG_0);
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG, 0);
-
-	/* Enable 1.8V VDDIO voltage */
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
-		  AR803x_DEBUG_REG_31);
-	phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG,
-		AR803x_VDDIO_1P8V_EN);
-
-	return 0;
-}
-
 #define CHAR_BIT 8
 
 #if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP)
