@@ -42,6 +42,7 @@
 
 #define CONFIG_SYS_I2C
 
+#define CONFIG_SYS_I2C_SPEED		100000
 #endif
 
 #define CONFIG_CMD_READ
@@ -90,18 +91,19 @@
 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
 	"bsp_script=boot.scr\0" \
 	"image=Image.gz\0" \
-	"console=ttymxc0,115200\0" \
 	"img_addr=0x42000000\0"			\
+	"console=ttymxc0,115200\0" \
 	"fdt_addr_r=0x43000000\0" \
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
+	"boot_fit=no\0" \
 	"fdt_file=undefined\0" \
+	"ip_dyn=yes\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcblk=1\0" \
-	"mmcautodetect=yes\0" \
 	"mmcpart=1\0" \
+	"mmcautodetect=yes\0" \
 	"m4_addr=0x7e0000\0" \
 	"m4_bin=hello_world.bin\0" \
 	"use_m4=no\0" \
@@ -154,37 +156,37 @@
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
+			"bootm ${loadaddr}; " \
+		"else " \
 			"if run loadfdt; then " \
-				"booti ${loadaddr} - ${fdt_addr}; " \
+				"booti ${loadaddr} - ${fdt_addr_r}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
 			"fi; " \
-		"else " \
-			"echo wait for boot; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console} " \
 		"root=/dev/nfs ${cma_size} " \
-		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp ${cma_size}\0" \
 	"netboot=echo Booting from net ...; " \
+		"run netargs;  " \
+		"run optargs;  " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
 			"setenv get_cmd tftp; " \
 		"fi; " \
 		"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
-		"run netargs; " \
-		"run optargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
+			"bootm ${loadaddr}; " \
+		"else " \
 			"run findfdt; " \
 			"echo fdt_file=${fdt_file}; " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"booti ${loadaddr} - ${fdt_addr}; " \
+				"booti ${loadaddr} - ${fdt_addr_r}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
 			"fi; " \
-		"else " \
-			"booti; " \
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 	"run ramsize_check; " \
@@ -202,8 +204,6 @@
 				"run netboot; " \
 			"fi; " \
 		"fi; " \
-	"else " \
-		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;"
 
 
@@ -224,6 +224,7 @@
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		SZ_32M
 
+/* DDR configs */
 #define CONFIG_SYS_SDRAM_BASE           0x40000000
 #define PHYS_SDRAM                      0x40000000
 #define DEFAULT_SDRAM_SIZE		(512 * SZ_1M) /* 512MB Minimum DDR4, see get_dram_size */
@@ -249,12 +250,6 @@
 #define CONFIG_SYS_FSL_ESDHC_ADDR	0
 
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
-
-#ifndef CONFIG_DM_I2C
-#define CONFIG_SYS_I2C
-#endif
-
-#define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
 #ifndef CONFIG_SPL_BUILD
