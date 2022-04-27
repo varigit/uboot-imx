@@ -1817,7 +1817,6 @@ int android_image_check_header_v3(uint8_t *boot_magic, uint8_t * vendor_boot_mag
 int android_image_get_kernel_v3(const struct boot_img_hdr_v3 *hdr,
 				const struct vendor_boot_img_hdr_v3 *vendor_hdr,
 				bool bootconfig);
-int append_runtime_bootconfig(char *bootconfig, uint32_t *size);
 int32_t add_bootconfig_trailer(uint64_t bootconfig_start_addr, uint32_t bootconfig_size);
 
 /**
@@ -1951,7 +1950,7 @@ bool android_image_print_dtb_contents(ulong hdr_addr);
 bool image_arm64(void *images);
 uint32_t kernel_size(void *images);
 ulong kernel_relocate_addr(ulong images);
-int append_runtime_bootconfig(char *bootconfig, uint32_t *size);
+int append_runtime_bootconfig(char *bootconfig, uint32_t *size, void *fdt_addr);
 int32_t add_bootconfig_trailer(uint64_t bootconfig_start_addr, uint32_t bootconfig_size);
 
 /**
