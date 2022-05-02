@@ -40,6 +40,7 @@
 	status = "okay";
 	phy-supply = <&reg_ethphy0>;
 	phy-reset-gpios = <&gpio1 2 GPIO_ACTIVE_LOW>;
+	phy-reset-post-delay = <20>;
 
 	mdio {
 		#address-cells = <1>;
