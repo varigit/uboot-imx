@@ -254,6 +254,7 @@ struct fec_priv {
 #endif
 #ifdef CONFIG_DM_REGULATOR
 	struct udevice *phy_supply;
+	struct udevice *phy_supply_vselect;
 #endif
 #ifdef CONFIG_DM_GPIO
 	struct gpio_desc phy_reset_gpio;
