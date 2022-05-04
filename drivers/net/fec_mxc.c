@@ -1319,6 +1319,13 @@ static int fecmxc_probe(struct udevice *dev)
 			return ret;
 		}
 	}
+	if (priv->phy_supply_vselect) {
+		ret = regulator_set_enable(priv->phy_supply_vselect, true);
+		if (ret) {
+			printf("%s: Error enabling phy vselect supply\n", dev->name);
+			return ret;
+		}
+	}
 #endif
 
 #ifdef CONFIG_DM_GPIO
@@ -1379,6 +1386,8 @@ static int fecmxc_remove(struct udevice *dev)
 #ifdef CONFIG_DM_REGULATOR
 	if (priv->phy_supply)
 		regulator_set_enable(priv->phy_supply, false);
+	if (priv->phy_supply_vselect)
+		regulator_set_enable(priv->phy_supply, false);
 #endif
 
 	return 0;
@@ -1406,6 +1415,7 @@ static int fecmxc_ofdata_to_platdata(struct udevice *dev)
 
 #ifdef CONFIG_DM_REGULATOR
 	device_get_supply_regulator(dev, "phy-supply", &priv->phy_supply);
+	device_get_supply_regulator(dev, "phy-supply-vselect", &priv->phy_supply_vselect);
 #endif
 
 #ifdef CONFIG_DM_GPIO
