@@ -53,6 +53,7 @@
 		};
 		ethphy1: ethernet-phy@5 {
 			compatible = "ethernet-phy-ieee802.3-c22";
+			adi,phy-mode-override = "rgmii";
 			reg = <5>;
 		};
 	};
