@@ -36,6 +36,16 @@
 	};
 };
 
+&fec2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec2>;
+	phy-mode = "rgmii";
+	phy-handle = <&ethphy1>;
+	fsl,magic-packet;
+	phy-reset-gpios = <&gpio2 29 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
 &gpio2 {
 	status = "okay";
 };
