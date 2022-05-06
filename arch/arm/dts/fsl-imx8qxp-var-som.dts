@@ -333,7 +333,7 @@
 	phy-mode = "rgmii";
 	phy-handle = <&ethphy1>;
 	fsl,magic-packet;
-	status = "disabled";
+	status = "okay";
 	phy-supply = <&reg_ethphy1>;
 	phy-supply-vselect = <&reg_vselect>;
 	phy-reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
