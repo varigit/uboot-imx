@@ -44,7 +44,7 @@ int mmc_load_image_raw_sector_dual_uboot(struct spl_image_info *spl_image,
 					 struct spl_boot_device *bootdev, struct mmc *mmc);
 #endif
 
-int __weak mmc_image_load_late(struct mmc *mmc)
+int __weak mmc_image_load_late(struct spl_image_info *spl_image, struct mmc *mmc)
 {
 	return 0;
 }
@@ -69,7 +69,7 @@ int mmc_load_image_raw_sector(struct spl_image_info *spl_image,
 		return -1;
 	}
 
-	ret = mmc_image_load_late(mmc);
+	ret = mmc_image_load_late(spl_image, mmc);
 	return ret;
 }
 
