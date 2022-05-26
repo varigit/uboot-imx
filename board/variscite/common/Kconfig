@@ -1,0 +1,6 @@
+config EXTCON_PTN5150
+	bool "NXP PTN5150 CC LOGIC USB EXTCON support"
+	default n
+	help
+	  Say Y here to enable support for USB peripheral and USB host
+	  detection by NXP PTN5150 CC (Configuration Channel) logic chip.
