@@ -14,5 +14,6 @@ config IMX8MN_FORCE_NOM_SOC
 	default n
 
 source "board/freescale/common/Kconfig"
+source "board/variscite/common/Kconfig"
 
 endif
