@@ -178,6 +178,9 @@
 	pinctrl-0 = <&pinctrl_fec>;
 	phy-mode = "rgmii";
 	phy-handle = <&ethphy1>;
+	phy-reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <10>;
+	phy-reset-post-delay = <20>;
 	status = "disabled";
 };
 

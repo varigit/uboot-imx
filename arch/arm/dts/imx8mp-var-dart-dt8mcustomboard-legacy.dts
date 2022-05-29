@@ -21,5 +21,6 @@
 };
 
 &fec {
+	/delete-property/ phy-reset-gpios;
 	status = "disabled";
 };
