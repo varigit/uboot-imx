@@ -17,6 +17,7 @@
 #include <usb.h>
 #include <dm.h>
 
+#include "../common/extcon-ptn5150.h"
 #include "../common/imx8_eeprom.h"
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -146,16 +147,22 @@ static int setup_fec(void)
 }
 #endif
 
-#define USB_OTG1_ID_GPIO  IMX_GPIO_NR(1, 10)
-
-static iomux_v3_cfg_t const usb_pads[] = {
-	IMX8MN_PAD_GPIO1_IO10__GPIO1_IO10  | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
 #ifdef CONFIG_CI_UDC
+
+#ifdef CONFIG_EXTCON_PTN5150
+static struct extcon_ptn5150 usb_ptn5150;
+#endif
+
 int board_usb_init(int index, enum usb_init_type init)
 {
 	imx8m_usb_power(index, true);
+
+#if (!defined(CONFIG_SPL_BUILD) && defined(CONFIG_EXTCON_PTN5150))
+	/* Verify port is in proper mode */
+	if (extcon_ptn5150_phy_mode(&usb_ptn5150) != init)
+		return -ENODEV;
+#endif
+
 
 	return 0;
 }
@@ -167,32 +174,24 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return 0;
 }
 
-/* Used only on VAR-SOM-MX8M-NANO Rev1.0 (with extcon) */
+#ifdef CONFIG_EXTCON_PTN5150
 int board_ehci_usb_phy_mode(struct udevice *dev)
 {
-	return gpio_get_value(USB_OTG1_ID_GPIO) ?
-		USB_INIT_DEVICE : USB_INIT_HOST;
-}
+	int usb_phy_mode = extcon_ptn5150_phy_mode(&usb_ptn5150);
 
-static void setup_usb(void)
-{
-	if ((get_som_rev() != SOM_REV10))
-		return;
+	/* Default to host mode if not connected */
+	if (usb_phy_mode < 0)
+		usb_phy_mode = USB_INIT_HOST;
 
-	imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
-	gpio_request(USB_OTG1_ID_GPIO, "usb_otg1_id");
-	gpio_direction_input(USB_OTG1_ID_GPIO);
+	return usb_phy_mode;
 }
+#endif
 #endif
 
 int board_init(void)
 {
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
-#endif
-
-#ifdef CONFIG_CI_UDC
-	setup_usb();
 #endif
 
 	return 0;
@@ -203,6 +202,10 @@ int board_late_init(void)
 {
 	struct var_eeprom eeprom;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
+
+#ifdef CONFIG_EXTCON_PTN5150
+	extcon_ptn5150_setup(&usb_ptn5150);
+#endif
 
 	var_eeprom_read_header(&eeprom);
 

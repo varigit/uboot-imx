@@ -14,4 +14,5 @@ else
 obj-y += imx8mn_var_som.o ../common/mmc.o
 obj-$(CONFIG_VIDEO) += ../common/video.o
 obj-$(CONFIG_FEC_MXC) += ../common/eth.o
+obj-$(CONFIG_EXTCON_PTN5150) += ../common/extcon-ptn5150.o
 endif

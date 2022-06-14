@@ -409,6 +409,14 @@
 	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 	status = "okay";
+
+	ptn5150: ptn5150@3d {
+		compatible = "nxp,ptn5150";
+		pinctrl-names = "default";
+		reg = <0x3d>;
+		i2c-bus = <0x1>;
+		status = "okay";
+	};
 };
 
 &i2c3 {
@@ -498,6 +506,7 @@
 
 &usbotg1 {
 	status = "okay";
+	extcon = <&ptn5150>;
 };
 
 &gpio5 {
