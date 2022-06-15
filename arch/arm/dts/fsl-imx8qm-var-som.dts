@@ -262,6 +262,8 @@
 	phy-mode = "rgmii";
 	phy-handle = <&ethphy0>;
 	phy-reset-gpios = <&gpio2 28 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <10>;
+	phy-reset-post-delay = <20>;
 	fsl,magic-packet;
 	status = "okay";
 
@@ -292,6 +294,8 @@
 	phy-handle = <&ethphy1>;
 	fsl,magic-packet;
 	phy-reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <10>;
+	phy-reset-post-delay = <20>;
 	status = "disabled";
 };
 
