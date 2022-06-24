@@ -32,10 +32,26 @@ int board_phy_config(struct phy_device *phydev)
 	case AR803x_PHY_ID_1:
 		printf("AR8033 PHY detected at addr %d\n", phydev->addr);
 
+#if CONFIG_TARGET_IMX8QM_VAR_SOM
+		if (phydev->addr == 4) {
+			/* Disable RGMII RX clock delay for VAR-SOM-MX8 PHY
+			- Enabled by default on VAR-SOM-MX8 and Symphony PHYs
+			- Disabled by default on both SPEAR-MX8 PHYs
+			- The final configuration should be:
+			  VAR-SOM-MX8 PHY: RX clock delay disabled
+			  Symphony PHY: RX clock delay enabled
+			  SPEAR-MX8 PHYs: RX clock delay disabled for both PHYs
+			*/
+			phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
+				AR803x_DEBUG_REG_0);
+			phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG, 0);
+		}
+#else
 		/* Disable RGMII RX clock delay (enabled by default) */
 		phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
 			AR803x_DEBUG_REG_0);
 		phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_DATA_REG, 0);
+#endif
 
 		/* Enable 1.8V VDDIO voltage */
 		phy_write(phydev, MDIO_DEVAD_NONE, AR803x_PHY_DEBUG_ADDR_REG,
