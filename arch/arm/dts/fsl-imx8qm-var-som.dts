@@ -332,7 +332,7 @@
 	phy-reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
 	phy-reset-duration = <10>;
 	phy-reset-post-delay = <20>;
-	status = "disabled";
+	status = "okay";
 };
 
 &i2c0 {
