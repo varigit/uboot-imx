@@ -104,6 +104,14 @@
 			line-name = "eth1_phy_pwr";
 		};
 	};
+
+	ptn5150: ptn5150@3d {
+		compatible = "nxp,ptn5150";
+		pinctrl-names = "default";
+		reg = <0x3d>;
+		i2c-bus = <0x2>;
+		status = "okay";
+	};
 };
 
 &i2c4 {
@@ -132,6 +140,7 @@
 
 &usb_dwc3_0 {
 	dr_mode = "otg";
+	extcon = <&ptn5150>;
 	hnp-disable;
 	srp-disable;
 	adp-disable;
