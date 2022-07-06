@@ -27,6 +27,7 @@
 #include <asm/arch/ddr.h>
 #include <fsl_sec.h>
 #include <linux/delay.h>
+#include <fsl_sec.h>
 #include "../common/imx8_eeprom.h"
 #include "imx8mm_var_dart.h"
 
@@ -236,6 +237,11 @@ void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 
+#ifdef CONFIG_FSL_CAAM
+	if (sec_init()) {
+		printf("\nsec_init failed!\n");
+	}
+#endif
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
 	/* Serial download mode */
 	if (is_usb_boot()) {

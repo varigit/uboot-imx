@@ -67,6 +67,10 @@ config TARGET_IMX8MM_VAR_DART
 	select IMX8M_DDR4
 	select IMX8M_LPDDR4
 	select IMX8M_BOARD_INIT_DRAM
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
 
 choice
 	prompt  "NXP i.MX8M board select"
