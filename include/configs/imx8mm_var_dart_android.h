@@ -32,6 +32,7 @@
 		"cma=960M@0x400M-0x1000M " \
 		"firmware_class.path=/vendor/firmware " \
 		"loop.max_part=7 " \
+		"bootconfig " \
 		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
