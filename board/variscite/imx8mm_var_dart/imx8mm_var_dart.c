@@ -151,12 +151,14 @@ int board_usb_init(int index, enum usb_init_type init)
 	imx8m_usb_power(index, true);
 
 #if (!defined(CONFIG_SPL_BUILD) && defined(CONFIG_EXTCON_PTN5150))
-	/* Verify port is in proper mode */
-	int phy_mode = extcon_ptn5150_phy_mode(&usb_ptn5150);
+	if (index == 0) {
+		/* Verify port is in proper mode */
+		int phy_mode = extcon_ptn5150_phy_mode(&usb_ptn5150);
 
-	//Only verify phy_mode if ptn5150 is initialized
-	if (phy_mode >= 0 && phy_mode != init)
-		return -ENODEV;
+		//Only verify phy_mode if ptn5150 is initialized
+		if (phy_mode >= 0 && phy_mode != init)
+			return -ENODEV;
+	}
 #endif
 
 	return 0;
