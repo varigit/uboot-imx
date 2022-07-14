@@ -173,6 +173,7 @@
 	vmmc-supply = <&reg_usdhc2_vmmc>;
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
 	bus-width = <4>;
+	no-1-8-v;
 	status = "okay";
 };
 
