@@ -217,5 +217,6 @@
 	bus-width = <4>;
 	non-removable;
 	vmmc-supply = <&reg_usdhc2_vmmc>;
+	no-1-8-v;
 	status = "okay";
 };
