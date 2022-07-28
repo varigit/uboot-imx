@@ -51,4 +51,7 @@ config IMX8M_LPDDR4_FREQ0_3200MTS
 config IMX8M_4G_LPDDR4
 	bool "imx8m 4GB LPDDR4"
 
+config IMX8M_DDRPHY_FW_OFFSET
+	int "Offset of DDR PHY firmware from the end of the SPL image"
+	default 0
 endmenu

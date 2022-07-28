@@ -79,6 +79,8 @@ struct dram_fsp_msg {
 };
 
 struct dram_timing_info {
+	/* ddrphy firmware offset */
+	unsigned int ddrphy_fw_offset;
 	/* umctl2 config */
 	struct dram_cfg_param *ddrc_cfg;
 	unsigned int ddrc_cfg_num;
@@ -182,7 +184,7 @@ struct ddrphy_qb_state {
 #endif /* #if IS_ENABLED(CONFIG_IMX_SNPS_DDR_PHY_QB_GEN)  */
 #endif /* #if IS_ENABLED(CONFIG_IMX95) || IS_ENABLED(CONFIG_IMX94) */
 
-void ddr_load_train_firmware(enum fw_type type);
+void ddr_load_train_firmware(enum fw_type type, unsigned int start_offset);
 int ddr_init(struct dram_timing_info *timing_info);
 int ddr_cfg_phy(struct dram_timing_info *timing_info);
 void load_lpddr4_phy_pie(void);
