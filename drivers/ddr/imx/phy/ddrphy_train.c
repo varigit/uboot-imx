@@ -36,7 +36,8 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing)
 
 		/* load the dram training firmware image */
 		dwc_ddrphy_apb_wr(0xd0000, 0x0);
-		ddr_load_train_firmware(fsp_msg->fw_type);
+		ddr_load_train_firmware(fsp_msg->fw_type,
+					dram_timing->ddrphy_fw_offset);
 
 		/* load the frequency set point message block parameter */
 		dram_cfg = fsp_msg->fsp_cfg;
