@@ -48,12 +48,12 @@ binman_sym_declare(ulong, ddr_2d_dmem_fw, size);
 #endif
 
 /* We need PHY iMEM PHY is 32KB padded */
-void ddr_load_train_firmware(enum fw_type type)
+void ddr_load_train_firmware(enum fw_type type, unsigned int start_offset)
 {
 	u32 tmp32, i;
 	unsigned long pr_to32, pr_from32;
-	uint32_t fw_offset = type ? IMEM_2D_OFFSET : 0;
-	unsigned long imem_start = (unsigned long)_end + fw_offset;
+	unsigned long fw_offset = type ? IMEM_2D_OFFSET : 0;
+	unsigned long imem_start = (unsigned long)&_end + start_offset + fw_offset;
 	unsigned long dmem_start;
 	unsigned long imem_len = IMEM_LEN, dmem_len = DMEM_LEN;
 #if defined(CONFIG_IMX_SNPS_DDR_PHY_QB)
