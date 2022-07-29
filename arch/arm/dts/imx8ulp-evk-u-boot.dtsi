@@ -41,6 +41,18 @@
 	bootph-pre-ram;
 };
 
+&{/firmware} {
+	bootph-some-ram;
+};
+
+&{/firmware/scmi} {
+	bootph-some-ram;
+};
+
+&{/firmware/scmi/protocol@15} {
+	bootph-some-ram;
+};
+
 &per_bridge3 {
 	bootph-all;
 	bootph-pre-ram;
