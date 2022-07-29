@@ -98,6 +98,9 @@ struct udevice *scmi_get_protocol(struct udevice *dev,
 	case SCMI_PROTOCOL_ID_VOLTAGE_DOMAIN:
 		proto = priv->voltagedom_dev;
 		break;
+	case SCMI_PROTOCOL_ID_SENSOR:
+		proto = priv->sensor_dev;
+		break;
 	default:
 		dev_err(dev, "Protocol not supported\n");
 		proto = NULL;
@@ -147,6 +150,9 @@ static int scmi_add_protocol(struct udevice *dev,
 		break;
 	case SCMI_PROTOCOL_ID_VOLTAGE_DOMAIN:
 		priv->voltagedom_dev = proto;
+		break;
+	case SCMI_PROTOCOL_ID_SENSOR:
+		priv->sensor_dev = proto;
 		break;
 	default:
 		dev_err(dev, "Protocol not supported\n");
@@ -436,6 +442,11 @@ static int scmi_bind_protocols(struct udevice *dev)
 				}
 				drv = DM_DRIVER_GET(scmi_voltage_domain);
 			}
+			break;
+		case SCMI_PROTOCOL_ID_SENSOR:
+			if (IS_ENABLED(CONFIG_DM_THERMAL) &&
+				scmi_protocol_is_supported(dev, protocol_id))
+				drv = DM_DRIVER_GET(scmi_thermal);
 			break;
 		default:
 			break;
