@@ -25,29 +25,18 @@
 #define CONFIG_SYS_UBOOT_BASE		(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
 
 #ifdef CONFIG_SPL_BUILD
-#define CONFIG_SPL_WATCHDOG_SUPPORT
-#define CONFIG_SPL_DRIVERS_MISC_SUPPORT
-#define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/armv8/u-boot-spl.lds"
 #define CONFIG_SPL_STACK		0x95fff0
 #define CONFIG_SPL_BSS_START_ADDR	0x00950000
-#define CONFIG_SPL_BSS_MAX_SIZE		0x2000	/* 8 KB */
-#define CONFIG_SYS_SPL_MALLOC_START	0x00940000
-#define CONFIG_SYS_SPL_MALLOC_SIZE	0x10000	/* 64 KB */
-#define CONFIG_SYS_ICACHE_OFF
-#define CONFIG_SYS_DCACHE_OFF
+#define CONFIG_SPL_BSS_MAX_SIZE		SZ_8K	/* 8 KB */
+#define CONFIG_SYS_SPL_MALLOC_START	0x42200000
+#define CONFIG_SYS_SPL_MALLOC_SIZE	SZ_512K	/* 512 KB */
 
-#define CONFIG_MALLOC_F_ADDR		0x00940000 /* malloc f used before GD_FLG_FULL_MALLOC_INIT set */
-
-#define CONFIG_SPL_ABORT_ON_RAW_IMAGE /* For RAW image gives a error info not panic */
-
-#undef CONFIG_DM_MMC
-#undef CONFIG_DM_PMIC
+/* For RAW image gives a error info not panic */
+#define CONFIG_SPL_ABORT_ON_RAW_IMAGE
 
 #define CONFIG_POWER
 #define CONFIG_POWER_I2C
 #define CONFIG_POWER_BD71837
-
-#define CONFIG_SYS_I2C
 
 #endif /* CONFIG_SPL_BUILD */
 
@@ -67,7 +56,8 @@
 /* ENET Config */
 #if defined(CONFIG_FEC_MXC)
 #define CONFIG_BOOTP_SERVERIP
-#define CONFIG_ETHPRIME			"FEC"
+#define CONFIG_ETHPRIME		"FEC"
+#define PHY_ANEG_TIMEOUT		20000
 
 #define CONFIG_FEC_XCV_TYPE		RGMII
 #define FEC_QUIRK_ENET_MAC
@@ -88,17 +78,20 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	"bootdir=/boot\0" \
-	"script=boot.scr\0" \
+	"scriptaddr=0x43500000\0" \
+	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
+	"bsp_script=boot.scr\0" \
 	"image=Image.gz\0" \
 	"img_addr=0x42000000\0" \
 	"console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200\0" \
+	"fdt_addr_r=0x43000000\0" \
 	"fdt_addr=0x43000000\0" \
 	"fdt_high=0xffffffffffffffff\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"fdt_file=undefined\0" \
+	"bootm_size=0x10000000\0" \
 	"initrd_addr=0x43800000\0" \
-	"initrd_high=0xffffffffffffffff\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcblk=1\0" \
 	"mmcautodetect=yes\0" \
@@ -119,7 +112,7 @@
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size}\0 " \
-	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
+	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bsp_script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
@@ -130,7 +123,7 @@
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
 		"echo fdt_file=${fdt_file}; " \
-		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
+		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${bootdir}/${fdt_file}\0" \
 	"ramsize_check="\
 		"if test $sdram_size -le 512; then " \
 			"setenv cma_size cma=320M; " \
@@ -142,7 +135,7 @@
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
-				"booti ${loadaddr} - ${fdt_addr}; " \
+				"booti ${loadaddr} - ${fdt_addr_r}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
 			"fi; " \
@@ -164,8 +157,8 @@
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"run findfdt; " \
 			"echo fdt_file=${fdt_file}; " \
-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"booti ${loadaddr} - ${fdt_addr}; " \
+			"if ${get_cmd} ${fdt_addr_r} ${fdt_file}; then " \
+				"booti ${loadaddr} - ${fdt_addr_r}; " \
 			"else " \
 				"echo WARN: Cannot load the DT; " \
 			"fi; " \
@@ -204,8 +197,6 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
-#define CONFIG_ENV_OVERWRITE
-
 /* Default ENV offset is 4MB for SD/EMMC/FSPI, but NAND uses 60MB offset, overridden by env_get_offset */
 #define CONFIG_ENV_SECT_SIZE		(64 * 1024)
 
@@ -222,9 +213,6 @@
 #define CONFIG_MXC_UART_BASE		UART4_BASE_ADDR
 
 /* Monitor Command Prompt */
-#undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT		"u-boot=> "
-#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #define CONFIG_SYS_CBSIZE		2048
 #define CONFIG_SYS_MAXARGS		64
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE

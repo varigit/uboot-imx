@@ -25,6 +25,12 @@
 		status = "okay";
 	};
 
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		u-boot,dm-spl;
+	};
+
 	mcu_rdc {
 		compatible = "imx8m,mcu_rdc";
 			    /* rdc config when MCU starts
@@ -78,6 +84,10 @@
 	/delete-property/ assigned-clock-rates;
 };
 
+&crypto {
+	u-boot,dm-spl;
+};
+
 &gpio1 {
 	u-boot,dm-spl;
 };
@@ -120,6 +130,18 @@
 	u-boot,dm-spl;
 };
 
+&sec_jr0 {
+	u-boot,dm-spl;
+};
+
+&sec_jr1 {
+	u-boot,dm-spl;
+};
+
+&sec_jr2 {
+	u-boot,dm-spl;
+};
+
 &uart4 {
 	u-boot,dm-spl;
 };
@@ -140,4 +162,8 @@
 	assigned-clocks = <&clk IMX8MN_CLK_USDHC3>;
 	assigned-clock-rates = <400000000>;
 	assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_400M>;
+};
+
+&wdog1 {
+	u-boot,dm-spl;
 };
