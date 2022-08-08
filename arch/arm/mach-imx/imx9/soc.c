@@ -38,6 +38,7 @@
 #include <fuse.h>
 #include <asm/arch/ddr.h>
 #include <asm/mach-imx/optee.h>
+#include <fuse.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
