@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright 2019 NXP
- * Copyright 2020-2021 Variscite Ltd.
+ * Copyright 2020-2022 Variscite Ltd.
  */
 
 #include "imx8mp-var-som.dtsi"
@@ -15,6 +15,12 @@
 
 	aliases {
 		gpio5 = &pca9534;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x0 0x40000000 0 0xc0000000>,
+		      <0x1 0x00000000 0 0xc0000000>;
 	};
 
 	reg_usdhc2_vmmc: regulator-usdhc2-vmmc {

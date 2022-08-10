@@ -22,19 +22,34 @@
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #undef CONFIG_BOOTCOMMAND
 
+#define HW_ENV_SETTINGS \
+	"cmaargs=" \
+		"if test $sdram_size -le 2048; then " \
+			"setenv cmavar 320M@0x400M-0xb80M; " \
+			"setenv galcore_var 'galcore.contiguousSize=33554432'; " \
+		"else " \
+			"setenv cmavar 1184M@0x400M-0x1000M; " \
+		"fi; " \
+		"setenv bootargs ${bootargs} " \
+			"cma=${cmavar} ${galcore_var}; \0"
+
+#define BOOT_ENV_SETTINGS \
+	"bootcmd=" \
+		"run cmaargs; " \
+		"boota ${fastboot_dev}\0"
+
 #define CONFIG_EXTRA_ENV_SETTINGS		\
+	HW_ENV_SETTINGS				\
+	BOOT_ENV_SETTINGS \
 	"splashpos=m,m\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
 	"bootargs=" \
 		"init=/init " \
-		"consoleblank=0 " \
-		"androidboot.hardware=nxp " \
-		"cma=960M@0x400M-0x1000M " \
-		"loop.max_part=7 " \
-		"swiotlb=65536 " \
-		"androidboot.vendor.sysrq=1 " \
 		"firmware_class.path=/vendor/firmware " \
+		"loop.max_part=7 bootconfig " \
+		"androidboot.hardware=nxp " \
+		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
 /* Enable mcu firmware flash */
