@@ -24,6 +24,7 @@
 #define ELE_GET_FW_VERSION_REQ (0x9D)
 #define ELE_RET_LIFECYCLE_UP_REQ (0xA0)
 #define ELE_GET_EVENTS_REQ (0xA2)
+#define ELE_COMMIT_REQ (0xA8)
 #define ELE_START_RNG (0xA3)
 #define ELE_GENERATE_DEK_BLOB (0xAF)
 #define ELE_V2X_GET_STATE_REQ (0xB2)
@@ -164,5 +165,6 @@ int ele_release_m33_trout(void);
 int ele_write_secure_fuse(ulong signed_msg_blk, u32 *response);
 int ele_return_lifecycle_update(ulong signed_msg_blk, u32 *response);
 int ele_start_rng(void);
+int ele_commit(u16 fuse_id, u32 *response, u32 *info_type);
 int ele_v2x_get_state(struct v2x_get_state *state, u32 *response);
 #endif
