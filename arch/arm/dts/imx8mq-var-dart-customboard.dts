@@ -241,5 +241,6 @@
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
 	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
 	vmmc-supply = <&reg_usdhc2_vmmc>;
+	no-1-8-v;
 	status = "okay";
 };
