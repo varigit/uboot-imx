@@ -126,11 +126,7 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if test $carrier_rev = legacy; then " \
-				"setenv fdt_file imx8mn-var-som-symphony-legacy.dtb; " \
-			"else " \
-				"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
-			"fi; " \
+			"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
 		"echo fdt_file=${fdt_file}; " \
