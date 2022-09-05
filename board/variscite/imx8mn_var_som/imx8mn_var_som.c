@@ -6,6 +6,9 @@
  */
 
 #include <common.h>
+#include <env.h>
+#include <init.h>
+#include <asm/global_data.h>
 #include <init.h>
 #include <miiphy.h>
 #include <netdev.h>
@@ -19,6 +22,8 @@
 #include <i2c.h>
 #include <asm/io.h>
 #include <usb.h>
+#include <imx_sip.h>
+#include <linux/arm-smccc.h>
 
 #include "../common/extcon-ptn5150.h"
 #include "../common/imx8_eeprom.h"

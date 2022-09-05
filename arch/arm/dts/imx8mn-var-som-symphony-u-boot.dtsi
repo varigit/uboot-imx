@@ -58,11 +58,6 @@
 	};
 };
 
-&{/soc@0} {
-	u-boot,dm-pre-reloc;
-	u-boot,dm-spl;
-};
-
 &aips1 {
 	u-boot,dm-spl;
 	u-boot,dm-pre-reloc;
@@ -108,6 +103,10 @@
 	u-boot,dm-spl;
 };
 
+&i2c1 {
+	u-boot,dm-spl;
+};
+
 &iomuxc {
 	u-boot,dm-spl;
 	u-boot,dm-pre-reloc;
@@ -118,7 +117,23 @@
 	u-boot,dm-pre-reloc;
 };
 
+&pinctrl_i2c1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_i2c1_gpio {
+	u-boot,dm-spl;
+};
+
+&pinctrl_pmic {
+	u-boot,dm-spl;
+};
+
 &pinctrl_uart4 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2_gpio {
 	u-boot,dm-spl;
 };
 
@@ -127,6 +142,24 @@
 };
 
 &pinctrl_usdhc3 {
+	u-boot,dm-spl;
+};
+
+&reg_usdhc2_vmmc {
+	u-boot,dm-spl;
+	u-boot,off-on-delay-us = <20000>;
+};
+
+&{/soc@0} {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b} {
+	u-boot,dm-spl;
+};
+
+&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b/regulators} {
 	u-boot,dm-spl;
 };
 

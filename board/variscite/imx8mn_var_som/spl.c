@@ -17,9 +17,12 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/boot_mode.h>
 #include <asm/arch/ddr.h>
-
 #include <power/pmic.h>
 #include <power/bd71837.h>
+#include <dm/uclass.h>
+#include <dm/device.h>
+#include <dm/uclass-internal.h>
+#include <dm/device-internal.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <fsl_esdhc_imx.h>
@@ -160,45 +163,48 @@ int board_mmc_getcd(struct mmc *mmc)
 	return 1;
 }
 
-#ifdef CONFIG_POWER
-
-#define PMIC_I2C_BUS	0
-
+#if CONFIG_IS_ENABLED(DM_PMIC_BD71837)
 int power_init_board(void)
 {
-	struct pmic *p;
+	struct udevice *dev;
 	int ret;
 
-	ret = power_bd71837_init(PMIC_I2C_BUS);
-	if (ret)
-		printf("power init failed");
-
-	p = pmic_get("BD71837");
-	pmic_probe(p);
+	ret = pmic_get("pmic@4b", &dev);
+	if (ret == -ENODEV) {
+		puts("No pmic@4b\n");
+		return 0;
+	}
+	if (ret != 0)
+		return ret;
 
 	/* decrease RESET key long push time from the default 10s to 10ms */
-	pmic_reg_write(p, BD718XX_PWRONCONFIG1, 0x0);
+	pmic_reg_write(dev, BD718XX_PWRONCONFIG1, 0x0);
 
 	/* unlock the PMIC regs */
-	pmic_reg_write(p, BD718XX_REGLOCK, 0x1);
+	pmic_reg_write(dev, BD718XX_REGLOCK, 0x1);
 
 	/* Set VDD_ARM to typical value 0.85v for 1.2Ghz */
-	pmic_reg_write(p, BD718XX_BUCK2_VOLT_RUN, 0xf);
+	pmic_reg_write(dev, BD718XX_BUCK2_VOLT_RUN, 0xf);
 
+#ifdef CONFIG_IMX8MN_LOW_DRIVE_MODE
+	/* Set VDD_SOC/VDD_DRAM to typical value 0.8v for low drive mode */
+	pmic_reg_write(dev, BD718XX_BUCK1_VOLT_RUN, 0xa);
+#else
 	/* Set VDD_SOC/VDD_DRAM to typical value 0.85v for nominal mode */
-	pmic_reg_write(p, BD718XX_BUCK1_VOLT_RUN, 0xf);
+	pmic_reg_write(dev, BD718XX_BUCK1_VOLT_RUN, 0xf);
+#endif /* CONFIG_IMX8MN_LOW_DRIVE_MODE */
 
-	/* Set VDD_SOC 0.85v for suspend */
-	pmic_reg_write(p, BD718XX_BUCK1_VOLT_SUSP, 0xf);
+	/* Set VDD_SOC 0.75v for low-v suspend */
+	pmic_reg_write(dev, BD718XX_BUCK1_VOLT_SUSP, 0x5);
 
 	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
-	pmic_reg_write(p, BD718XX_4TH_NODVS_BUCK_VOLT, 0x28);
+	pmic_reg_write(dev, BD718XX_4TH_NODVS_BUCK_VOLT, 0x28);
 
 	/* enable LDO5 - required to access I2C bus 3 */
-	pmic_reg_write(p, BD718XX_LDO5_VOLT, 0xc0);
+	pmic_reg_write(dev, BD718XX_LDO5_VOLT, 0xc0);
 
 	/* lock the PMIC regs */
-	pmic_reg_write(p, BD718XX_REGLOCK, 0x11);
+	pmic_reg_write(dev, BD718XX_REGLOCK, 0x11);
 
 	return 0;
 }
@@ -209,6 +215,14 @@ void spl_board_init(void)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 
 	puts("Normal Boot\n");
+
+	struct udevice *dev;
+	uclass_find_first_device(UCLASS_MISC, &dev);
+
+	for (; dev; uclass_find_next_device(&dev)) {
+		if (device_probe(dev))
+			continue;
+	}
 
 	/* Copy EEPROM contents to DRAM */
 	memcpy(ep, &eeprom, sizeof(*ep));
@@ -222,23 +236,9 @@ int board_fit_config_name_match(const char *name)
 }
 #endif
 
-#define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
-
-struct i2c_pads_info i2c_pad_info1 = {
-	.scl = {
-		.i2c_mode = IMX8MN_PAD_I2C1_SCL__I2C1_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MN_PAD_I2C1_SCL__GPIO5_IO14 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 14),
-	},
-	.sda = {
-		.i2c_mode = IMX8MN_PAD_I2C1_SDA__I2C1_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MN_PAD_I2C1_SDA__GPIO5_IO15 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 15),
-	},
-};
-
 void board_init_f(ulong dummy)
 {
+	struct udevice *dev;
 	int ret;
 
 	/* Clear the BSS. */
@@ -252,16 +252,21 @@ void board_init_f(ulong dummy)
 
 	preloader_console_init();
 
-	ret = spl_init();
+	ret = spl_early_init();
 	if (ret) {
-		debug("spl_init() failed: %d\n", ret);
+		debug("spl_early_init() failed: %d\n", ret);
+		hang();
+	}
+
+	ret = uclass_get_device_by_name(UCLASS_CLK,
+					"clock-controller@30380000",
+					&dev);
+	if (ret < 0) {
+		printf("Failed to find clock node. Check device tree\n");
 		hang();
 	}
 
 	enable_tzc380();
-
-	/* I2C bus 0 initialization */
-	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 
 	/* PMIC initialization */
 	power_init_board();

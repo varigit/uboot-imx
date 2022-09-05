@@ -17,7 +17,7 @@
 #define CONFIG_CSF_SIZE			0x2000 /* 8K region */
 #endif
 
-#define CONFIG_SPL_MAX_SIZE		(148 * 1024)
+#define CONFIG_SPL_MAX_SIZE		(208 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
 #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	0x300
@@ -25,18 +25,14 @@
 #define CONFIG_SYS_UBOOT_BASE		(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
 
 #ifdef CONFIG_SPL_BUILD
-#define CONFIG_SPL_STACK		0x95fff0
-#define CONFIG_SPL_BSS_START_ADDR	0x00950000
-#define CONFIG_SPL_BSS_MAX_SIZE		SZ_8K	/* 8 KB */
+#define CONFIG_SPL_STACK		0x95dff0
+#define CONFIG_SPL_BSS_START_ADDR	0x95e000
+#define CONFIG_SPL_BSS_MAX_SIZE	SZ_8K		/* 8 KB */
 #define CONFIG_SYS_SPL_MALLOC_START	0x42200000
 #define CONFIG_SYS_SPL_MALLOC_SIZE	SZ_512K	/* 512 KB */
 
 /* For RAW image gives a error info not panic */
 #define CONFIG_SPL_ABORT_ON_RAW_IMAGE
-
-#define CONFIG_POWER
-#define CONFIG_POWER_I2C
-#define CONFIG_POWER_BD71837
 
 #endif /* CONFIG_SPL_BUILD */
 
@@ -45,13 +41,6 @@
 #define CONFIG_FASTBOOT_USB_DEV 0
 
 #define CONFIG_REMAKE_ELF
-
-#undef CONFIG_CMD_EXPORTENV
-#undef CONFIG_CMD_IMPORTENV
-#undef CONFIG_CMD_IMLS
-
-#undef CONFIG_CMD_CRC32
-#undef CONFIG_BOOTM_NETBSD
 
 /* ENET Config */
 #if defined(CONFIG_FEC_MXC)
@@ -215,11 +204,8 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
-/* Default ENV offset is 4MB for SD/EMMC/FSPI, but NAND uses 60MB offset, overridden by env_get_offset */
-#define CONFIG_ENV_SECT_SIZE		(64 * 1024)
-
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
+#define CONFIG_SYS_MALLOC_LEN		SZ_32M
 
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define PHYS_SDRAM			0x40000000
@@ -249,9 +235,6 @@
 #endif
 
 /* I2C configs */
-#ifndef CONFIG_DM_I2C
-#define CONFIG_SYS_I2C
-#endif
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
