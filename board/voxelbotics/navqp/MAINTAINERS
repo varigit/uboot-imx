@@ -1,0 +1,6 @@
+i.MX8MP NavQPlus BOARD
+M:	VoxelBotics team <team@voxelbotics.com>
+S:	Maintained
+F:	board/voxelbotics/navqp/
+F:	include/configs/navqp.h
+F:	configs/navqp_defconfig

@@ -1,0 +1,15 @@
+if TARGET_NAVQPLUS
+
+config SYS_BOARD
+	default "navqp"
+
+config SYS_VENDOR
+	default "voxelbotics"
+
+config SYS_CONFIG_NAME
+	default "navqp"
+
+config IMX_CONFIG
+	default "board/voxelbotics/navqp/imximage-8mp-lpddr4.cfg"
+
+endif

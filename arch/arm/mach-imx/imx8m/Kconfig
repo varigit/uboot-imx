@@ -333,6 +333,16 @@ config TARGET_PICO_IMX8MQ
 	select IMX8MQ
 	select IMX8M_LPDDR4
 
+config TARGET_NAVQPLUS
+	bool "imx8mp DDR4 NAVQPlus board"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
 config TARGET_IMX8MN_VAR_SOM
 	bool "Variscite imx8mn_var_som"
 	select IMX8MN
@@ -463,5 +473,6 @@ source "board/technexion/pico-imx8mq/Kconfig"
 source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
+source "board/voxelbotics/navqp/Kconfig"
 
 endif
