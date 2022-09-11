@@ -2,7 +2,7 @@
 /*
  * Copyright 2017 NXP
  * Copyright (C) 2017-2018 Pengutronix, Lucas Stach <kernel@pengutronix.de>
- * Copyright 2020 Variscite Ltd.
+ * Copyright 2020-2022 Variscite Ltd.
  */
 
 /dts-v1/;
@@ -157,6 +157,8 @@
 
 /* eMMC */
 &usdhc1 {
+	assigned-clocks = <&clk IMX8MQ_CLK_USDHC1>;
+	assigned-clock-rates = <400000000>;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;

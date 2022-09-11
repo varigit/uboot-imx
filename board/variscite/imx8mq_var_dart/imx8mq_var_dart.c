@@ -7,6 +7,7 @@
  */
 
 #include <common.h>
+#include <env.h>
 #include <asm/io.h>
 #include <miiphy.h>
 #include <asm/mach-imx/iomux-v3.h>
@@ -102,9 +103,9 @@ ulong board_get_usable_ram_top(ulong total_size)
 	return (gd->ram_top > top) ? top : gd->ram_top;
 }
 
-int usb_gadget_handle_interrupts(void)
+int usb_gadget_handle_interrupts(int index)
 {
-	dwc3_uboot_handle_interrupt(0);
+	dwc3_uboot_handle_interrupt(index);
 	return 0;
 }
 

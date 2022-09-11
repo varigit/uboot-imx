@@ -2,7 +2,7 @@
 /*
  * Copyright 2017 NXP
  * Copyright (C) 2017-2018 Pengutronix, Lucas Stach <kernel@pengutronix.de>
- * Copyright 2018-2021 Variscite Ltd.
+ * Copyright 2018-2022 Variscite Ltd.
  */
 
 /dts-v1/;
@@ -117,7 +117,7 @@
 	};
 
 
-	pinctrl_reg_usdhc2: regusdhc2grpgpio {
+	pinctrl_reg_usdhc2: regusdhc2gpiogrp {
 		fsl,pins = <
 			MX8MQ_IOMUXC_SD2_CD_B_GPIO2_IO12	0x41
 			MX8MQ_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x41
@@ -233,6 +233,8 @@
 
 /* SD card */
 &usdhc2 {
+	assigned-clocks = <&clk IMX8MQ_CLK_USDHC2>;
+	assigned-clock-rates = <200000000>;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
