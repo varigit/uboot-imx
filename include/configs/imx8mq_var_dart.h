@@ -60,6 +60,11 @@
 	func(MMC, mmc, 0)
 
 #include <config_distro_bootcmd.h>
+/* redefine BOOTENV_EFI_SET_FDTFILE_FALLBACK to use Variscite function to load fdt */
+#undef BOOTENV_EFI_SET_FDTFILE_FALLBACK
+#define BOOTENV_EFI_SET_FDTFILE_FALLBACK \
+	"setenv efi_dtb_prefixes; " \
+	"run loadfdt; "
 #else
 #define BOOTENV
 #endif
@@ -96,6 +101,7 @@
 	"m4_addr=0x7e0000\0" \
 	"m4_bin=hello_world.bin\0" \
 	"use_m4=no\0" \
+	"dfu_alt_info=mmc 2=1 raw 0x42 0x1000 mmcpart\0" \
 	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m4_bin} && " \
 	"cp.b ${loadaddr} ${m4_addr} ${filesize}\0" \
 	"runm4bin=" \
