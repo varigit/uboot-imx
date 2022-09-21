@@ -127,7 +127,7 @@ void board_init_f(ulong dummy)
 	power_init_board();
 
 	if (!IS_ENABLED(CONFIG_IMX9_LOW_DRIVE_MODE))
-		set_arm_clk(get_cpu_speed_grade_hz());
+		set_arm_core_max_clk();
 
 	/* Init power of mix */
 	soc_power_init();
