@@ -172,6 +172,10 @@ static struct mm_region imx8m_mem_map[] = {
 #else
 			 PTE_BLOCK_OUTER_SHARE
 #endif
+#else
+	}, {
+		/* empty entry to be filled in enable_caches(void) when SoM has >= 3GB of DRAM as configured by board/variscite/common/imx8_dram.c according to Variscite EEPROM */
+		0,
 #endif
 	}, {
 		/* empty entrie to split table entry 5 if needed when TEEs are used */
