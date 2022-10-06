@@ -42,7 +42,7 @@ int dram_init_banksize(void)
 	if (ret)
 		return ret;
 
-	if (sdram_size >= PHYS_SDRAM_LOW_MAX_ADDR)
+	if (sdram_size >= PHYS_SDRAM_LOW_MAX_SIZE)
 		low_mem_size = PHYS_SDRAM_LOW_MAX_SIZE;
 	else
 		low_mem_size = sdram_size;
@@ -92,7 +92,7 @@ int dram_init(void)
 	if (ret)
 		return ret;
 
-	if (sdram_size >= PHYS_SDRAM_LOW_MAX_ADDR)
+	if (sdram_size >= PHYS_SDRAM_LOW_MAX_SIZE)
 		low_mem_size = PHYS_SDRAM_LOW_MAX_SIZE;
 	else
 		low_mem_size = sdram_size;
