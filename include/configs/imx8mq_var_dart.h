@@ -120,9 +120,9 @@
 				"setenv cma_size cma=640M; " \
 			"else " \
 				"if test ${use_m4} = yes; then " \
-					"setenv cma_size cma=928M@1088M; " \
+					"setenv cma_size cma=928M; " \
 				"else " \
-					"setenv cma_size cma=960M@1088M; " \
+					"setenv cma_size cma=960M; " \
 				"fi; " \
 			"fi; " \
 		"fi;\0" \
