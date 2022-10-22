@@ -139,7 +139,7 @@
 		"if test $sdram_size -le 512; then " \
 			"setenv cma_size cma=320M; " \
 		"else " \
-			"setenv cma_size cma=640M@1376M; " \
+			"setenv cma_size cma=640M; " \
 		"fi;\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
