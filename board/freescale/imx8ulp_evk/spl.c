@@ -168,6 +168,8 @@ void spl_board_init(void)
 	/* Enable A35 access to the CAAM */
 	ret = ele_release_caam(0x7, &res);
 	if (!ret) {
+		if (((res >> 8) & 0xff) == ELE_NON_SECURE_STATE_FAILURE_IND)
+			printf("Warning: CAAM is in non-secure state, 0x%x\n", res);
 
 		/* Only two UCLASS_MISC devicese are present on the platform. There
 		 * are MU and CAAM. Here we initialize CAAM once it's released by
