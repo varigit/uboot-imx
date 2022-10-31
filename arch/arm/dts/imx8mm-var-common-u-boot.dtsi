@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
  * Copyright 2019 NXP
- * Copyright 2019-2020 Variscite Ltd.
+ * Copyright 2019-2022 Variscite Ltd.
  */
+
+#include "imx8mm-u-boot.dtsi"
 
 / {
 	aliases {
@@ -30,32 +32,16 @@
 		chipidea,usb = <&usbotg2>;
 		status = "okay";
 	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		u-boot,dm-spl;
+	};
 };
 
-&{/soc@0} {
-	u-boot,dm-pre-reloc;
+&crypto {
 	u-boot,dm-spl;
-};
-
-&aips1 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&aips2 {
-	u-boot,dm-spl;
-};
-
-&aips3 {
-	u-boot,dm-spl;
-};
-
-&clk {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-	/delete-property/ assigned-clocks;
-	/delete-property/ assigned-clock-parents;
-	/delete-property/ assigned-clock-rates;
 };
 
 &gpio1 {
@@ -70,17 +56,8 @@
 	u-boot,dm-spl;
 };
 
-&iomuxc {
-	u-boot,dm-spl;
-};
-
 &i2c1 {
 	u-boot,dm-spl;
-};
-
-&osc_24m {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
 };
 
 &pinctrl_i2c1 {
@@ -103,6 +80,23 @@
 	u-boot,dm-spl;
 };
 
+&sec_jr0 {
+	u-boot,dm-spl;
+};
+
+&sec_jr1 {
+	u-boot,dm-spl;
+};
+
+&sec_jr2 {
+	u-boot,dm-spl;
+};
+
+&usbotg1 {
+	status = "okay";
+	extcon = <&ptn5150>;
+};
+
 &usdhc2 {
 	u-boot,dm-spl;
 	sd-uhs-sdr104;
@@ -119,4 +113,8 @@
 	assigned-clocks = <&clk IMX8MM_CLK_USDHC3>;
 	assigned-clock-rates = <400000000>;
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_400M>;
+};
+
+&wdog1 {
+	u-boot,dm-spl;
 };

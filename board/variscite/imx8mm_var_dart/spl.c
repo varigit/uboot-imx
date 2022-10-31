@@ -8,9 +8,10 @@
 #include <common.h>
 #include <cpu_func.h>
 #include <hang.h>
+#include <image.h>
 #include <init.h>
 #include <spl.h>
-#include <asm/io.h>
+#include <asm/global_data.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <asm/mach-imx/iomux-v3.h>
@@ -27,6 +28,7 @@
 #include <asm/arch/ddr.h>
 #include <fsl_sec.h>
 #include <linux/delay.h>
+
 #include "../common/imx8_eeprom.h"
 #include "imx8mm_var_dart.h"
 
@@ -192,7 +194,7 @@ int board_mmc_getcd(struct mmc *mmc)
 	return 1;
 }
 
-#ifdef CONFIG_POWER
+#if CONFIG_IS_ENABLED(POWER_LEGACY)
 #define PMIC_I2C_BUS	0
 int power_init_board(void)
 {
@@ -236,11 +238,10 @@ void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 
-#ifdef CONFIG_FSL_CAAM
-	if (sec_init()) {
+if (IS_ENABLED(CONFIG_FSL_CAAM)) {
+	if (sec_init())
 		printf("\nsec_init failed!\n");
-	}
-#endif
+}
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
 	/* Serial download mode */
 	if (is_usb_boot()) {

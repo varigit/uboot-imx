@@ -1,5 +1,25 @@
 #include "imx8mm-var-common-u-boot.dtsi"
 
+&pinctrl_uart4 {
+       u-boot,dm-spl;
+};
+
 &uart4 {
+	u-boot,dm-spl;
+};
+
+&ethphy0 {
+	vddio0: vddio-regulator {
+		regulator-name = "VDDIO";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+};
+
+&fec1 {
+	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+};
+
+&gpio4 {
 	u-boot,dm-spl;
 };

@@ -8,6 +8,7 @@
 #include <common.h>
 #include <i2c.h>
 #include <linux/bitfield.h>
+#include <dm.h>
 #include "extcon-ptn5150.h"
 
 int extcon_ptn5150_setup(struct extcon_ptn5150 *port)
