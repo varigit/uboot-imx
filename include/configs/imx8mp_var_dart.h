@@ -141,7 +141,7 @@
 			"setenv cma_size cma=320M; " \
 		"else " \
 			"if test $sdram_size -le 1024; then " \
-				"setenv cma_size cma=640M; " \
+				"setenv cma_size cma=576M; " \
 			"else " \
 				"setenv cma_size cma=960M; " \
 			"fi; " \
