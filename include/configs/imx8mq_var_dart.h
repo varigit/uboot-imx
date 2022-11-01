@@ -117,7 +117,11 @@
 			"setenv cma_size cma=320M; " \
 		"else " \
 			"if test $sdram_size -le 1024; then " \
-				"setenv cma_size cma=640M; " \
+				"if test ${use_m4} = yes; then " \
+					"setenv cma_size cma=576M; " \
+				"else " \
+					"setenv cma_size cma=608M; " \
+				"fi; " \
 			"else " \
 				"if test ${use_m4} = yes; then " \
 					"setenv cma_size cma=928M; " \
