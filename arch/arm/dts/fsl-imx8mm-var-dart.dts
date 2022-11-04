@@ -23,7 +23,7 @@
 
 	chosen {
 		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
-		stdout-patch = &uart1;
+		stdout-path = &uart1;
 	};
 
 	regulators {
