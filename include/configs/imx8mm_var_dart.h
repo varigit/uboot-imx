@@ -91,8 +91,8 @@
 	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x43800000\0" \
 	"initrd_high=0xffffffffffffffff\0" \
-	"emmc_dev=1\0"\
-	"sd_dev=0\0" \
+	"emmc_dev=2\0"\
+	"sd_dev=1\0" \
 
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
@@ -234,7 +234,7 @@
 #define CONFIG_ENV_OVERWRITE
 #define CONFIG_ENV_OFFSET		(64 * SZ_64K)
 #define CONFIG_ENV_SIZE			0x1000
-#define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC2 */
+#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)

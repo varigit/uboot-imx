@@ -238,16 +238,6 @@ int board_init(void)
 	return 0;
 }
 
-int board_mmc_get_env_dev(int devno)
-{
-	return devno - 1;
-}
-
-int mmc_map_to_kernel_blk(int devno)
-{
-	return devno + 1;
-}
-
 #define SDRAM_SIZE_STR_LEN 5
 int board_late_init(void)
 {

@@ -21,11 +21,6 @@
 	model = "Variscite DART-MX8MM board";
 	compatible = "variscite,imx8mm-var-dart", "fsl,imx8mm";
 
-	aliases {
-		mmc0 = &usdhc2;
-		mmc1 = &usdhc3;
-	};
-
 	chosen {
 		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
 		stdout-patch = &uart1;
