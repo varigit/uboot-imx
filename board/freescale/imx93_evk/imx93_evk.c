@@ -265,6 +265,20 @@ static void board_gpio_init(void)
 
 	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
 	dm_gpio_set_value(&desc, 1);
+
+	if (IS_ENABLED(CONFIG_TARGET_IMX93_14X14_EVK)) {
+		/* Enable I2C_LS_EN levelshift */
+		ret = dm_gpio_lookup_name("gpio@20_16", &desc);
+		if (ret)
+			return;
+
+		ret = dm_gpio_request(&desc, "I2C_LS_EN");
+		if (ret)
+			return;
+
+		dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
+		dm_gpio_set_value(&desc, 1);
+	}
 }
 
 int board_init(void)
