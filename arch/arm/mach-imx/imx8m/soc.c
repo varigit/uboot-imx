@@ -1261,6 +1261,37 @@ static int delete_u_boot_nodes(void *blob)
 	return 0;
 }
 
+static int cleanup_nodes_for_efi(void *blob)
+{
+	static const char * const path[][2] = {
+		{ "/soc@0/bus@32c00000/usb@32e40000", "extcon" },
+		{ "/soc@0/bus@32c00000/usb@32e50000", "extcon" },
+		{ "/soc@0/bus@30800000/ethernet@30be0000", "phy-reset-gpios" },
+		{ "/soc@0/bus@30800000/ethernet@30bf0000", "phy-reset-gpios" }
+	};
+	int nodeoff, i, rc;
+
+	for (i = 0; i < ARRAY_SIZE(path); i++) {
+		nodeoff = fdt_path_offset(blob, path[i][0]);
+		if (nodeoff < 0)
+			continue; /* Not found, skip it */
+		debug("Found %s node\n", path[i][0]);
+
+		rc = fdt_delprop(blob, nodeoff, path[i][1]);
+		if (rc == -FDT_ERR_NOTFOUND)
+			continue;
+		if (rc) {
+			printf("Unable to update property %s:%s, err=%s\n",
+			       path[i][0], path[i][1], fdt_strerror(rc));
+			return rc;
+		}
+
+		printf("Remove %s:%s\n", path[i][0], path[i][1]);
+	}
+
+	return 0;
+}
+
 int ft_system_setup(void *blob, struct bd_info *bd)
 {
 #ifdef CONFIG_IMX8MQ
@@ -1401,6 +1432,8 @@ usb_modify_speed:
 	if (is_imx8mpd())
 		disable_cpu_nodes(blob, 2);
 #endif
+
+	cleanup_nodes_for_efi(blob);
 
 	delete_u_boot_nodes(blob);
 
