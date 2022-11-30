@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Variscite Ltd.
+ * Copyright 2019-2022 Variscite Ltd.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -34,17 +34,11 @@ void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	struct udevice *dev;
-	int node, ret;
 
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, "fsl,imx8-mu");
-
-	ret = uclass_get_device_by_of_offset(UCLASS_MISC, node, &dev);
-	if (ret) {
-		return;
-	}
-	device_probe(dev);
+	uclass_get_device_by_driver(UCLASS_MISC, DM_DRIVER_GET(imx8_scu), &dev);
 
 	uclass_find_first_device(UCLASS_MISC, &dev);
+
 	for (; dev; uclass_find_next_device(&dev)) {
 		if (device_probe(dev))
 			continue;
@@ -54,7 +48,7 @@ void spl_board_init(void)
 
 	timer_init();
 
-#ifdef CONFIG_SPL_SERIAL_SUPPORT
+#ifdef CONFIG_SPL_SERIAL
 	preloader_console_init();
 #endif
 

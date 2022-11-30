@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Variscite Ltd.
+ * Copyright 2019-2022 Variscite Ltd.
  *
  * SPDX-License-Identifier:     GPL-2.0+
  */
@@ -12,11 +12,11 @@
 #include <asm/arch/imx-regs.h>
 #include "imx_env.h"
 
+#define CONFIG_SYS_BOOTM_LEN		(64 * SZ_1M)
+
 #ifdef CONFIG_SPL_BUILD
 #define CONFIG_SPL_MAX_SIZE				(192 * 1024)
 #define CONFIG_SYS_MONITOR_LEN				(1024 * 1024)
-#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
-#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR                0x1040 /* (flash.bin_offset + 2Mb)/sector_size */
 
 /*
  * 0x08081000 - 0x08180FFF is for m4_0 xip image,
@@ -25,7 +25,6 @@
  */
 #define CONFIG_SYS_UBOOT_BASE 0x08281000
 
-#define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/armv8/u-boot-spl.lds"
 #define CONFIG_SPL_STACK		0x013fff0
 #define CONFIG_SPL_BSS_START_ADDR      0x00130000
 #define CONFIG_SPL_BSS_MAX_SIZE		0x1000	/* 4 KB */
@@ -35,7 +34,6 @@
 #define CONFIG_SPL_RAW_IMAGE_ARM_TRUSTED_FIRMWARE
 
 #define CONFIG_SPL_ABORT_ON_RAW_IMAGE
-
 #endif
 
 #ifdef CONFIG_TARGET_IMX8QM_MEK_A53_ONLY
@@ -44,12 +42,7 @@
 #define IMX_HDMIRX_FIRMWARE_SIZE 0x20000
 #endif
 
-#define CONFIG_REMAKE_ELF
-
 #define CONFIG_CMD_READ
-
-/* Flat Device Tree Definitions */
-#define CONFIG_OF_BOARD_SETUP
 
 #undef CONFIG_CMD_EXPORTENV
 #undef CONFIG_CMD_IMPORTENV
@@ -62,7 +55,6 @@
 #define CONFIG_PCIE_IMX
 #define CONFIG_CMD_PCI
 #define CONFIG_PCI_SCAN_SHOW
-#define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #define CONFIG_FEC_XCV_TYPE             RGMII
 #define FEC_QUIRK_ENET_MAC
@@ -83,9 +75,15 @@
 	"m4boot_0=run loadm4image_0; dcache flush; bootaux ${loadaddr} 0\0" \
 	"m4boot_1=run loadm4image_1; dcache flush; bootaux ${loadaddr} 1\0" \
 
+#define HDP_LOAD_ENV \
+	"if run loadhdp; then; hdp load ${hdp_addr}; fi;"
+#define HDPRX_LOAD_ENV \
+	"if test ${hdprx_enable} = yes; then if run loadhdprx; then; hdprx load ${hdprx_addr}; fi; fi; "
+#define INITRD_ADDR_ENV "initrd_addr=0x83100000\0"
+
 #define CONFIG_MFG_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
-	"initrd_addr=0x83100000\0" \
+	INITRD_ADDR_ENV \
 	"initrd_high=0xffffffffffffffff\0" \
 	"emmc_dev=0\0" \
 	"sd_dev=1\0" \
@@ -149,13 +147,15 @@
 	"hdprx_addr=0x9c800000\0" \
 	"hdp_file=hdmitxfw.bin\0" \
 	"hdprx_file=hdmirxfw.bin\0" \
+	"hdprx_enable=no\0" \
 	"loadhdp=load mmc ${mmcdev}:${mmcpart} ${hdp_addr} ${bootdir}/${hdp_file}\0" \
 	"loadhdprx=load mmc ${mmcdev}:${mmcpart} ${hdprx_addr} ${bootdir}/${hdprx_file}\0" \
 	"boot_os=booti ${loadaddr} - ${fdt_addr};\0" \
 	"loadcntr=load mmc ${mmcdev}:${mmcpart} ${cntr_addr} ${bootdir}/${cntr_file}\0" \
 	"auth_os=auth_cntr ${cntr_addr}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
-		"if run loadhdp; then; hdp load ${hdp_addr}; fi;" \
+		HDP_LOAD_ENV \
+		HDPRX_LOAD_ENV \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${sec_boot} = yes; then " \
@@ -218,47 +218,13 @@
 		"setenv splashimage 0x83100000\0" \
 	"splashdisable=setenv splashfile; setenv splashimage\0"
 
-
-#define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if test ${use_m40} = yes && run loadm40bin; then " \
-			   "run runm40bin; " \
-		   "fi; " \
-		   "if test ${use_m41} = yes && run loadm41bin; then " \
-			   "run runm41bin; " \
-		   "fi; " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if test ${sec_boot} = yes; then " \
-				   "if run loadcntr; then " \
-					   "run mmcboot; " \
-				   "else run netboot; " \
-				   "fi; " \
-			    "else " \
-				   "if run loadimage; then " \
-					   "run mmcboot; " \
-				   "else run netboot; " \
-				   "fi; " \
-			 "fi; " \
-		   "fi; " \
-	   "else booti ${loadaddr} - ${fdt_addr}; fi"
-
 /* Link Definitions */
-#define CONFIG_LOADADDR			0x80280000
-
-#define CONFIG_SYS_LOAD_ADDR           CONFIG_LOADADDR
-
 #define CONFIG_SYS_INIT_SP_ADDR         0x80200000
-
 
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
 
 #define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC1 */
 #define CONFIG_SYS_FSL_USDHC_NUM	2
-
-/* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (32 * 1024)) * 1024)
 
 #define CONFIG_SYS_SDRAM_BASE		0x80000000
 #define CONFIG_NR_DRAM_BANKS		4
@@ -299,14 +265,7 @@
 
 /* USB Config */
 #ifndef CONFIG_SPL_BUILD
-#define CONFIG_CMD_USB
-#define CONFIG_USB_STORAGE
 #define CONFIG_USBD_HS
-
-#define CONFIG_CMD_USB_MASS_STORAGE
-#define CONFIG_USB_GADGET_MASS_STORAGE
-#define CONFIG_USB_FUNCTION_MASS_STORAGE
-
 #endif
 
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
@@ -320,12 +279,6 @@
 
 /* Video */
 #ifdef CONFIG_DM_VIDEO
-#define CONFIG_VIDEO_LOGO
-#define CONFIG_BMP_16BPP
-#define CONFIG_BMP_24BPP
-#define CONFIG_BMP_32BPP
-#define CONFIG_VIDEO_BMP_RLE8
-#define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IMX_VIDEO_SKIP
 #endif
 

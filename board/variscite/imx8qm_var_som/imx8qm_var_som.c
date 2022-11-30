@@ -1,6 +1,6 @@
 /*
  * Copyright 2017-2018 NXP
- * Copyright 2019-2020 Variscite Ltd.
+ * Copyright 2019-2022 Variscite Ltd.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -123,7 +123,7 @@ void board_quiesce_devices(void)
 /*
  * Board specific reset that is system reset.
  */
-void reset_cpu(ulong addr)
+void reset_cpu(void)
 {
 	sc_pm_reboot(-1, SC_PM_RESET_TYPE_COLD);
 	while(1);
