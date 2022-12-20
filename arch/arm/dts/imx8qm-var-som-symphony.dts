@@ -100,13 +100,6 @@
 			line-name = "usb3_sel";
 		};
 
-		eth1_phy_rst_hog {
-			gpio-hog;
-			gpios = <5 0>;
-			output-high;
-			line-name = "eth1_phy_rst";
-		};
-
 		eth1_phy_vsel_hog {
 			gpio-hog;
 			gpios = <6 0>;
