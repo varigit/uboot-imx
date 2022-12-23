@@ -93,13 +93,6 @@
 		reg = <0x21>;
 		gpio-controller;
 		#gpio-cells = <2>;
-
-		eth1_phy_rst_hog {
-			gpio-hog;
-			gpios = <0 0>;
-			output-high;
-			line-name = "eth1_phy_rst";
-		};
 	};
 };
 
