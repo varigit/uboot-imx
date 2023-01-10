@@ -29,11 +29,13 @@
 	"cmaargs=" \
 		"if test $sdram_size = 1024; then " \
 			"setenv cmavar 320M@0x400M-0xb80M; " \
+			"setenv galcore_var 'galcore.contiguousSize=33554432'; " \
+			"setenv lowmemargs 'androidboot.lowmemopt=true'; " \
 		"else " \
 			"setenv cmavar 800M@0x400M-0xb80M; " \
 		"fi; " \
 		"setenv bootargs ${bootargs} " \
-			"cma=${cmavar};\0"
+			"cma=${cmavar} ${galcore_var} ${lowmemargs}; \0"
 
 #define BOOT_ENV_SETTINGS \
 	"bootcmd=" \
@@ -58,7 +60,6 @@
 		"loop.max_part=7 " \
 		"bootconfig " \
 		"androidboot.primary_display=imx-drm " \
-		"galcore.contiguousSize=33554432 " \
 		"androidboot.wificountrycode=US " \
 		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
