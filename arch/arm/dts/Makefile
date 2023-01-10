@@ -956,7 +956,8 @@ dtb-$(CONFIG_ARCH_IMX8) += \
 	imx8-deneb.dtb \
 	imx8-giedi.dtb \
 	imx8qm-var-som-symphony.dtb \
-	imx8qm-var-spear-sp8customboard.dtb
+	imx8qm-var-spear-sp8customboard.dtb \
+	imx8qxp-var-som-symphony.dtb
 
 dtb-$(CONFIG_ARCH_IMX8ULP) += \
 	imx8ulp-evk.dtb \
@@ -1006,8 +1007,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-var-dart-dt8mcustomboard-legacy.dtb \
 	imx8mp-var-som-symphony.dtb \
 	imx8mq-pico-pi.dtb \
-	imx8mq-kontron-pitx-imx8m.dtb \
-	imx8qxp-var-som-symphony.dtb
+	imx8mq-kontron-pitx-imx8m.dtb
 
 dtb-$(CONFIG_ARCH_IMXRT) += imxrt1050-evk.dtb \
 	imxrt1020-evk.dtb
