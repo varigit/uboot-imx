@@ -75,6 +75,10 @@
 	bootph-pre-ram;
 };
 
+&cpu_pd_wait {
+	/delete-property/ compatible;
+};
+
 &osc_24m {
 	bootph-pre-ram;
 	bootph-all;
