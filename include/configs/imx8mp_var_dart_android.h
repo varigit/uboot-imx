@@ -36,7 +36,7 @@
 #define BOOT_ENV_SETTINGS \
 	"bootcmd=" \
 		"run cmaargs; " \
-		"boota ${fastboot_dev}\0"
+		"bootmcu; boota ${fastboot_dev}\0"
 
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	HW_ENV_SETTINGS				\
