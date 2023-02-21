@@ -84,21 +84,13 @@ int var_eeprom_get_dram_size(struct var_eeprom *ep, phys_size_t *size)
 #ifndef CONFIG_SPL_BUILD
 void var_eeprom_print_prod_info(struct var_eeprom *ep)
 {
-	u8 partnum[8] = {0};
-
 	flush_dcache_all();
 
 	if (!var_eeprom_is_valid(ep))
 		return;
 
-	/* Read first part of P/N  */
-	memcpy(partnum, ep->partnum, sizeof(ep->partnum));
-
-	/* Read second part of P/N  */
-	memcpy(partnum + sizeof(ep->partnum), ep->partnum2, sizeof(ep->partnum2));
-
 #ifdef CONFIG_TARGET_MX93_VAR_SOM
-	printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(partnum), partnum);
+	printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 #endif
 
 	printf("Assembly: AS%.*s\n", (int)sizeof(ep->assembly), (char *)ep->assembly);
@@ -117,6 +109,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 	debug("EEPROM version: 0x%x\n", ep->version);
 	debug("SOM features: 0x%x\n", ep->features);
 	printf("SOM revision: 0x%x\n", ep->somrev);
+	printf("DRAM PN: VIC-%04d\n", ep->ddr_vic);
 	debug("DRAM size: %d GiB\n\n", (ep->dramsize * 128) / 1024);
 }
 #endif
