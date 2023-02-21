@@ -89,7 +89,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 	if (!var_eeprom_is_valid(ep))
 		return;
 
-#ifdef CONFIG_TARGET_MX93_VAR_SOM
+#ifdef CONFIG_TARGET_IMX93_VAR_SOM
 	printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 #endif
 
