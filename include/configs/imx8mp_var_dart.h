@@ -77,6 +77,7 @@
 	CONFIG_MFG_ENV_SETTINGS \
 	"bootdir=/boot\0"	\
 	BOOTENV \
+	"prepare_mcore=setenv mcore_clk clk-imx8mp.mcore_booted;\0" \
 	"scriptaddr=0x43500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"bsp_script=boot.scr\0" \
@@ -114,7 +115,7 @@
 		"fi; " \
 		"bootaux ${m7_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console} " \
+	"mmcargs=setenv bootargs ${mcore_clk} console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size} cma_name=linux,cma\0 " \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bsp_script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
@@ -158,7 +159,7 @@
 				"echo WARN: Cannot load the DT; " \
 			"fi; " \
 		"fi;\0" \
-	"netargs=setenv bootargs console=${console} " \
+	"netargs=setenv bootargs ${mcore_clk} console=${console} " \
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
