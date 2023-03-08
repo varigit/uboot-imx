@@ -91,13 +91,13 @@ int var_detect_board_id(void)
 struct efi_fw_image fw_images[] = {
 	{
 		.image_type_id = IMX_BOOT_IMAGE_GUID,
-		.fw_name = u"IMX8MP-EVK-RAW",
+		.fw_name = u"IMX8MP-VAR-DART-RAW",
 		.image_index = 1,
 	},
 };
 
 struct efi_capsule_update_info update_info = {
-	.dfu_string = "mmc 2=flash-bin raw 0 0x2000 mmcpart 1",
+	.dfu_string = "mmc 2=1 raw 0x40 0x1000",
 	.images = fw_images,
 };
 
