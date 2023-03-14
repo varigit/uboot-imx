@@ -420,6 +420,7 @@ config TARGET_IMX8MP_VAR_DART
 	select FSL_BLOB
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
+	select IMX_REDUCE_DMEM_PADDING
 
 config TARGET_IMX8MM_CL_IOT_GATE
 	bool "CompuLab iot-gate-imx8"
