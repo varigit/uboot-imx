@@ -38,4 +38,8 @@ config SAVED_QB_STATE_BASE
 	  info into memory in order to be reachable from U-Boot.
 	default 0x83100000
 
+config IMX9_DDRPHY_FW_OFFSET
+	int "Offset of DDR PHY firmware from the end of the SPL image"
+	default 0
+
 endmenu
