@@ -587,7 +587,7 @@ int dram_init_banksize(void)
 }
 #endif
 
-#ifdef CONFIG_IMX_TRUSTY_OS
+#if defined(CONFIG_IMX_TRUSTY_OS) && !defined(CONFIG_IMX_MATTER_TRUSTY)
 int check_rollback_index(struct spl_image_info *spl_image, struct mmc *mmc);
 int check_rpmb_blob(struct mmc *mmc);
 
