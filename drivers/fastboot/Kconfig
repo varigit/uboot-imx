@@ -292,6 +292,10 @@ config FASTBOOT_CMD_OEM_CONSOLE
 	  Add support for the "oem console" command to input and read console
 	  record buffer.
 
+config USE_EMMC_BOOT_PART
+	bool "Use userdata eMMC partition for bootloader"
+	default n
+
 endif # FASTBOOT
 
 endmenu
