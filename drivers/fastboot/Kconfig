@@ -270,6 +270,10 @@ config FASTBOOT_OEM_RUN
 	  this feature if you are using verified boot, as it will allow an
 	  attacker to bypass any restrictions you have in place.
 
+config USE_EMMC_BOOT_PART
+	bool "Use userdata eMMC partition for bootloader"
+	default n
+
 endif # FASTBOOT
 
 endmenu
