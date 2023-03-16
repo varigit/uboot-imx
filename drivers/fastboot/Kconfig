@@ -335,6 +335,10 @@ config FASTBOOT_OEM_BOARD
 	  command allows running vendor custom code defined in board/ files.
 	  Otherwise, it will do nothing and send fastboot fail.
 
+config USE_EMMC_BOOT_PART
+	bool "Use userdata eMMC partition for bootloader"
+	default n
+
 endif # FASTBOOT
 
 endmenu
