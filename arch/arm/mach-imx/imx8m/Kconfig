@@ -240,6 +240,7 @@ config TARGET_IMX8MN_VAR_SOM
 	select FSL_BLOB
 	select MISC
 	select SPL_CRYPTO_SUPPORT if SPL
+	select IMX_REDUCE_DMEM_PADDING
 
 config TARGET_IMX8MN_VENICE
 	bool "Support Gateworks Venice iMX8M Nano module"
