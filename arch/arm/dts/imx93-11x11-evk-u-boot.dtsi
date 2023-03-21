@@ -13,6 +13,25 @@
 		bootph-some-ram;
 	};
 
+	aliases {
+		usbgadget0 = &usbg1;
+		usbgadget1 = &usbg2;
+	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
+
+	usbg2: usbg2 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg2>;
+		status = "okay";
+	};
+
 	firmware {
 		optee {
 			compatible = "linaro,optee-tz";
@@ -68,6 +87,10 @@
 	bootph-some-ram;
 };
 
+&pinctrl_usdhc1 {
+	bootph-pre-ram;
+};
+
 &pinctrl_usdhc2_gpio {
 	bootph-pre-ram;
 };
@@ -110,7 +133,15 @@
 	fsl,signal-voltage-switch-extra-delay-ms = <8>;
 };
 
+&lpi2c1 {
+	bootph-pre-ram;
+};
+
 &lpi2c2 {
+	bootph-pre-ram;
+};
+
+&lpi2c3 {
 	bootph-pre-ram;
 };
 
@@ -122,7 +153,15 @@
 	bootph-pre-ram;
 };
 
+&pinctrl_lpi2c1 {
+	bootph-pre-ram;
+};
+
 &pinctrl_lpi2c2 {
+	bootph-pre-ram;
+};
+
+&pinctrl_lpi2c3 {
 	bootph-pre-ram;
 };
 
@@ -136,6 +175,16 @@
 	reset-gpios = <&pcal6524 15 GPIO_ACTIVE_LOW>;
 	reset-assert-us = <15000>;
 	reset-deassert-us = <100000>;
+};
+
+&usbotg1 {
+	status = "okay";
+	extcon = <&ptn5110>;
+};
+
+&usbotg2 {
+	status = "okay";
+	extcon = <&ptn5110_2>;
 };
 
 &s4muap {
