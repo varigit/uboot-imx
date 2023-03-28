@@ -116,7 +116,6 @@ int board_late_init(void)
 	var_eeprom_print_prod_info(ep);
 
 	/* ENV Variables */
-	env_set("board_name", "VAR-SOM-MX93");
 
 	/* SDRAM ENV */
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d",
@@ -142,8 +141,7 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "11X11_EVK");
-	env_set("board_rev", "iMX93");
+	env_set("board_name", "VAR-SOM-MX93");
 #endif
 	return 0;
 }
