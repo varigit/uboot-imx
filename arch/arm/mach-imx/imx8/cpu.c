@@ -112,6 +112,9 @@ static int imx8_init_mu(void)
 		return ret;
 	}
 
+	if (gd->flags & GD_FLG_RELOC) /* Skip others for board_r */
+		return 0;
+
 	struct pass_over_info_t *pass_over;
 
 	if ((is_imx8qm() || is_imx8qxp()) && is_soc_rev(CHIP_REV_A)) {
@@ -139,6 +142,7 @@ static int imx8_init_mu(void)
 	return 0;
 }
 EVENT_SPY_SIMPLE(EVT_DM_POST_INIT_F, imx8_init_mu);
+EVENT_SPY_SIMPLE(EVT_DM_POST_INIT_R, imx8_init_mu);
 
 #if defined(CONFIG_ARCH_MISC_INIT)
 int arch_misc_init(void)
