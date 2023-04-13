@@ -1,0 +1,115 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright 2021 NXP
+ */
+
+/ {
+	mu@27020000 {
+		compatible = "fsl,imx8ulp-mu";
+		reg = <0 0x27020000 0 0x10000>;
+		status = "okay";
+		bootph-all;
+	};
+
+	aliases {
+		usbgadget0 = &usbg1;
+	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "northwest,mipi-dsi";
+		status = "okay";
+	};
+};
+
+&soc {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&{/firmware} {
+	bootph-some-ram;
+};
+
+&{/firmware/scmi} {
+	bootph-some-ram;
+};
+
+&{/firmware/scmi/protocol@15} {
+	bootph-some-ram;
+};
+
+&per_bridge3 {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&per_bridge4 {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&iomuxc1 {
+	bootph-all;
+	bootph-pre-ram;
+	fsl,mux_mask = <0xf00>;
+};
+
+&pinctrl_lpuart5 {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&lpuart5 {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&usdhc0 {
+	bootph-pre-ram;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+};
+
+&pinctrl_usdhc0 {
+	bootph-pre-ram;
+};
+
+&crypto {
+	bootph-pre-ram;
+};
+
+&sec_jr0 {
+	bootph-pre-ram;
+};
+
+&sec_jr1 {
+	bootph-pre-ram;
+};
+
+&sec_jr2 {
+	bootph-pre-ram;
+};
+
+&sec_jr3 {
+	bootph-pre-ram;
+};
+
+&scmi_buf {
+	reg = <0x0 0x1000>; /* Align page size */
+};
+
+&dsi {
+	data-lanes-num = <4>;
+};
+
+&usbotg1 {
+	compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb", "fsl,imx27-usb";
+	fsl,usbphy = <&usbphy1>;
+};
