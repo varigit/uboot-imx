@@ -6,8 +6,11 @@
  */
 
 #include <common.h>
+#include <efi_loader.h>
 #include <env.h>
+#include <init.h>
 #include <asm/io.h>
+#include <asm/global_data.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm-generic/gpio.h>
 #include <asm/arch/imx8mm_pins.h>
@@ -17,6 +20,7 @@
 #include <asm/arch/clock.h>
 #include <usb.h>
 #include <dm.h>
+#include <linux/arm-smccc.h>
 
 #include "../common/extcon-ptn5150.h"
 #include "../common/imx8_eeprom.h"
@@ -103,6 +107,23 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 };
 
 extern struct mxc_uart *mxc_base;
+
+#if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
+struct efi_fw_image fw_images[] = {
+	{
+		.image_type_id = IMX_BOOT_IMAGE_GUID,
+		.fw_name = u"IMX8MM-VAR-DART-RAW",
+		.image_index = 1,
+	},
+};
+
+struct efi_capsule_update_info update_info = {
+	.dfu_string = "mmc 2=1 raw 0x40 0x1000",
+	.images = fw_images,
+};
+
+u8 num_image_type_guids = ARRAY_SIZE(fw_images);
+#endif /* EFI_HAVE_CAPSULE_SUPPORT */
 
 int board_early_init_f(void)
 {
