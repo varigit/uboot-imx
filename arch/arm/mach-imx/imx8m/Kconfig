@@ -187,6 +187,7 @@ config TARGET_IMX8MM_VAR_DART
 	select FSL_BLOB
 	select MISC
 	select SPL_CRYPTO_SUPPORT if SPL
+	select IMX_REDUCE_DMEM_PADDING
 
 config TARGET_IMX8MN_EVK
 	bool "imx8mn LPDDR4 EVK board"
