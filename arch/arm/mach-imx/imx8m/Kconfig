@@ -176,6 +176,18 @@ config TARGET_KONTRON_MX8MM
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_IMX8MM_VAR_DART
+	bool "imx8mm_var_dart"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+	select IMX8M_LPDDR4
+	select IMX8M_BOARD_INIT_DRAM
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
+
 config TARGET_IMX8MN_EVK
 	bool "imx8mn LPDDR4 EVK board"
 	select IMX8MN
@@ -390,5 +402,6 @@ source "board/technexion/pico-imx8mq/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
 source "board/variscite/imx8mn_var_som/Kconfig"
+source "board/variscite/imx8mm_var_dart/Kconfig"
 
 endif
