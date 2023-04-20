@@ -59,6 +59,7 @@ void spl_dram_init(void)
 {
 	/* EEPROM initialization */
 	var_eeprom_read_header(&eeprom);
+	var_eeprom_adjust_dram(&eeprom, &dram_timing);
 
 	ddr_init(&dram_timing);
 }
