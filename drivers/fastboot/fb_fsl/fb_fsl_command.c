@@ -48,6 +48,11 @@
 #include <trusty/libtipc.h>
 #endif
 
+#ifdef CONFIG_IMX_SNPS_DDR_PHY_QB_GEN
+#include <asm/arch/ddr.h>
+#include <u-boot/crc.h>
+#endif
+
 #include "fb_fsl_common.h"
 
 #define EP_BUFFER_SIZE			4096
@@ -177,6 +182,22 @@ static void reboot_bootloader(char *cmd_parameter, char *response)
 		fastboot_okay(NULL, response);
 }
 
+#if (defined(CONFIG_FASTBOOT_LOCK) || defined(CONFIG_IMX_SNPS_DDR_PHY_QB_GEN))
+static bool endswith(char* s, char* subs) {
+	if (!s || !subs)
+		return false;
+	uint32_t len = strlen(s);
+	uint32_t sublen = strlen(subs);
+	if (len < sublen) {
+		return false;
+	}
+	if (strncmp(s + len - sublen, subs, sublen)) {
+		return false;
+	}
+	return true;
+}
+#endif
+
 static void send(char *response, const char *buffer, unsigned int buffer_size)
 {
 	int remaining, size;
@@ -201,6 +222,23 @@ static void send(char *response, const char *buffer, unsigned int buffer_size)
 
 static void upload(char *cmd_parameter, char *response)
 {
+	#if CONFIG_IS_ENABLED(IMX_SNPS_DDR_PHY_QB_GEN)
+	if (endswith(cmd_parameter, "snps-ddr-phy-qb")) {
+		struct ddrphy_qb_state *qb_state;
+		uint32_t crc;
+
+		qb_state = (struct ddrphy_qb_state *)CONFIG_SAVED_QB_STATE_BASE;
+		crc = crc32(0, (void *)&(qb_state->flags), DDRPHY_QB_STATE_SIZE);
+
+		if (crc != qb_state->crc)
+			log_err("DDRPHY TD CRC error SPL->U-Boot: spl=0x%08x, uboot=0x%08x\n",
+				qb_state->crc, crc);
+
+		send(response, (const char *)qb_state, sizeof(struct ddrphy_qb_state));
+		return;
+	}
+	#endif
+
 	send(response, (const char *)(fastboot_buf_addr), fastboot_bytes_received);
 }
 
@@ -402,20 +440,6 @@ static FbLockState do_fastboot_lock(void)
 	wipe_all_userdata();
 
 	return FASTBOOT_LOCK;
-}
-
-static bool endswith(char* s, char* subs) {
-	if (!s || !subs)
-		return false;
-	uint32_t len = strlen(s);
-	uint32_t sublen = strlen(subs);
-	if (len < sublen) {
-		return false;
-	}
-	if (strncmp(s + len - sublen, subs, sublen)) {
-		return false;
-	}
-	return true;
 }
 
 static void flashing(char *cmd, char *response)
