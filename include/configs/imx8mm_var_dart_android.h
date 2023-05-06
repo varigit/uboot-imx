@@ -21,16 +21,21 @@
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #undef CONFIG_BOOTCOMMAND
 
+#define BOOT_ENV_SETTINGS \
+	"bootcmd=" \
+		"bootmcu; boota ${fastboot_dev}\0"
+
 #define CONFIG_EXTRA_ENV_SETTINGS		\
+	BOOT_ENV_SETTINGS \
 	"splashpos=m,m\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
 	"bootargs=" \
 		"init=/init " \
-		"consoleblank=0 " \
 		"androidboot.hardware=nxp " \
 		"cma=800M@0x400M-0xb80M " \
 		"firmware_class.path=/vendor/firmware " \
+		"fw_devlink.strict=0 " \
 		"loop.max_part=7 " \
 		"bootconfig " \
 		"androidboot.vendor.sysrq=1 " \
