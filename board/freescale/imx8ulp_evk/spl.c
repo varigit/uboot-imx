@@ -162,6 +162,14 @@ void spl_board_init(void)
 	/* Call it after PS16 power up */
 	set_lpav_qos();
 
+#if defined(CONFIG_IMX8ULP_FIXED_OP_RANGE)
+	/* Set operation range for PTE/PTF */
+	set_apd_gpiox_op_range(PTE, RANGE_1P8V);
+	set_apd_gpiox_op_range(PTF, RANGE_1P8V);
+	/* disable PTD cell compensation */
+	set_apd_gpiox_comp_cell(PTD, false);
+#endif
+
 	/* Enable A35 access to the CAAM */
 	ret = ele_release_caam(0x7, &res);
 	if (!ret) {
