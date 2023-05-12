@@ -26,6 +26,7 @@
 #define ELE_GET_EVENTS_REQ (0xA2)
 #define ELE_COMMIT_REQ (0xA8)
 #define ELE_START_RNG (0xA3)
+#define ELE_CMD_DERIVE_KEY    (0xA9)
 #define ELE_GENERATE_DEK_BLOB (0xAF)
 #define ELE_V2X_GET_STATE_REQ (0xB2)
 #define ELE_ENABLE_PATCH_REQ (0xC3)
@@ -168,4 +169,5 @@ int ele_start_rng(void);
 int ele_commit(u16 fuse_id, u32 *response, u32 *info_type);
 int ele_v2x_get_state(struct v2x_get_state *state, u32 *response);
 int ele_message_call(struct ele_msg *msg);
+int ele_get_hw_unique_key(uint8_t *hwkey, size_t key_size, uint8_t *ctx, size_t ctx_size);
 #endif
