@@ -39,11 +39,11 @@ static void int2mac(const uint64_t mac, uint8_t *hwaddr)
 int var_setup_mac(struct var_eeprom *eeprom)
 {
 	int ret;
-	uint8_t enetaddr[6];
+	uint8_t enetaddr[ARP_HLEN];
 
 #if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX93)
 	uint64_t addr;
-	uint8_t enet1addr[6];
+	uint8_t enet1addr[ARP_HLEN];
 #endif
 
 	ret = eth_env_get_enetaddr("ethaddr", enetaddr);
