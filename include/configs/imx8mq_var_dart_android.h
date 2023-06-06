@@ -23,16 +23,14 @@
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
 	"bootargs=" \
-		"console=ttymxc0,115200 " \
 		"init=/init " \
-		"androidboot.console=ttymxc0 " \
-		"consoleblank=0 " \
 		"androidboot.hardware=nxp " \
-		"androidboot.vendor.sysrq=1 " \
-		"androidboot.force_normal_boot=1 " \
 		"cma=1280M " \
 		"firmware_class.path=/vendor/firmware " \
-		"loop.max_part=7 bootconfig " \
+		"fw_devlink.strict=0 " \
+		"loop.max_part=7 " \
+		"bootconfig " \
+		"androidboot.vendor.sysrq=1 " \
 		"transparent_hugepage=never\0"
 
 /* Enable mcu firmware flash */
