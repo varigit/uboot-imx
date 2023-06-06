@@ -48,8 +48,13 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	int ret;
 
 	puts("Normal Boot\n");
+
+	ret = ahab_start_rng();
+	if (ret)
+		printf("Fail to start RNG: %d\n", ret);
 
 	/* Copy EEPROM contents to DRAM */
 	memcpy(ep, &eeprom, sizeof(*ep));
