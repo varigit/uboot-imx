@@ -524,7 +524,12 @@ int board_spl_fit_post_load(const void *fit, struct spl_image_info *spl_image)
 		if (imx_hab_authenticate_image((uintptr_t)fit,
 					       offset + IVT_SIZE + CSF_PAD_SIZE,
 					       offset)) {
+#ifdef CONFIG_ANDROID_SUPPORT
+			printf("spl: ERROR:  image authentication unsuccessful\n");
+			return -1;
+#else
 			panic("spl: ERROR:  image authentication unsuccessful\n");
+#endif
 		}
 	}
 #if defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MN)
