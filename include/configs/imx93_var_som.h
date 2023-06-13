@@ -84,9 +84,13 @@
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs ${jh_clk} console=${console} \
 		root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw\0 " \
+	"bootenv=uEnv.txt\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
+	"loadbootenv=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bootenv}\0" \
+	"importbootenv=echo Importing environment from mmc ...; " \
+		"env import -t -r $loadaddr $filesize\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
@@ -154,6 +158,10 @@
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
 		   "else " \
+			   "if run loadbootenv; then " \
+				   "echo Loaded environment from ${bootenv};" \
+				   "run importbootenv;" \
+			   "fi;" \
 			   "if test ${sec_boot} = yes; then " \
 				   "if run loadcntr; then " \
 					   "run mmcboot; " \
