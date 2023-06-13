@@ -124,10 +124,6 @@ int do_booti(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 	/* Consume 'booti' */
 	argc--; argv++;
 
-#ifdef CONFIG_IMX_MATTER_TRUSTY
-	trusty_ipc_shutdown();
-#endif
-
 	bootm_init(&bmi);
 	if (argc)
 		bmi.addr_img = argv[0];
