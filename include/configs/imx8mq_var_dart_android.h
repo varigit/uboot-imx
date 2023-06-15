@@ -17,8 +17,12 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #undef CONFIG_BOOTCOMMAND
+#define BOOT_ENV_SETTINGS \
+	"bootcmd=" \
+		"bootmcu; boota ${fastboot_dev}\0"
 
 #define CONFIG_EXTRA_ENV_SETTINGS		\
+	BOOT_ENV_SETTINGS \
 	"splashpos=m,m\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
