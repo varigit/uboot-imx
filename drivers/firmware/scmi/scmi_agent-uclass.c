@@ -103,6 +103,9 @@ struct udevice *scmi_get_protocol(struct udevice *dev,
 	case SCMI_PROTOCOL_ID_SENSOR:
 		proto = priv->sensor_dev;
 		break;
+	case SCMI_PROTOCOL_ID_PINCTRL:
+		proto = priv->pinctrl_dev;
+		break;
 	default:
 		dev_err(dev, "Protocol not supported\n");
 		proto = NULL;
@@ -155,6 +158,9 @@ static int scmi_add_protocol(struct udevice *dev,
 		break;
 	case SCMI_PROTOCOL_ID_SENSOR:
 		priv->sensor_dev = proto;
+		break;
+	case SCMI_PROTOCOL_ID_PINCTRL:
+		priv->pinctrl_dev = proto;
 		break;
 	default:
 		dev_err(dev, "Protocol not supported\n");
@@ -451,6 +457,11 @@ static int scmi_bind_protocols(struct udevice *dev)
 			if (IS_ENABLED(CONFIG_DM_THERMAL) &&
 				scmi_protocol_is_supported(dev, protocol_id))
 				drv = DM_DRIVER_GET(scmi_thermal);
+			break;
+		case SCMI_PROTOCOL_ID_PINCTRL:
+			if (IS_ENABLED(CONFIG_PINCTRL_IMX_SCMI) &&
+				scmi_protocol_is_supported(dev, protocol_id))
+				drv = DM_DRIVER_GET(scmi_pinctrl_imx);
 			break;
 		default:
 			break;
