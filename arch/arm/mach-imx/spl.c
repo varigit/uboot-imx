@@ -20,7 +20,10 @@
 #include <asm/mach-imx/boot_mode.h>
 #include <g_dnl.h>
 #include <linux/libfdt.h>
-#include <memalign.h>
+#include <mmc.h>
+#include <u-boot/lz4.h>
+#include <image.h>
+#include <asm/sections.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -325,12 +328,55 @@ ulong board_spl_fit_size_align(ulong size)
 
 void *board_spl_fit_buffer_addr(ulong fit_size, int sectors, int bl_len)
 {
-#if defined(CONFIG_SPL_LOAD_FIT_ADDRESS)
-	return (void *)CONFIG_SPL_LOAD_FIT_ADDRESS;
-#else
-	return (void *)(CONFIG_TEXT_BASE + CONFIG_SYS_BOOTM_LEN);
-#endif
+	int align_len = ARCH_DMA_MINALIGN - 1;
+
+	/* Some devices like SDP, NOR, NAND, SPI are using bl_len =1, so their fit address
+	 * is different with SD/MMC, this cause mismatch with signed address. Thus, adjust
+	 * the bl_len to align with SD/MMC.
+	 */
+	if (bl_len < 512)
+		bl_len = 512;
+
+	return  (void *)((CONFIG_TEXT_BASE - fit_size - bl_len -
+			align_len) & ~align_len);
 }
+#endif
+
+#if IS_ENABLED(CONFIG_SPL_LOAD_FIT)
+static int spl_verify_fit_hash(const void *fit)
+{
+	unsigned long size;
+	u8 value[SHA256_SUM_LEN];
+	int value_len;
+	ulong fit_hash;
+
+#if CONFIG_IS_ENABLED(OF_CONTROL)
+	if (gd->fdt_blob && !fdt_check_header(gd->fdt_blob)) {
+		fit_hash = roundup((unsigned long)&_end +
+				     fdt_totalsize(gd->fdt_blob), 4) + 0x18000;
+	}
+#else
+	fit_hash = (unsigned long)&_end + 0x18000;
+#endif
+
+	size = fdt_totalsize(fit);
+
+	if (calculate_hash(fit, size, "sha256", value, &value_len)) {
+		printf("Unsupported hash algorithm\n");
+		return -1;
+	}
+
+	if (value_len != SHA256_SUM_LEN) {
+		printf("Bad hash value len\n");
+		return -1;
+	} else if (memcmp(value, (const void *)fit_hash, value_len) != 0) {
+		printf("Bad hash value\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 /*
  * read the address where the IVT header must sit
  * from IVT image header, loaded from SPL into
@@ -340,25 +386,55 @@ void *board_spl_fit_buffer_addr(ulong fit_size, int sectors, int bl_len)
 void *spl_load_simple_fit_fix_load(const void *fit)
 {
 	struct ivt *ivt;
+	unsigned long new;
 	unsigned long offset;
 	unsigned long size;
 	u8 *tmp = (u8 *)fit;
+
+	if (IS_ENABLED(CONFIG_IMX_HAB)) {
+		int ret = spl_verify_fit_hash(fit);
+
+		if (ret && imx_hab_is_enabled())
+			panic("spl: ERROR:  FIT hash verify unsuccessful\n");
+
+		debug("spl_verify_fit_hash %d\n", ret);
+	}
 
 	offset = ALIGN(fdt_totalsize(fit), 0x1000);
 	size = ALIGN(fdt_totalsize(fit), 4);
 	size = board_spl_fit_size_align(size);
 	tmp += offset;
 	ivt = (struct ivt *)tmp;
-
+	if (ivt->hdr.magic != IVT_HEADER_MAGIC) {
+		debug("no IVT header found\n");
+		return (void *)fit;
+	}
 	debug("%s: ivt: %p offset: %lx size: %lx\n", __func__, ivt, offset, size);
 	debug("%s: ivt self: %x\n", __func__, ivt->self);
+	new = ivt->self;
+	new -= offset;
+	debug("%s: new %lx\n", __func__, new);
+	memcpy((void *)new, fit, size);
 
-	if (imx_hab_authenticate_image((uintptr_t)fit, (uintptr_t)size, offset))
-		panic("spl: ERROR: image authentication unsuccessful\n");
-
-	return (void *)fit;
+	return (void *)new;
 }
-#endif /* CONFIG_IMX_HAB */
+#endif
+
+int board_spl_fit_post_load(const void *fit, struct spl_image_info *spl_image)
+{
+	if (IS_ENABLED(CONFIG_IMX_HAB)) {
+		u32 offset = ALIGN(fdt_totalsize(fit), 0x1000);
+
+		if (imx_hab_authenticate_image((uintptr_t)fit,
+					       offset + IVT_SIZE + CSF_PAD_SIZE,
+					       offset)) {
+			panic("spl: ERROR:  image authentication unsuccessful\n");
+		}
+	}
+
+	return 0;
+
+}
 
 #if defined(CONFIG_MX6) && defined(CONFIG_SPL_OS_BOOT)
 int dram_init_banksize(void)
