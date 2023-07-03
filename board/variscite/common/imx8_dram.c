@@ -30,7 +30,7 @@ static int get_dram_size(phys_size_t *size)
 #ifdef CONFIG_IMX8M_BOARD_INIT_DRAM
 
 #define PHYS_SDRAM_LOW_MAX_ADDR		0x100000000ULL
-#define PHYS_SDRAM_LOW_MAX_SIZE		(PHYS_SDRAM_LOW_MAX_ADDR - CONFIG_SYS_SDRAM_BASE)
+#define PHYS_SDRAM_LOW_MAX_SIZE		(PHYS_SDRAM_LOW_MAX_ADDR - CFG_SYS_SDRAM_BASE)
 
 int dram_init_banksize(void)
 {
