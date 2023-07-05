@@ -211,4 +211,5 @@ U_BOOT_DRIVER(scmi_clock) = {
 	.id = UCLASS_CLK,
 	.ops = &scmi_clk_ops,
 	.probe = scmi_clk_probe,
+	.flags = DM_FLAG_PRE_RELOC,
 };
