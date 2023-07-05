@@ -107,6 +107,9 @@ struct arch_global_data {
 #ifdef CONFIG_SMBIOS
 	ulong smbios_start;		/* Start address of SMBIOS table */
 #endif
+#if defined(CONFIG_SCMI_FIRMWARE) && defined(CONFIG_IMX9)
+	struct udevice *scmi_dev;
+#endif
 };
 
 #include <asm-generic/global_data.h>
