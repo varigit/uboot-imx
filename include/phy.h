@@ -331,6 +331,7 @@ int phy_marvell_init(void);
 int phy_micrel_ksz8xxx_init(void);
 int phy_micrel_ksz90x1_init(void);
 int phy_meson_gxl_init(void);
+int phy_mxl8611x_init(void);
 int phy_natsemi_init(void);
 int phy_nxp_c45_tja11xx_init(void);
 int phy_nxp_tja11xx_init(void);
