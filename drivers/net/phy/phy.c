@@ -532,6 +532,9 @@ int phy_init(void)
 #ifdef CONFIG_PHY_MESON_GXL
 	phy_meson_gxl_init();
 #endif
+#ifdef CONFIG_PHY_MXL8611X
+	phy_mxl8611x_init();
+#endif
 #ifdef CONFIG_PHY_NATSEMI
 	phy_natsemi_init();
 #endif
