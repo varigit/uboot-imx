@@ -275,6 +275,11 @@ config PHY_MICREL_KSZ8XXX
 
 endif # PHY_MICREL
 
+config PHY_MXL8611X
+	bool "MaxLinear MXL8611X Ethernet PHYs"
+	help
+		Add support for configuring MaxLinear MXL8611X Ethernet PHYs.
+
 config PHY_MSCC
 	bool "Microsemi Corp Ethernet PHYs support"
 
