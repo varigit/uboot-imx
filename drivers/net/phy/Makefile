@@ -24,6 +24,7 @@ obj-$(CONFIG_PHY_MARVELL) += marvell.o
 obj-$(CONFIG_PHY_MARVELL_10G) += marvell10g.o
 obj-$(CONFIG_PHY_MICREL_KSZ8XXX) += micrel_ksz8xxx.o
 obj-$(CONFIG_PHY_MICREL_KSZ90X1) += micrel_ksz90x1.o
+obj-$(CONFIG_PHY_MXL8611X) += mxl-8611x.o
 obj-$(CONFIG_PHY_MESON_GXL) += meson-gxl.o
 obj-$(CONFIG_PHY_MOTORCOMM) += motorcomm.o
 obj-$(CONFIG_PHY_NATSEMI) += natsemi.o
