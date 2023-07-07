@@ -1,0 +1,37 @@
+* MaxLinear MXL8611x PHY Device Tree binding
+
+Required properties:
+- reg: PHY address
+
+Optional properties:
+- mxl-8611x,ledN_cfg: Register configuration for COM_EXT_LED0_CFG,
+	COM_EXT_LED1_CFG, and COM_EXT_LED2_CFG
+- mxl-8611x,rx-internal-delay-ps: RGMII RX Clock Delay used only when PHY operates
+	in RGMII mode with internal delay (phy-mode is 'rgmii-id' or
+	'rgmii-rxid') in pico-seconds.
+- mxl-8611x,tx-internal-delay-ps-100m: RGMII TX Clock Delay used only when PHY operates
+	in 10/100M RGMII mode with internal delay (phy-mode is 'rgmii-id' or
+	'rgmii-txid') in pico-seconds.
+- mxl-8611x,tx-internal-delay-ps-1g: RGMII TX Clock Delay used only when PHY operates
+	in 1G RGMII mode with internal delay (phy-mode is 'rgmii-id' or
+	'rgmii-txid') in pico-seconds.
+
+Example:
+
+	ethernet-phy@0 {
+		reg = <0>;
+
+		mxl-8611x,led0_cfg = <(
+			MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON |
+			MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON |
+			MXL8611X_LEDX_CFG_TRAFFIC_ACT_BLINK_IND
+		)>;
+		mxl-8611x,led1_cfg = <(
+			MXL8611X_LEDX_CFG_LINK_UP_10MB_ON |
+			MXL8611X_LEDX_CFG_LINK_UP_100MB_ON |
+			MXL8611X_LEDX_CFG_LINK_UP_1GB_ON
+		)>;
+		mxl-8611x,rx-internal-delay-ps = <0>;
+		mxl-8611x,tx-internal-delay-ps-100m = <2250>;
+		mxl-8611x,tx-internal-delay-ps-1g = <150>;
+	};
