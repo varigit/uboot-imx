@@ -289,6 +289,11 @@ config PHY_MOTORCOMM
 	  Enables support for Motorcomm network PHYs.
 	  Currently supports the YT8511 and YT8531 Gigabit Ethernet PHYs.
 
+config PHY_MXL8611X
+	bool "MaxLinear MXL8611X Ethernet PHYs"
+	help
+		Add support for configuring MaxLinear MXL8611X Ethernet PHYs.
+
 config PHY_MSCC
 	bool "Microsemi Corp Ethernet PHYs support"
 
