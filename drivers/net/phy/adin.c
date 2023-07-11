@@ -182,6 +182,18 @@ static int adin_config_clk_out(struct phy_device *phydev)
 			      ADIN1300_GE_CLK_CFG_MASK & sel);
 }
 
+static int adin_extread(struct phy_device *phydev, int addr, int devaddr,
+			       int regnum)
+{
+	return adin_ext_read(phydev, regnum);
+}
+
+static int adin_extwrite(struct phy_device *phydev, int addr,
+				int devaddr, int regnum, u16 val)
+{
+	return adin_ext_write(phydev, regnum, val);
+}
+
 static int adin_config_rgmii_mode(struct phy_device *phydev)
 {
 	u16 reg_val;
@@ -260,6 +272,8 @@ static struct phy_driver ADIN1300_driver =  {
 	.config = adin1300_config,
 	.startup = genphy_startup,
 	.shutdown = genphy_shutdown,
+	.readext = adin_extread,
+	.writeext = adin_extwrite,
 };
 
 int phy_adin_init(void)
