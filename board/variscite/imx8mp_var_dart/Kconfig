@@ -9,7 +9,6 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "imx8mp_var_dart"
 
-source "board/freescale/common/Kconfig"
 source "board/variscite/common/Kconfig"
 
 endif
