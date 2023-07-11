@@ -83,6 +83,7 @@
 	"mmcautodetect=yes\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs ${jh_clk} console=${console} \
+		${cma_size} cma_name=linux,cma \
 		root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw\0 " \
 	"bootenv=uEnv.txt\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
@@ -123,6 +124,7 @@
 			"fi;" \
 		"fi;\0" \
 	"netargs=setenv bootargs ${jh_clk} console=${console} " \
+		"${cma_size} cma_name=linux,cma " \
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
@@ -153,7 +155,14 @@
 				"fi; " \
 			"fi;" \
 		"fi;\0" \
+	"ramsize_check="\
+		"if test $sdram_size -le 512; then " \
+			"setenv cma_size cma=32M; " \
+		"else " \
+			"setenv cma_size cma=128M; " \
+		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
+		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
