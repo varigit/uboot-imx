@@ -117,17 +117,13 @@
 	"ramsize_check="\
 		"if test $sdram_size -le 512; then " \
 			"setenv cma_size cma=320M; " \
+		"elif test $sdram_size -le 1024; then " \
+			"setenv cma_size cma=576M; " \
+		"elif test $sdram_size -le 2048; then " \
+			"setenv cma_size cma=640M; " \
 		"else " \
-			"if test $sdram_size -le 1024; then " \
-				"setenv cma_size cma=576M; " \
-			"else " \
-				"if test $sdram_size -le 2048; then " \
-					"setenv cma_size cma=640M; " \
-				"else " \
-					"setenv cma_size cma=960M; " \
-				"fi; " \
-			"fi; " \
-		"fi;\0" \
+			"setenv cma_size cma=960M; " \
+		"fi\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
