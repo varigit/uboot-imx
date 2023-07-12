@@ -20,7 +20,7 @@
         /delete-node/ gpio@21;
 };
 
-&fec {
-	/delete-property/ phy-reset-gpios;
+&ethphy1 {
+	/delete-property/ reset-gpios;
 	status = "disabled";
 };
