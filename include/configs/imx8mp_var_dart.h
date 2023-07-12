@@ -29,7 +29,6 @@
 
 /* ENET Config */
 #if defined(CONFIG_CMD_NET)
-#define CONFIG_FEC_XCV_TYPE		RGMII
 #define PHY_ANEG_TIMEOUT		20000
 #endif
 
