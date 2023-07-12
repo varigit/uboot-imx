@@ -124,14 +124,7 @@ void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 
-	if (IS_ENABLED(CONFIG_FSL_CAAM)) {
-		struct udevice *dev;
-		int ret;
-
-		ret = uclass_get_device_by_driver(UCLASS_MISC, DM_DRIVER_GET(caam_jr), &dev);
-		if (ret)
-			printf("Failed to initialize caam_jr: %d\n", ret);
-	}
+	arch_misc_init();
 
 	/* Set GIC clock to 500Mhz for OD VDD_SOC. Kernel driver does not allow to change it.
 	 * Should set the clock after PMIC setting done.
