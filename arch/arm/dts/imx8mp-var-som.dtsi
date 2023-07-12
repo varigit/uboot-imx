@@ -31,9 +31,13 @@
 		#size-cells = <0>;
 
 		ethphy0: ethernet-phy@4 {
+			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <4>;
-			qca,clk-out-frequency = <125000000>;
-			qca,keep-pll-enabled;
+			at803x,eee-disabled;
+			eee-broken-1000t;
+			reset-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <20000>;
 			vddio-supply = <&vddio0>;
 
 			vddio0: vddio-regulator {
