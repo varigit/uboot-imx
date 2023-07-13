@@ -854,7 +854,7 @@ int arch_cpu_init(void)
 		/* Disable wdog */
 		init_wdog();
 
-		clock_init();
+		clock_init_early();
 
 		trdc_early_init();
 
