@@ -197,8 +197,7 @@ static void reboot_bootloader(char *cmd_parameter, char *response)
 		fastboot_okay(NULL, response);
 }
 
-#if (defined(CONFIG_FASTBOOT_LOCK) || defined(CONFIG_IMX_SNPS_DDR_PHY_QB_GEN))
-static bool endswith(char* s, char* subs) {
+bool endswith(char* s, char* subs) {
 	if (!s || !subs)
 		return false;
 	uint32_t len = strlen(s);
@@ -211,7 +210,6 @@ static bool endswith(char* s, char* subs) {
 	}
         return true;
 }
-#endif
 
 #ifdef CONFIG_ANDROID_RECOVERY
 /**
