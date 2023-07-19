@@ -20,6 +20,10 @@
 #define VAR_EEPROM_F_ETH		(1 << 1)
 #define VAR_EEPROM_F_AUDIO		(1 << 2)
 
+/* Helpers to extract the major and minor versions from somrev */
+#define SOMREV_MINOR(val) ((val) & GENMASK(4, 0))
+#define SOMREV_MAJOR(val) (1 + (((val) >> 5) & GENMASK(2, 0)))
+
 /* SOM storage types */
 enum som_storage {
 	SOM_STORAGE_EMMC,

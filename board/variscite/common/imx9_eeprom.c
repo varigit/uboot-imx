@@ -114,7 +114,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 
 	debug("EEPROM version: 0x%x\n", ep->version);
 	debug("SOM features: 0x%x\n", ep->features);
-	printf("SOM revision: 0x%x\n", ep->somrev);
+	printf("SOM revision: %d.%d\n", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	printf("DRAM PN: VIC-%04d\n", ep->ddr_vic);
 	debug("DRAM size: %d GiB\n\n", (ep->dramsize * 128) / 1024);
 }
