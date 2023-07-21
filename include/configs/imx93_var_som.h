@@ -81,6 +81,17 @@
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=1\0" \
 	"mmcautodetect=yes\0" \
+	"m33_addr=0x201e0000\0" \
+	"m33_addr_auxview=0x1ffe0000\0" \
+	"m33_bin=cm_hello_world.bin.release\0" \
+	"use_m33=no\0" \
+	"loadm33bin=" \
+	         "load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m33_bin} && " \
+	         "cp.b ${loadaddr} ${m33_addr} ${filesize};\0" \
+	"runm33bin=" \
+		"echo Booting M33 from TCM; " \
+		"stopaux; " \
+		"bootaux ${m33_addr_auxview};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs ${jh_clk} console=${console} \
 		${cma_size} cma_name=linux,cma \
@@ -164,6 +175,9 @@
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
+		   "if test ${use_m33} = yes && run loadm33bin; then " \
+			   "run runm33bin; " \
+		   "fi; " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
 		   "else " \
