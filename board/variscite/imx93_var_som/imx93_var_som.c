@@ -128,7 +128,7 @@ int board_late_init(void)
 	env_set("carrier_rev", carrier_rev);
 
 	/* SoM Rev ENV */
-	snprintf(som_rev, CARRIER_REV_LEN, "som_rev1%d", ep->somrev);
+	snprintf(som_rev, CARRIER_REV_LEN, "%d.%d", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	env_set("som_rev", som_rev);
 
 #ifdef CONFIG_ENV_IS_IN_MMC
