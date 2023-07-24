@@ -90,7 +90,11 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"setenv fdt_file "CONFIG_DEFAULT_FDT_FILE"; " \
+			"if test ${som_rev} -lt 2; then " \
+				"setenv fdt_file imx93-var-som-1.x-symphony.dtb; " \
+			"else " \
+				"setenv fdt_file imx93-var-som-symphony.dtb; " \
+			"fi; " \
 		"fi; " \
 		"echo fdt_file=${fdt_file};\0" \
 	"loadfdt=run findfdt;load mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${bootdir}/${fdt_file}\0" \
