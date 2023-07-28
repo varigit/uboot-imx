@@ -693,6 +693,20 @@ U_BOOT_PHY_DRIVER(aqr113c) = {
 	.data = AQUANTIA_GEN3,
 };
 
+U_BOOT_PHY_DRIVER(aqr115) = {
+	.name = "Aquantia AQR115",
+	.uid = 0x31c31c63,
+	.mask = 0xfffffff0,
+	.features = PHY_GBIT_FEATURES | SUPPORTED_2500baseX_Full,
+	.mmds = (MDIO_MMD_PMAPMD | MDIO_MMD_PCS|
+		 MDIO_MMD_PHYXS | MDIO_MMD_AN |
+		 MDIO_MMD_VEND1),
+	.config = &aquantia_config,
+	.startup = &aquantia_startup,
+	.shutdown = &gen10g_shutdown,
+	.data = AQUANTIA_GEN3,
+};
+
 U_BOOT_PHY_DRIVER(aqr405) = {
 	.name = "Aquantia AQR405",
 	.uid = 0x3a1b4b2,
