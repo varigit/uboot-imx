@@ -228,6 +228,19 @@ config TARGET_KONTRON_MX8MM
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
+config TARGET_IMX8MM_VAR_DART
+	bool "imx8mm_var_dart"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+	select IMX8M_LPDDR4
+	select IMX8M_BOARD_INIT_DRAM
+	select FSL_CAAM
+	select FSL_BLOB
+	select MISC
+	select SPL_CRYPTO_SUPPORT if SPL
+	select IMX_REDUCE_DMEM_PADDING
+
 config TARGET_IMX8MN_BSH_SMM_S2
 	bool "imx8mn-bsh-smm-s2"
 	select BINMAN
@@ -503,6 +516,7 @@ source "board/ronetix/imx8mq-cm/Kconfig"
 source "board/technexion/pico-imx8mq/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
+source "board/variscite/imx8mm_var_dart/Kconfig"
 source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/variscite/imx8mp_var_dart/Kconfig"
 
