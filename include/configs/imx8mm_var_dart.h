@@ -101,12 +101,10 @@
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
 				"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+			"elif test $carrier_rev = legacy; then " \
+				"setenv fdt_file imx8mm-var-dart-dt8mcustomboard-legacy.dtb; " \
 			"else " \
-				"if test $carrier_rev = legacy; then " \
-					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard-legacy.dtb; " \
-				"else " \
-					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
-				"fi; " \
+				"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
@@ -115,24 +113,20 @@
 	"ramsize_check="\
 		"if test $sdram_size -le 512; then " \
 			"setenv cma_size cma=320M; " \
+		"elif test $sdram_size -le 1024; then " \
+			"setenv cma_size cma=576M; " \
 		"else " \
-			"if test $sdram_size -le 1024; then " \
-				"setenv cma_size cma=576M; " \
-			"else " \
-				"setenv cma_size cma=640M; " \
-			"fi; " \
+			"setenv cma_size cma=640M; " \
 		"fi;\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
 			"bootm ${loadaddr}; " \
+		"elif run loadfdt; then " \
+			"booti ${loadaddr} - ${fdt_addr_r}; " \
 		"else " \
-			"if run loadfdt; then " \
-				"booti ${loadaddr} - ${fdt_addr_r}; " \
-			"else " \
-				"echo WARN: Cannot load the DT; " \
-			"fi; " \
+			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console} " \
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
@@ -166,12 +160,10 @@
 		"fi; " \
 		"if run loadbootscript; then " \
 			"run bootscript; " \
+		"elif run loadimage; then " \
+			"run mmcboot; " \
 		"else " \
-			"if run loadimage; then " \
-				"run mmcboot; " \
-			"else " \
-				"run netboot; " \
-			"fi; " \
+			"run netboot; " \
 		"fi; " \
 	"fi;"
 
