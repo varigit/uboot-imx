@@ -107,7 +107,9 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if test ${som_rev} -lt 2; then " \
+			"if test "CONFIG_DEFAULT_FDT_FILE" != imx93-var-som-symphony.dtb; then " \
+				"setenv fdt_file "CONFIG_DEFAULT_FDT_FILE"; " \
+			"elif test ${som_rev} -lt 2; then " \
 				"setenv fdt_file imx93-var-som-1.x-symphony.dtb; " \
 			"else " \
 				"setenv fdt_file imx93-var-som-symphony.dtb; " \
