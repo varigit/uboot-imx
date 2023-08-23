@@ -52,9 +52,11 @@
 
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
+#ifndef CONFIG_TARGET_IMX8QM_MEK_A72_ONLY
 #define CONFIG_PCIE_IMX
 #define CONFIG_CMD_PCI
 #define CONFIG_PCI_SCAN_SHOW
+#endif
 
 #define CONFIG_FEC_XCV_TYPE             RGMII
 #define FEC_QUIRK_ENET_MAC
@@ -288,5 +290,8 @@
 #define CONFIG_HIDE_LOGO_VERSION
 #endif
 
+#if defined(CONFIG_ANDROID_SUPPORT)
+#include "imx8qm_var_som_android.h"
+#endif
 
 #endif /* __IMX8QM_VAR_SOM_H */

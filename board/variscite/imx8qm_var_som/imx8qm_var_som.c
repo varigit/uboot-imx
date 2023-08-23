@@ -191,16 +191,32 @@ int board_late_init(void)
 
 #ifdef CONFIG_IMX_LOAD_HDMI_FIMRWARE
 	char command[256];
+#ifdef CONFIG_ANDROID_SUPPORT
+	char fw_folder[] = "hdp";
+#else
 	char fw_folder[] = "firmware/hdp";
+#endif
 	char *hdp_file = env_get("hdp_file");
 	char *hdprx_file = env_get("hdprx_file");
 	u32 dev_no = mmc_get_env_dev();
+#ifdef CONFIG_HDMI_FIRMWARE_PARTNO
+	u32 part_no = CONFIG_HDMI_FIRMWARE_PARTNO;
+#else
 	u32 part_no = 10;
+#endif
 
 	sprintf(command, "load mmc %x:%x 0x%x %s/%s", dev_no, part_no,
 			 IMX_HDMI_FIRMWARE_LOAD_ADDR,
 			 fw_folder, hdp_file);
-	run_command(command, 0);
+	ret = run_command(command, 0);
+	if (ret) {
+		/*try vendor*/
+		part_no = 10;
+		sprintf(command, "load mmc %x:%x 0x%x %s/%s", dev_no, part_no,
+				 IMX_HDMI_FIRMWARE_LOAD_ADDR,
+				 fw_folder, hdp_file);
+		ret = run_command(command, 0);
+	}
 
 	sprintf(command, "hdp load 0x%x", IMX_HDMI_FIRMWARE_LOAD_ADDR);
 	run_command(command, 0);

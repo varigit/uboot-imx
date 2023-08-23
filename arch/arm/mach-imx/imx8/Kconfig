@@ -18,6 +18,17 @@ config IMX_LOAD_HDMI_FIMRWARE_TX
 	help
 	  This enable the hdmi tx firmware loading. It depends on the "hdp" command.
 
+config IMX_LOAD_HDMI_FIMRWARE
+	bool "Enable HDMI/DP firmware loading for Variscite Android"
+	depends on ARCH_IMX8 || VIDEO_IMX_HDP_LOAD
+	help
+	  This enable the hdmi tx firmware loading. It depends on the "hdp" command.
+
+config HDMI_FIRMWARE_PARTNO
+	depends on ANDROID_SUPPORT
+	hex "Parition Number in Hex for Firmware loading for Variscite Android"
+	default 11
+
 config IMX8
 	bool
 	select HAS_CAAM
