@@ -206,6 +206,18 @@ config TARGET_IMX8MM_VENICE
 	select GATEWORKS_SC
 	select MISC
 
+config TARGET_IMX8MN_VAR_SOM
+	bool "imx8mn_var_som"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+	select IMX8M_BOARD_INIT_DRAM
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+	select IMX_REDUCE_DMEM_PADDING
+
 config TARGET_KONTRON_MX8MM
 	bool "Kontron Electronics N80xx"
 	select BINMAN
@@ -491,6 +503,7 @@ source "board/ronetix/imx8mq-cm/Kconfig"
 source "board/technexion/pico-imx8mq/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
+source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/variscite/imx8mp_var_dart/Kconfig"
 
 endif
