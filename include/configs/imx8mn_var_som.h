@@ -203,9 +203,7 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB configs */
-#ifndef CONFIG_SPL_BUILD
 #define CONFIG_USBD_HS
-#endif
 
 #define CONFIG_USB_GADGET_VBUS_DRAW 2
 
