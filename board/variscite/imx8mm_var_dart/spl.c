@@ -231,6 +231,38 @@ int power_init_board(void)
 }
 #endif
 
+#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+
+static const iomux_v3_cfg_t uart1_pads[] = {
+	IMX8MM_PAD_UART1_RXD_UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	IMX8MM_PAD_UART1_TXD_UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+static const iomux_v3_cfg_t uart4_pads[] = {
+	IMX8MM_PAD_UART4_RXD_UART4_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	IMX8MM_PAD_UART4_TXD_UART4_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+extern struct mxc_uart *mxc_base;
+
+int uart_init(void)
+{
+	int id;
+
+	id = get_board_id();
+
+	if (id == DART_MX8M_MINI) {
+		init_uart_clk(0);
+		imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+	} else if (id == VAR_SOM_MX8M_MINI) {
+		init_uart_clk(3);
+		imx_iomux_v3_setup_multiple_pads(uart4_pads, ARRAY_SIZE(uart4_pads));
+		mxc_base = (struct mxc_uart *)CFG_MXC_UART_BASE_2;
+	}
+
+	return 0;
+}
+
 void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
@@ -292,6 +324,8 @@ void board_init_f(ulong dummy)
 	board_early_init_f();
 
 	timer_init();
+
+	uart_init();
 
 	preloader_console_init();
 

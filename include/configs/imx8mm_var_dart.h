@@ -178,6 +178,7 @@
 					(DEFAULT_SDRAM_SIZE >> 1))
 
 #define CFG_MXC_UART_BASE		UART1_BASE_ADDR
+#define CFG_MXC_UART_BASE_2		UART4_BASE_ADDR
 
 /* Monitor Command Prompt */
 #define CFG_SYS_PROMPT_HUSH_PS2	"> "

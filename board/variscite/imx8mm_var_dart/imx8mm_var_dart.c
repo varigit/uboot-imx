@@ -88,24 +88,11 @@ int var_get_som_rev(struct var_eeprom *ep)
 	}
 }
 
-#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
-
-static const iomux_v3_cfg_t uart1_pads[] = {
-	IMX8MM_PAD_UART1_RXD_UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
-	IMX8MM_PAD_UART1_TXD_UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
-};
-
-static const iomux_v3_cfg_t uart4_pads[] = {
-	IMX8MM_PAD_UART4_RXD_UART4_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
-	IMX8MM_PAD_UART4_TXD_UART4_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
-};
 
 static const iomux_v3_cfg_t wdog_pads[] = {
 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
-
-extern struct mxc_uart *mxc_base;
 
 #if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
 struct efi_fw_image fw_images[] = {
@@ -126,23 +113,11 @@ u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 
 int board_early_init_f(void)
 {
-	int id;
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
 	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
 
 	set_wdog_reset(wdog);
-
-	id = get_board_id();
-
-	if (id == DART_MX8M_MINI) {
-		init_uart_clk(0);
-		imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
-	} else if (id == VAR_SOM_MX8M_MINI) {
-		init_uart_clk(3);
-		mxc_base = (struct mxc_uart *)UART4_BASE_ADDR;
-		imx_iomux_v3_setup_multiple_pads(uart4_pads, ARRAY_SIZE(uart4_pads));
-	}
 
 	return 0;
 }
