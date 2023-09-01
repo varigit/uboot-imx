@@ -40,6 +40,10 @@
 	};
 };
 
+&aips4 {
+	u-boot,dm-spl;
+};
+
 &crypto {
 	u-boot,dm-spl;
 };
@@ -95,6 +99,18 @@
 &usbotg1 {
 	status = "okay";
 	extcon = <&ptn5150>;
+};
+
+&usbmisc1 {
+	u-boot,dm-spl;
+};
+
+&usbphynop1 {
+	u-boot,dm-spl;
+};
+
+&usbotg1 {
+	u-boot,dm-spl;
 };
 
 &usdhc2 {
