@@ -21,7 +21,6 @@
 #endif
 
 #define CONFIG_SERIAL_TAG
-#define CONFIG_FASTBOOT_USB_DEV 0
 
 /* ENET Config */
 #if defined(CONFIG_FEC_MXC)
