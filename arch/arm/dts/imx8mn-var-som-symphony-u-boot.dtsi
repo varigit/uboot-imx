@@ -4,31 +4,12 @@
  * Copyright 2023 Variscite Ltd.
  */
 
+#include "imx8mn-u-boot.dtsi"
 #include "imx8mn-sec-def.h"
 
 / {
 	aliases {
 		usbgadget0 = &usbg1;
-	};
-
-	firmware {
-		optee {
-			compatible = "linaro,optee-tz";
-			method = "smc";
-		};
-	};
-
-	usbg1: usbg1 {
-		compatible = "fsl,imx27-usb-gadget";
-		dr_mode = "peripheral";
-		chipidea,usb = <&usbotg1>;
-		status = "okay";
-	};
-
-	wdt-reboot {
-		compatible = "wdt-reboot";
-		wdt = <&wdog1>;
-		u-boot,dm-spl;
 	};
 
 	mcu_rdc {
@@ -56,27 +37,6 @@
 			    0x0 0x0 0x0 0x0 0x0
 			  >;
 	};
-};
-
-&aips1 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&aips2 {
-	u-boot,dm-spl;
-};
-
-&aips3 {
-	u-boot,dm-spl;
-};
-
-&clk {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-	/delete-property/ assigned-clocks;
-	/delete-property/ assigned-clock-parents;
-	/delete-property/ assigned-clock-rates;
 };
 
 &crypto {
@@ -107,16 +67,6 @@
 	u-boot,dm-spl;
 };
 
-&iomuxc {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&osc_24m {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
 &pinctrl_i2c1 {
 	u-boot,dm-spl;
 };
@@ -145,14 +95,13 @@
 	u-boot,dm-spl;
 };
 
+&pinctrl_wdog {
+	boot,dm-spl;
+};
+
 &reg_usdhc2_vmmc {
 	u-boot,dm-spl;
 	u-boot,off-on-delay-us = <20000>;
-};
-
-&{/soc@0} {
-	u-boot,dm-pre-reloc;
-	u-boot,dm-spl;
 };
 
 &{/soc@0/bus@30800000/i2c@30a20000/pmic@4b} {
@@ -195,8 +144,4 @@
 	assigned-clocks = <&clk IMX8MN_CLK_USDHC3>;
 	assigned-clock-rates = <400000000>;
 	assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_400M>;
-};
-
-&wdog1 {
-	u-boot,dm-spl;
 };
