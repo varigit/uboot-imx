@@ -101,7 +101,7 @@
 		>;
 	};
 
-	pinctrl_i2c1_gpio: i2c1grp-gpio {
+	pinctrl_i2c1_gpio: i2c1gpiogrp {
 		fsl,pins = <
 			MX8MN_IOMUXC_I2C1_SCL_GPIO5_IO14		0x1c3
 			MX8MN_IOMUXC_I2C1_SDA_GPIO5_IO15		0x1c3
@@ -115,7 +115,7 @@
 		>;
 	};
 
-	pinctrl_i2c3_gpio: i2c3grp-gpio {
+	pinctrl_i2c3_gpio: i2c3gpiogrp {
 		fsl,pins = <
 			MX8MN_IOMUXC_I2C3_SCL_GPIO5_IO18		0x1c3
 			MX8MN_IOMUXC_I2C3_SDA_GPIO5_IO19		0x1c3
