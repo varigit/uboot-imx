@@ -19,6 +19,7 @@
 #define VAR_EEPROM_F_WIFI		(1 << 0)
 #define VAR_EEPROM_F_ETH		(1 << 1)
 #define VAR_EEPROM_F_AUDIO		(1 << 2)
+#define VAR_EEPROM_F_WBE		(1 << 3)
 
 /* Helpers to extract the major and minor versions from somrev */
 #define SOMREV_MINOR(val) ((val) & GENMASK(4, 0))
