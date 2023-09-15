@@ -22,10 +22,6 @@
 	};
 };
 
-&fec1 {
-	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
-};
-
 &gpio4 {
 	u-boot,dm-spl;
 };
