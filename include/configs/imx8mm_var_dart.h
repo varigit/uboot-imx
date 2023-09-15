@@ -70,6 +70,12 @@
 	"emmc_dev=2\0"\
 	"sd_dev=1\0" \
 
+#ifdef CONFIG_SYS_MMC_ENV_DEV
+#define BOOTENV_MMCDEV __stringify(CONFIG_SYS_MMC_ENV_DEV)
+#else
+#define BOOTENV_MMCDEV "1"
+#endif
+
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	CONFIG_MFG_ENV_SETTINGS \
@@ -88,8 +94,8 @@
 	"boot_fit=no\0" \
 	"fdt_file=undefined\0" \
 	"ip_dyn=yes\0" \
-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcblk=1\0" \
+	"mmcdev=" BOOTENV_MMCDEV "\0" \
+	"mmcblk=" BOOTENV_MMCDEV "\0" \
 	"mmcpart=1\0" \
 	"mmcautodetect=yes\0" \
 	"m4_addr=0x7e0000\0" \
