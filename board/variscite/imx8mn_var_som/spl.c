@@ -216,14 +216,7 @@ void spl_board_init(void)
 
 	puts("Normal Boot\n");
 
-	if (IS_ENABLED(CONFIG_FSL_CAAM)) {
-		struct udevice *dev;
-		int ret;
-
-		ret = uclass_get_device_by_driver(UCLASS_MISC, DM_DRIVER_GET(caam_jr), &dev);
-		if (ret)
-			printf("Failed to initialize caam_jr: %d\n", ret);
-	}
+	arch_misc_init();
 
 	/* Copy EEPROM contents to DRAM */
 	memcpy(ep, &eeprom, sizeof(*ep));
