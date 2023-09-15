@@ -238,10 +238,10 @@ void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 
-if (IS_ENABLED(CONFIG_FSL_CAAM)) {
+#if CONFIG_IS_ENABLED(SPL_CRYPTO) && CONFIG_IS_ENABLED(FSL_CAAM)
 	if (sec_init())
 		printf("\nsec_init failed!\n");
-}
+#endif
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
 	/* Serial download mode */
 	if (is_usb_boot()) {
