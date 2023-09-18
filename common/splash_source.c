@@ -448,6 +448,7 @@ int splash_source_load(struct splash_location *locations, uint size)
 {
 	struct splash_location *splash_location;
 	char *env_splashimage_value;
+	char *devpart;
 	uintptr_t bmp_load_addr;
 
 	env_splashimage_value = env_get("splashimage");
