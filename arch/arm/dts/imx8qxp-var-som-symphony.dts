@@ -47,6 +47,16 @@
 	status = "okay";
 };
 
+&fec1 {
+	mdio {
+		ethphy1: ethernet-phy@5 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			adi,phy-mode-override = "rgmii";
+			reg = <5>;
+		};
+	};
+};
+
 &fec2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec2>;
