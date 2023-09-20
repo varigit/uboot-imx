@@ -186,7 +186,7 @@ phys_size_t get_effective_memsize(void)
 
 			/* Find the memory region runs the u-boot */
 			if (start >= PHYS_SDRAM_1 && start <= ((sc_faddr_t)PHYS_SDRAM_1 + phys_sdram_1_size)
-				&& (start <= CONFIG_SYS_TEXT_BASE && CONFIG_SYS_TEXT_BASE <= end)){
+				&& (start <= CONFIG_TEXT_BASE && CONFIG_TEXT_BASE <= end)){
 				if ((end + 1) <= ((sc_faddr_t)PHYS_SDRAM_1 + phys_sdram_1_size))
 					return (end - PHYS_SDRAM_1 + 1);
 				else
