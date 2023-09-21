@@ -220,6 +220,16 @@ config TARGET_IMX8DXL_DDR3_EVK
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
+config TARGET_IMX8QXP_VAR_SOM
+	bool "Support Variscite VAR-SOM-MX8X board"
+	select IMX8_BOARD_INIT_DRAM
+	select BOARD_LATE_INIT
+	select IMX8QXP
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
 endchoice
 
 source "board/freescale/imx8qm_mek/Kconfig"
@@ -235,6 +245,7 @@ source "board/toradex/colibri-imx8x/Kconfig"
 source "board/toradex/apalis-imx8x/Kconfig"
 source "board/siemens/capricorn/Kconfig"
 source "board/variscite/imx8qm_var_som/Kconfig"
+source "board/variscite/imx8qxp_var_som/Kconfig"
 
 config IMX_SNVS_SEC_SC
 	bool "Support SNVS configuration"
