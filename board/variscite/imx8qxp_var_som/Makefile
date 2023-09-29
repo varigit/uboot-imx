@@ -7,7 +7,7 @@
 
 obj-y += imx8qxp_var_som.o
 obj-y += ../common/mmc.o ../common/imx8_eeprom.o
-obj-$(CONFIG_DM_VIDEO) += ../common/video.o
+obj-$(CONFIG_VIDEO) += ../common/video.o
 obj-$(CONFIG_FEC_MXC) += ../common/eth.o
 obj-$(CONFIG_IMX8_BOARD_INIT_DRAM) += ../common/imx8_dram.o
 obj-$(CONFIG_SPL_BUILD) += spl.o
