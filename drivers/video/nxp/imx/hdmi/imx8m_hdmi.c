@@ -293,7 +293,7 @@ struct dm_display_ops imx8m_hdmi_ops = {
 	.enable =  imx8m_hdmi_enable,
 };
 
-static const struct udevice_id  imx8m_hdmi_ids[] = {
+static const struct udevice_id imx8m_hdmi_ids[] = {
 	{ .compatible = "fsl,imx8mq-hdmi" },
 	{ }
 };
