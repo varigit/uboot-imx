@@ -13,9 +13,3 @@
 &pinctrl_uart1 {
 	u-boot,dm-spl;
 };
-
-&ethphy0 {
-	reset-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
-	reset-assert-us = <10000>;
-	reset-deassert-us = <20000>;
-};
