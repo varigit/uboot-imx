@@ -92,7 +92,7 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
 
 int board_init(void)
 {
-	if (CONFIG_IS_ENABLED(DWC_ETH_QOS))
+	if (IS_ENABLED(CONFIG_DWC_ETH_QOS))
 		setup_eqos();
 
 	return 0;
