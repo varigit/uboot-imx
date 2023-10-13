@@ -197,6 +197,19 @@ config TARGET_IMX8MM_PHG
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_IMX8MM_VAR_DART
+	bool "Support Variscite VAR-SOM-/DART-MX8M-MINI"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+	select IMX8M_LPDDR4
+	select IMX8M_BOARD_INIT_DRAM
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+	select IMX_REDUCE_DMEM_PADDING
+
 config TARGET_IMX8MM_VENICE
 	bool "Support Gateworks Venice iMX8M Mini module"
 	select BINMAN
@@ -487,5 +500,6 @@ source "board/technexion/pico-imx8mq/Kconfig"
 source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
+source "board/variscite/imx8mm_var_dart/Kconfig"
 
 endif

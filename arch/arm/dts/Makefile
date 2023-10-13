@@ -1043,6 +1043,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-kontron-bl-osm-s.dtb \
 	imx8mm-mx8menlo.dtb \
 	imx8mm-phg.dtb \
+	imx8mm-var-dart-customboard.dtb \
+	imx8mm-var-som-symphony.dtb \
 	imx8mm-venice.dtb \
 	imx8mm-venice-gw71xx-0x.dtb \
 	imx8mm-venice-gw72xx-0x.dtb \
