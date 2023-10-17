@@ -90,12 +90,13 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if test ${som_rev} -lt 2; then " \
-				"setenv fdt_file imx93-var-som-1.x-symphony.dtb; " \
-			"elif test ${som_has_wbe} = 1; then " \
+			"if test ${som_has_wbe} = 1; then " \
 				"setenv fdt_file imx93-var-som-wbe-symphony.dtb; " \
 			"else " \
 				"setenv fdt_file imx93-var-som-symphony.dtb; " \
+				"if test ${som_rev} -lt 2; then " \
+					"echo \"Warning: Only SoM revisions >= 2.0 are supported\"; " \
+				"fi; " \
 			"fi; " \
 		"fi; " \
 		"echo fdt_file=${fdt_file};\0" \
