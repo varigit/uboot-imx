@@ -8,7 +8,6 @@
 #ifndef __EXTCON_PTN5150_H
 #define __EXTCON_PTN5150_H
 
-#include <dm.h>
 #include <linux/bitfield.h>
 #include <usb.h>
 
