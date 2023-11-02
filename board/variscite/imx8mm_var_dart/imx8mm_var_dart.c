@@ -50,6 +50,7 @@ int get_board_id(void)
 	gpio_direction_input(ID_GPIO);
 
 	board_id = gpio_get_value(ID_GPIO) ? DART_MX8M_MINI : VAR_SOM_MX8M_MINI;
+	gpio_free(ID_GPIO);
 
 	return board_id;
 }
