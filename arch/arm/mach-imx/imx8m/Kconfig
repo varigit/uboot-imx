@@ -423,6 +423,18 @@ config TARGET_PHYCORE_IMX8MP
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_IMX8MP_VAR_DART
+	bool "Support Variscite DART-MX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select IMX8M_BOARD_INIT_DRAM
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+	select IMX_REDUCE_DMEM_PADDING
+
 config TARGET_IMX8MM_CL_IOT_GATE
 	bool "CompuLab iot-gate-imx8"
 	select BINMAN
@@ -501,5 +513,6 @@ source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
 source "board/variscite/imx8mm_var_dart/Kconfig"
+source "board/variscite/imx8mp_var_dart/Kconfig"
 
 endif
