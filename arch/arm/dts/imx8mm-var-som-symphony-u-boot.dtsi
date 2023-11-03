@@ -29,3 +29,8 @@
 &extcon_ptn5150 {
 	i2c-bus = <0x1>;
 };
+
+&usbotg1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <>;
+};
