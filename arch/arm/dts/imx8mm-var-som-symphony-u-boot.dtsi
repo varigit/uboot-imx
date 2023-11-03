@@ -25,3 +25,7 @@
 &gpio4 {
 	u-boot,dm-spl;
 };
+
+&extcon_ptn5150 {
+	i2c-bus = <0x1>;
+};

@@ -124,6 +124,12 @@
 			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
 		>;
 	};
+
+	pinctrl_extcon: extcongrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO11_GPIO1_IO11		0x16
+		>;
+	};
 };
 
 &i2c2 {
@@ -135,12 +141,21 @@
 	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
-	ptn5150: ptn5150@3d {
+	extcon_ptn5150: typec@3d {
 		compatible = "nxp,ptn5150";
 		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_extcon>;
 		reg = <0x3d>;
-		i2c-bus = <0x1>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <11 IRQ_TYPE_NONE>;
+		irq-is-id-quirk;
 		status = "okay";
+
+		port {
+			typec1_dr_sw: endpoint {
+				remote-endpoint = <&usb1_drd_sw>;
+			};
+		};
 	};
 };
 
@@ -163,8 +178,20 @@
 
 &usbotg1 {
 	dr_mode = "otg";
-	extcon = <&ptn5150>;
+	hnp-disable;
+	srp-disable;
+	adp-disable;
+	usb-role-switch;
+	disable-over-current;
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust = <7>;
 	status = "okay";
+
+	port {
+		usb1_drd_sw: endpoint {
+			remote-endpoint = <&typec1_dr_sw>;
+		};
+	};
 };
 
 &usbotg2 {

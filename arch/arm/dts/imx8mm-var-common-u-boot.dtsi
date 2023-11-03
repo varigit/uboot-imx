@@ -102,7 +102,7 @@
 
 &usbotg1 {
 	status = "okay";
-	extcon = <&ptn5150>;
+	extcon = <&extcon_ptn5150>;
 };
 
 &usbmisc1 {
