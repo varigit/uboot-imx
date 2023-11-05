@@ -182,6 +182,49 @@ static enum current_board get_board_indx(void)
 }
 
 #ifdef CONFIG_SYS_I2C
+#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)
+#define CODEC_I2C_BUS	1
+#define CODEC_I2C_ADDR	0x1a
+#define CODEC_CHIP_ID	0
+#define CODEC_WM8904	0x0489 /* bytes swapped */
+
+static void board_codec_detect(void)
+{
+	u8 is_silent;
+	u16 id;
+
+	i2c_set_bus_num(CODEC_I2C_BUS);
+	if (i2c_probe(CODEC_I2C_ADDR)) {
+		debug("Couldn't find audio codec device\n");
+		env_set("codec", "none");
+		return;
+	}
+
+	/*
+	 * Silence the ID read operation, as in case of the
+	 * codec wm8731, being a write-only device, this will
+	 * end up in printing errors.
+	 */
+	is_silent = (gd->flags & GD_FLG_SILENT);
+	if (!is_silent)
+		gd->flags |= GD_FLG_SILENT;
+	if (i2c_read(CODEC_I2C_ADDR, CODEC_CHIP_ID, 1,
+		(u8 *)&id, sizeof(id))) {
+		/* Recover the i2c bus by re-probing */
+		i2c_probe(CODEC_I2C_ADDR);
+		env_set("codec", "wm8731");
+	} else if (id == CODEC_WM8904) {
+		env_set("codec", "wm8904");
+	} else {
+		env_set("codec", "unknown");
+	}
+	if (!is_silent)
+		gd->flags &= ~GD_FLG_SILENT;
+
+	printf("Codec: %s\n", env_get("codec"));
+}
+#endif
+
 static int var_eeprom_get_ram_size(void)
 {
 	u32 read_eeprom_magic;
@@ -930,6 +973,8 @@ int board_late_init(void)
 		env_set("som_storage", "unknown");
 		break;
 	}
+
+	board_codec_detect();
 #endif
 
 	return 0;
