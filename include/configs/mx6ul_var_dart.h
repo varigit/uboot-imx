@@ -239,7 +239,11 @@
 			"fi; " \
 			"if test -n $soc_type && test -n $som && " \
 			   "test -n $storage && test -n $mmc0_dev && test -n $carrier; then " \
-				"setenv fdt_file ${soc_type}-${som}-${carrier}-${storage}-${mmc0_dev}.dtb; " \
+				"if test -n $codec && test $codec = wm8731; then " \
+					"setenv fdt_file ${soc_type}-${som}-${carrier}-${storage}-${mmc0_dev}-${codec}.dtb; " \
+				"else " \
+					"setenv fdt_file ${soc_type}-${som}-${carrier}-${storage}-${mmc0_dev}.dtb; " \
+				"fi; " \
 			"fi; " \
 			"setenv som; setenv carrier; setenv storage; setenv mmc0_dev; " \
 			"if test $fdt_file = undefined; then " \
