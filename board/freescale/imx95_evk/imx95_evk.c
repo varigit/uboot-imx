@@ -526,3 +526,11 @@ int board_fix_fdt(void *fdt)
 #endif
 }
 #endif
+#ifdef CONFIG_FSL_FASTBOOT
+#ifdef CONFIG_ANDROID_RECOVERY
+int is_recovery_key_pressing(void)
+{
+	return 0;
+}
+#endif /*CONFIG_ANDROID_RECOVERY*/
+#endif /*CONFIG_FSL_FASTBOOT*/
