@@ -53,12 +53,17 @@ config TARGET_IMX93_9X9_QSB
 	select IMX93
 	select IMX9_LPDDR4X
 
+config TARGET_IMX95_19X19_EVK
+	bool "imx95_19x19_evk"
+	select IMX95
+
 endchoice
 
 source "board/freescale/imx93_evk/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
 source "board/variscite/imx93_var_som/Kconfig"
 source "board/freescale/imx93_qsb/Kconfig"
+source "board/freescale/imx95_evk/Kconfig"
 
 endif
 
