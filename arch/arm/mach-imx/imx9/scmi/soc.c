@@ -42,6 +42,7 @@
 #ifdef CONFIG_SCMI_FIRMWARE
 #include <scmi_agent.h>
 #include <scmi_protocols.h>
+#include <dt-bindings/power/fsl,imx95-power.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -688,6 +689,15 @@ static int disable_pcieb_node(void *blob)
 	return delete_fdt_nodes(blob, nodes_path_pcieb, ARRAY_SIZE(nodes_path_pcieb));
 }
 
+static int disable_m7_node(void *blob)
+{
+	static const char * const nodes_path_m7[] = {
+		"/imx95-cm7"
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_m7, ARRAY_SIZE(nodes_path_m7));
+}
+
 #ifdef CONFIG_OF_BOARD_FIXUP
 #ifndef CONFIG_SPL_BUILD
 int board_fix_fdt(void *fdt)
@@ -696,6 +706,20 @@ int board_fix_fdt(void *fdt)
 }
 #endif
 #endif
+
+static bool is_m7_off(void)
+{
+	u32 state = 0;
+	int ret;
+	ret = scmi_pwd_state_get(gd->arch.scmi_dev, IMX95_PD_M7, &state);
+	if (ret)
+		printf("scmi_pwd_state_get Failed %d for M7\n", ret);
+
+	if (state == BIT(30))
+		return true;
+	else
+		return false;
+}
 
 int ft_system_setup(void *blob, struct bd_info *bd)
 {
@@ -710,6 +734,10 @@ int ft_system_setup(void *blob, struct bd_info *bd)
 			disable_pciea_node(blob);
 		if (val & BIT(7)) /* PCIE B */
 			disable_pcieb_node(blob);
+	}
+
+	if (is_imx95() && is_m7_off()) {
+		disable_m7_node(blob);
 	}
 
 	return ft_add_optee_node(blob, bd);
