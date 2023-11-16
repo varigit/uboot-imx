@@ -180,9 +180,6 @@
 #define CFG_MXC_UART_BASE		UART1_BASE_ADDR
 #define CFG_MXC_UART_BASE_2		UART4_BASE_ADDR
 
-/* Monitor Command Prompt */
-#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
-
 /* USDHC */
 #define CFG_SYS_FSL_USDHC_NUM	2
 #define CFG_SYS_FSL_ESDHC_ADDR	0
