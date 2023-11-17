@@ -184,6 +184,11 @@ int board_usb_init(int index, enum usb_init_type init)
 	int ret = 0;
 
 	if (index == 0 && init == USB_INIT_DEVICE) {
+		ret = scmi_pwd_state_set(gd->arch.scmi_dev, 0, IMX95_PD_HSIO_TOP, 0);
+		if (ret) {
+			printf("SCMI_POWWER_STATE_SET Failed for USB MIX\n");
+			return ret;
+		}
 #ifdef CONFIG_USB_DWC3
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 #endif
