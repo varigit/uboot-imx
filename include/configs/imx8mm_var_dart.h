@@ -91,9 +91,13 @@
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size} cma_name=linux,cma\0 " \
+	"bootenv=uEnv.txt\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bsp_script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
+	"loadbootenv=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bootenv}\0" \
+	"importbootenv=echo Importing environment from mmc ...; " \
+		"env import -t -r $loadaddr $filesize\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
@@ -159,10 +163,16 @@
 		"fi; " \
 		"if run loadbootscript; then " \
 			"run bootscript; " \
-		"elif run loadimage; then " \
-			"run mmcboot; " \
 		"else " \
-			"run netboot; " \
+			"if run loadbootenv; then " \
+				"echo Loaded environment from ${bootenv}; " \
+				"run importbootenv; " \
+			"fi;" \
+			"if run loadimage; then " \
+				"run mmcboot; " \
+			"else " \
+				"run netboot; " \
+			"fi; " \
 		"fi; " \
 	"fi;"
 
