@@ -37,9 +37,6 @@
 /* NET PHY */
 #define PHY_ANEG_TIMEOUT 20000
 
-/* MMC */
-#define CONFIG_SUPPORT_EMMC_BOOT
-
 #ifdef CONFIG_IMX_OPTEE
 #define TEE_ENV "tee=yes\0"
 #else
