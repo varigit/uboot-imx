@@ -1013,6 +1013,7 @@ dtb-$(CONFIG_ARCH_IMX8) += \
 	fsl-imx8qxp-lpddr4-val.dtb \
 	fsl-imx8qxp-lpddr4-val-gpmi-nand.dtb \
 	fsl-imx8qxp-17x17-val.dtb \
+	imx8qxp-var-som-symphony.dtb \
 	fsl-imx8dx-17x17-val.dtb \
 	fsl-imx8dx-mek.dtb \
 	fsl-imx8dxl-phantom-mek.dtb \
