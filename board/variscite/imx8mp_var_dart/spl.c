@@ -37,6 +37,20 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+
+static iomux_v3_cfg_t const uart_pads_dart[] = {
+	MX8MP_PAD_UART1_RXD__UART1_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX8MP_PAD_UART1_TXD__UART1_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const uart_pads_som[] = {
+	MX8MP_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX8MP_PAD_UART2_TXD__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+extern struct mxc_uart *mxc_base;
+
 static struct var_eeprom eeprom = {0};
 
 int spl_board_boot_device(enum boot_device boot_dev_spl)
@@ -71,6 +85,23 @@ static void spl_dram_init(void)
 	var_eeprom_read_header(&eeprom);
 	var_eeprom_adjust_dram(&eeprom, &dram_timing);
 	ddr_init(&dram_timing);
+}
+
+static void spl_uart_init(void)
+{
+	int board_id;
+
+	board_id = var_detect_board_id();
+	if (board_id == BOARD_ID_DART) {
+		imx_iomux_v3_setup_multiple_pads(uart_pads_dart,
+			ARRAY_SIZE(uart_pads_dart));
+		init_uart_clk(0);
+	} else if (board_id == BOARD_ID_SOM) {
+		imx_iomux_v3_setup_multiple_pads(uart_pads_som,
+			ARRAY_SIZE(uart_pads_som));
+		init_uart_clk(1);
+		mxc_base = (struct mxc_uart *)UART2_BASE_ADDR;
+	}
 }
 
 #if CONFIG_IS_ENABLED(POWER_LEGACY)
@@ -230,6 +261,8 @@ void board_init_f(ulong dummy)
 	 * SOM and DART have different debug UARTs, board detection code
 	 * uses GPIO, which can be accessed only after DM is initialized.
 	 */
+	spl_uart_init();
+
 	board_early_init_f();
 
 	/* Can run only after UART clock is enabled */

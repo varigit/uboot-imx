@@ -34,20 +34,7 @@ extern int var_setup_mac(struct var_eeprom *ep);
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define GPIO_PAD_CTRL	(PAD_CTL_DSE1 | PAD_CTL_PUE | PAD_CTL_PE  | PAD_CTL_HYS)
-
-static iomux_v3_cfg_t const uart_pads_dart[] = {
-	MX8MP_PAD_UART1_RXD__UART1_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
-	MX8MP_PAD_UART1_TXD__UART1_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const uart_pads_som[] = {
-	MX8MP_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
-	MX8MP_PAD_UART2_TXD__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
-};
-
-extern struct mxc_uart *mxc_base;
 
 #ifdef CONFIG_SPL_BUILD
 
@@ -101,20 +88,6 @@ u8 num_image_type_guids = ARRAY_SIZE(fw_images);
 
 int board_early_init_f(void)
 {
-	int board_id;
-
-	board_id = var_detect_board_id();
-	if (board_id == BOARD_ID_DART) {
-		imx_iomux_v3_setup_multiple_pads(uart_pads_dart,
-			ARRAY_SIZE(uart_pads_dart));
-		init_uart_clk(0);
-	} else if (board_id == BOARD_ID_SOM) {
-		imx_iomux_v3_setup_multiple_pads(uart_pads_som,
-			ARRAY_SIZE(uart_pads_som));
-		init_uart_clk(1);
-		mxc_base = (struct mxc_uart *)UART2_BASE_ADDR;
-	}
-
 	return 0;
 }
 
