@@ -179,16 +179,22 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 }
 #endif
 
+static int imx9_scmi_power_domain_enable(u32 domain, bool enable)
+{
+	return scmi_pwd_state_set(gd->arch.scmi_dev, 0, domain, enable ? 0 : BIT(30));
+}
+
 int board_usb_init(int index, enum usb_init_type init)
 {
 	int ret = 0;
 
 	if (index == 0 && init == USB_INIT_DEVICE) {
-		ret = scmi_pwd_state_set(gd->arch.scmi_dev, 0, IMX95_PD_HSIO_TOP, 0);
+		ret = imx9_scmi_power_domain_enable(IMX95_PD_HSIO_TOP, true);
 		if (ret) {
-			printf("SCMI_POWWER_STATE_SET Failed for USB MIX\n");
+			printf("SCMI_POWWER_STATE_SET Failed for USB\n");
 			return ret;
 		}
+
 #ifdef CONFIG_USB_DWC3
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 #endif
@@ -257,7 +263,7 @@ void netc_init(void)
 	int ret;
 
 	/* Power up the NETC MIX. */
-	ret = scmi_pwd_state_set(gd->arch.scmi_dev, 0, IMX95_PD_NETC, 0);
+	ret = imx9_scmi_power_domain_enable(IMX95_PD_NETC, true);
 	if (ret) {
 		printf("SCMI_POWWER_STATE_SET Failed for NETC MIX\n");
 		return;
@@ -310,4 +316,15 @@ int board_phys_sdram_size(phys_size_t *size)
 	*size = PHYS_SDRAM_SIZE + PHYS_SDRAM_2_SIZE;
 
 	return 0;
+}
+
+void board_quiesce_devices(void)
+{
+	int ret;
+
+	ret = imx9_scmi_power_domain_enable(IMX95_PD_NETC, false);
+	if (ret) {
+		printf("%s: Failed for NETC MIX: %d\n", __func__, ret);
+		return;
+	}
 }
