@@ -9,3 +9,4 @@ jobs:
     with:
       defconfig: >-
         arm64:imx8mm_var_dart_defconfig
+        arm64:imx8mp_var_dart_defconfig
