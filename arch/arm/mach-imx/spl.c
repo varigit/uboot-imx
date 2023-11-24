@@ -31,6 +31,10 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#ifndef CFG_FIT_FDT_HASH_OFFSET
+	#define CFG_FIT_FDT_HASH_OFFSET 0x18000
+#endif
+
 __weak int spl_board_boot_device(enum boot_device boot_dev_spl)
 {
 	switch (boot_dev_spl) {
@@ -365,10 +369,10 @@ static int spl_verify_fit_hash(const void *fit)
 #if CONFIG_IS_ENABLED(OF_CONTROL)
 	if (gd->fdt_blob && !fdt_check_header(gd->fdt_blob)) {
 		fit_hash = roundup((unsigned long)&_end +
-				     fdt_totalsize(gd->fdt_blob), 4) + 0x18000;
+				     fdt_totalsize(gd->fdt_blob), 4) + CFG_FIT_FDT_HASH_OFFSET;
 	}
 #else
-	fit_hash = (unsigned long)&_end + 0x18000;
+	fit_hash = (unsigned long)&_end + CFG_FIT_FDT_HASH_OFFSET;
 #endif
 
 	size = fdt_totalsize(fit);
