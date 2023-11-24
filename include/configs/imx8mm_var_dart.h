@@ -208,6 +208,9 @@
 #define CARRIER_EEPROM_BUS_DART		0x01
 #define CARRIER_EEPROM_ADDR		0x54
 
+/* Define the offset for the FDT FIT hash */
+#define CFG_FIT_FDT_HASH_OFFSET 0x23800
+
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mm_var_dart_android.h"
 #endif
