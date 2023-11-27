@@ -653,6 +653,21 @@ config TARGET_NPI_IMX6ULL
 	select DM_THERMAL
 	select SUPPORT_SPL
 
+config TARGET_MX6VAR_SOM
+	bool "mx6var_som"
+	depends on MX6QDL
+	select BOARD_EARLY_INIT_F
+	select BOARD_LATE_INIT
+	select DM
+	select DM_THERMAL
+	select SUPPORT_SPL
+	imply CMD_DM
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select IMX_THERMAL
+	select FSL_BLOB
+	select RNG_SELF_TEST
+
 config TARGET_OPOS6ULDEV
 	bool "Armadeus OPOS6ULDev board"
 	depends on MX6UL
@@ -888,5 +903,5 @@ source "board/wandboard/Kconfig"
 source "board/warp/Kconfig"
 source "board/BuR/brppt2/Kconfig"
 source "board/out4/o4-imx6ull-nano/Kconfig"
-
+source "board/variscite/mx6var_som/Kconfig"
 endif
