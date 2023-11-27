@@ -38,6 +38,16 @@
 	};
 };
 
+&usbotg1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <>;
+};
+
+&usbotg2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <>;
+};
+
 &{/soc@0} {
 	u-boot,dm-pre-reloc;
 	u-boot,dm-spl;
