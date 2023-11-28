@@ -132,18 +132,6 @@
 	u-boot,dm-spl;
 };
 
-&ethphy0 {
-	reset-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
-	reset-assert-us = <15000>;
-	reset-deassert-us = <100000>;
-};
-
-&ethphy1 {
-	reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
-	reset-assert-us = <15000>;
-	reset-deassert-us = <100000>;
-};
-
 &s4muap {
 	u-boot,dm-spl;
 	status = "okay";
