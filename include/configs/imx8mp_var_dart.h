@@ -208,6 +208,9 @@
 /* EEPROM configs */
 #define VAR_EEPROM_DRAM_START	(PHYS_SDRAM + (DEFAULT_SDRAM_SIZE >> 1))
 
+/* Define the offset for the FDT FIT hash */
+#define CFG_FIT_FDT_HASH_OFFSET 0x12000
+
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mp_var_dart_android.h"
 #endif
