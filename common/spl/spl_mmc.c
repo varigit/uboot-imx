@@ -19,7 +19,7 @@
 #include <image.h>
 #include <imx_container.h>
 
-static ulong h_spl_load_read(struct spl_load_info *load, ulong off,
+ulong __weak h_spl_load_read(struct spl_load_info *load, ulong off,
 			     ulong size, void *buf)
 {
 	struct blk_desc *bd = load->priv;
