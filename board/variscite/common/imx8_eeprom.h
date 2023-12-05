@@ -24,6 +24,10 @@
 #define VAR_EEPROM_F_MX8Q_SOC_ID	BIT(3)	/* 0 = i.MX8QM, 1 = i.MX8QP */
 #define VAR_EEPROM_F_NAND		BIT(4)
 
+/* Helpers to extract the major and minor versions from somrev */
+#define SOMREV_MINOR(val) ((val) & GENMASK(4, 0))
+#define SOMREV_MAJOR(val) (1 + (((val) >> 5) & GENMASK(2, 0)))
+
 /* SOM storage types */
 enum som_storage {
 	SOM_STORAGE_EMMC,
