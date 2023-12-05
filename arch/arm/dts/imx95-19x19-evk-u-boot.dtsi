@@ -203,6 +203,12 @@
 	compatible = "fsl,imx95a-dwc3", "fsl,imx8mq-dwc3", "snps,dwc3";
 };
 
+&elemu1 {
+	status = "okay";
+	bootph-all;
+	bootph-pre-ram;
+};
+
 &elemu3 {
 	status = "okay";
 	bootph-all;
