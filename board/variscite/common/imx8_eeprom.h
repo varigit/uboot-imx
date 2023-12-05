@@ -24,6 +24,10 @@
 #define SOM_REV_1_1		0
 #define SOM_REV_1_2		1
 
+/* Helpers to extract the major and minor versions from somrev */
+#define SOMREV_MINOR(val) ((val) & GENMASK(4, 0))
+#define SOMREV_MAJOR(val) (1 + (((val) >> 5) & GENMASK(2, 0)))
+
 /* SOM storage types */
 enum som_storage {
 	SOM_STORAGE_EMMC,

@@ -223,9 +223,10 @@ void var_eeprom_print_prod_info(struct var_eeprom *e)
 	printf("Serial Number: %02x:%02x:%02x:%02x:%02x:%02x\n",
 		e->mac[0], e->mac[1], e->mac[2], e->mac[3], e->mac[4], e->mac[5]);
 
+
 	debug("EEPROM version: 0x%x\n", e->version);
 	debug("SOM features: 0x%x\n", e->features);
-	debug("SOM revision: 0x%x\n", e->somrev);
+	printf("SOM revision: %ld.%ld\n", SOMREV_MAJOR(e->somrev), SOMREV_MINOR(e->somrev));
 
 	if (e->version == 1)
 		debug("DRAM size: %d GiB\n\n", e->dramsize);
