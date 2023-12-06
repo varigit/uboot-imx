@@ -140,6 +140,33 @@
 				"booti; " \
 			"fi;" \
 		"fi;\0" \
+	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
+		"run ramsize_check; " \
+		"mmc dev ${mmcdev}; " \
+		"if mmc rescan; then " \
+			"if test ${use_m4} = yes && run loadm4bin; then " \
+				"run runm4bin; " \
+			"fi;" \
+			"if run loadbootscript; then " \
+				"run bootscript; " \
+			"else " \
+				"if test ${sec_boot} = yes; then " \
+					"if run loadcntr; then " \
+						"run mmcboot; " \
+					"else " \
+						"run netboot; " \
+					"fi;" \
+				"else " \
+					"if run loadimage; then " \
+						"run mmcboot; " \
+					"else " \
+						"run netboot; " \
+					"fi;" \
+				"fi;" \
+			"fi;" \
+		"else " \
+			"booti ${loadaddr} - ${fdt_addr}; " \
+		"fi;" \
 	"splashsourceauto=yes\0" \
 	"splashfile=/boot/splash.bmp\0" \
 	"splashimage=0x9e000000\0" \

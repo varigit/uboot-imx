@@ -32,7 +32,7 @@ CONFIG_OF_BOARD_SETUP=y
 CONFIG_OF_SYSTEM_SETUP=y
 CONFIG_BOOTDELAY=1
 CONFIG_USE_BOOTCOMMAND=y
-CONFIG_BOOTCOMMAND="run ramsize_check; mmc dev ${mmcdev}; if mmc rescan; then if test ${use_m4} = yes && run loadm4bin; then run runm4bin; fi; if run loadbootscript; then run bootscript; else if test ${sec_boot} = yes; then if run loadcntr; then run mmcboot; else run netboot; fi; else if run loadimage; then run mmcboot; else run netboot; fi; fi; fi; else booti ${loadaddr} - ${fdt_addr}; fi"
+CONFIG_BOOTCOMMAND="run bsp_bootcmd"
 CONFIG_LOG=y
 CONFIG_BOARD_EARLY_INIT_F=y
 CONFIG_SPL_MAX_SIZE=0x30000
