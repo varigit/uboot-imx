@@ -213,6 +213,9 @@
 #define CARRIER_EEPROM_BUS		0x02
 #define CARRIER_EEPROM_ADDR		0x54
 
+/* Define the offset for the FDT FIT hash */
+#define CFG_FIT_FDT_HASH_OFFSET 0x12000
+
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mn_var_som_android.h"
 #endif
