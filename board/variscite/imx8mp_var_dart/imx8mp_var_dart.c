@@ -328,6 +328,7 @@ int board_late_init(void)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
+	char som_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
@@ -349,6 +350,15 @@ int board_late_init(void)
 		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM, CARRIER_EEPROM_ADDR, &carrier_eeprom);
 		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
 		env_set("carrier_rev", carrier_rev);
+
+	/* SoM Features ENV */
+	env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
+
+
+	/* SoM Rev ENV*/
+	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
+	env_set("som_rev", som_rev);
+
 	} else if (board_id == BOARD_ID_DART) {
 		env_set("board_name", "DART-MX8M-PLUS");
 
