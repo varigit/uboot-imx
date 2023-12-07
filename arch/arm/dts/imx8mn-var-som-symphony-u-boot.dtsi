@@ -128,6 +128,11 @@
 	u-boot,dm-spl;
 };
 
+&usbotg1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <>;
+};
+
 &usdhc2 {
 	u-boot,dm-spl;
 	sd-uhs-sdr104;
