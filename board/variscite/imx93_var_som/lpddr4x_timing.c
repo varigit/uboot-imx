@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0+
  *
- * Code generated with DDR Tool v1.0.0.
+ * Code generated with DDR Tool v2.0.0_6.4.
  */
 
 #include <linux/kernel.h>
@@ -40,8 +40,8 @@ static struct dram_fsp_cfg ddr_dram_fsp_cfg[] = {
 			{0x4e300100, 0x24AB321B},
 			{0x4e300104, 0xF8EE001B},
 			{0x4e300108, 0x2F2EE233},
-			{0x4e30010C, 0x0005E18B},
-			{0x4e300124, 0x1C770000},
+			{0x4e30010C, 0x0005C18B},
+			{0x4e300124, 0x1C790000},
 			{0x4e300160, 0x00009102},
 			{0x4e30016C, 0x35F00000},
 			{0x4e300170, 0x8B0B0608},
@@ -51,7 +51,7 @@ static struct dram_fsp_cfg ddr_dram_fsp_cfg[] = {
 			{0x4e30025C, 0x00000400},
 			{0x4e300300, 0x224F2213},
 			{0x4e300304, 0x015B2213},
-			{0x4e300308, 0x0A3C0E3C},
+			{0x4e300308, 0x0A380E3D},
 		},
 		{
 			{0x01, 0xE4},
@@ -71,7 +71,7 @@ static struct dram_fsp_cfg ddr_dram_fsp_cfg[] = {
 			{0x4e300108, 0x1816B4AA},
 			{0x4e30010C, 0x005101E6},
 			{0x4e300124, 0x0E3C0000},
-			{0x4e300160, 0x00009102},
+			{0x4e300160, 0x00009101},
 			{0x4e30016C, 0x30900000},
 			{0x4e300170, 0x8A0A0508},
 			{0x4e300250, 0x00000014},
@@ -97,7 +97,7 @@ static struct dram_fsp_cfg ddr_dram_fsp_cfg[] = {
 			{0x4e300108, 0x6E62FA48},
 			{0x4e30010C, 0x0031010D},
 			{0x4e300124, 0x04C50000},
-			{0x4e300160, 0x00009102},
+			{0x4e300160, 0x00009100},
 			{0x4e30016C, 0x30000000},
 			{0x4e300170, 0x89090408},
 			{0x4e300250, 0x00000007},
@@ -254,6 +254,7 @@ struct dram_cfg_param ddr_ddrphy_cfg[] = {
 	{0x1200ca, 0x24},
 
 };
+
 
 /* ddr phy trained csr */
 struct dram_cfg_param ddr_ddrphy_trained_csr[] = {
@@ -1348,6 +1349,7 @@ struct dram_cfg_param ddr_fsp2_cfg[] = {
 };
 
 
+
 /* P0 2D message block parameter for training firmware */
 struct dram_cfg_param ddr_fsp0_2d_cfg[] = {
 	{0xd0000, 0x0},
@@ -1385,6 +1387,7 @@ struct dram_cfg_param ddr_fsp0_2d_cfg[] = {
 	{0x5403d, 0x400},
 	{0xd0000, 0x1}
 };
+
 
 /* DRAM PHY init engine image */
 struct dram_cfg_param ddr_phy_pie[] = {
@@ -1950,6 +1953,7 @@ struct dram_cfg_param ddr_phy_pie[] = {
 
 };
 
+
 struct dram_fsp_msg ddr_dram_fsp_msg[] = {
 	{
 		/* P0 3733mts 1D */
@@ -1985,6 +1989,7 @@ struct dram_fsp_msg ddr_dram_fsp_msg[] = {
 	},
 
 };
+
 
 /* ddr timing config params */
 struct dram_timing_info dram_timing = {
