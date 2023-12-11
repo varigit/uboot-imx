@@ -1,0 +1,14 @@
+name: Git Push Workflow Actions
+
+on:
+  push
+
+jobs:
+  defconfig-check:
+    uses: varigit-dev/action-workflows/.github/workflows/defconfig-check.yml@master
+    with:
+      defconfig: >-
+        arm:mx6var_som_nand_defconfig
+        arm:mx6var_som_nand_SECURE_BOOT_defconfig
+        arm:mx6var_som_sd_defconfig
+        arm:mx6var_som_sd_SECURE_BOOT_defconfig
