@@ -109,6 +109,10 @@
         bootph-pre-ram;
 };
 
+&{/firmware/scmi/protocol@15} {
+	bootph-all;
+};
+
 &{/firmware/scmi/protocol@19} {
 	bootph-all;
 	bootph-pre-ram;
