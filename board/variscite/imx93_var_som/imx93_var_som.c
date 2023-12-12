@@ -108,9 +108,9 @@ int board_late_init(void)
 	char carrier_rev[CARRIER_REV_LEN] = {0};
 	char som_rev[CARRIER_REV_LEN] = {0};
 
-	if (CONFIG_IS_ENABLED(EXTCON_PTN5150)) {
+#ifdef CONFIG_EXTCON_PTN5150
 		extcon_ptn5150_setup(&usb_ptn5150);
-	}
+#endif
 
 	var_setup_mac(ep);
 	var_eeprom_print_prod_info(ep);
