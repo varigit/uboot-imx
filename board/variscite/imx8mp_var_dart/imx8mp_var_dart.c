@@ -302,8 +302,9 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
 
 int board_init(void)
 {
-	if (CONFIG_IS_ENABLED(EXTCON_PTN5150))
+#ifdef CONFIG_EXTCON_PTN5150
 		extcon_ptn5150_setup(&usb_ptn5150);
+#endif
 
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
