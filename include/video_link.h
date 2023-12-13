@@ -12,6 +12,8 @@ int video_link_shut_down(void);
 
 struct udevice *video_link_get_next_device(struct udevice *curr_dev);
 
+ofnode video_link_get_ep_to_nextdev(struct udevice *next_dev);
+
 struct udevice *video_link_get_video_device(void);
 
 int video_link_get_display_timings(struct display_timing *timings);
