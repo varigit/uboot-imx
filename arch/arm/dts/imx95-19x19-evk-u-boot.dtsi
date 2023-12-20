@@ -141,11 +141,27 @@
 	bootph-pre-ram;
 };
 
+&pinctrl_usdhc1_100mhz {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1_200mhz {
+	bootph-pre-ram;
+};
+
 &usdhc2 {
 	bootph-pre-ram;
 };
 
 &pinctrl_usdhc2 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2_100mhz {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2_200mhz {
 	bootph-pre-ram;
 };
 
