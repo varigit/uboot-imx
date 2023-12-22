@@ -169,8 +169,9 @@ int board_late_init(void)
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
 
-	if (CONFIG_IS_ENABLED(EXTCON_PTN5150))
-		extcon_ptn5150_setup(&usb_ptn5150);
+#ifdef CONFIG_EXTCON_PTN5150
+	extcon_ptn5150_setup(&usb_ptn5150);
+#endif
 
 #ifdef CONFIG_FEC_MXC
 	var_setup_mac(ep);
