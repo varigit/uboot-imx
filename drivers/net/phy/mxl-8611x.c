@@ -19,6 +19,10 @@
 #define MXL8611X_EXTD_REG_ADDR_OFFSET				0x1E
 #define MXL8611X_EXTD_REG_ADDR_DATA				0x1F
 
+/* Chip Configuration Register - COM_EXT_CHIP_CFG */
+#define MXL86111_EXT_CHIP_CFG_REG				0xA001
+#define MXL86111_EXT_CHIP_CFG_RXDLY_MASK        		GENMASK(8, 8)
+
 /* RGMII register */
 #define MXL8611X_EXT_RGMII_CFG1_REG				0xA003
 #define MXL8611X_EXT_RGMII_CFG1_NO_DELAY			0
@@ -168,6 +172,8 @@ static int mxl8611x_rgmii_cfg(struct phy_device *phydev)
 {
 	u32 val = 0;
 	int rxdelay, txdelay_100m, txdelay_1g;
+	bool disable_rxdly = false;
+	int ret;
 
 	/* Get rgmii register value */
 	val = mxl8611x_ext_read(phydev, MXL8611X_EXT_RGMII_CFG1_REG);
@@ -188,6 +194,7 @@ static int mxl8611x_rgmii_cfg(struct phy_device *phydev)
 	switch (phydev->interface) {
 	case PHY_INTERFACE_MODE_RGMII:
 		val = MXL8611X_EXT_RGMII_CFG1_NO_DELAY;
+		disable_rxdly = true;
 		break;
 	case PHY_INTERFACE_MODE_RGMII_RXID:
 		val = (val & ~MXL8611X_EXT_RGMII_CFG1_RX_DELAY_MASK) |
@@ -198,6 +205,7 @@ static int mxl8611x_rgmii_cfg(struct phy_device *phydev)
 			FIELD_PREP(MXL8611X_EXT_RGMII_CFG1_TX_10MB_100MB_DELAY_MASK, txdelay_100m);
 		val = (val & ~MXL8611X_EXT_RGMII_CFG1_TX_1G_DELAY_MASK) |
 			FIELD_PREP(MXL8611X_EXT_RGMII_CFG1_TX_1G_DELAY_MASK, txdelay_1g);
+		disable_rxdly = true;
 		break;
 	case PHY_INTERFACE_MODE_RGMII_ID:
 		val = (val & ~MXL8611X_EXT_RGMII_CFG1_RX_DELAY_MASK) |
@@ -212,7 +220,28 @@ static int mxl8611x_rgmii_cfg(struct phy_device *phydev)
 		return -EINVAL;
 	}
 
-	return mxl8611x_ext_write(phydev, MXL8611X_EXT_RGMII_CFG1_REG, val);
+	/* Write RGMII Configuration Register 1 */
+	ret = mxl8611x_ext_write(phydev, MXL8611X_EXT_RGMII_CFG1_REG, val);
+	if (ret)
+		return ret;
+
+	/* Disable RXDLY (RGMII Rx Clock Delay) */
+	if (disable_rxdly)
+	{
+		/* Get Chip Configuration Register*/
+		val = mxl8611x_ext_read(phydev, MXL86111_EXT_CHIP_CFG_REG);
+
+		/* Update the rxdly bit */
+		val = (val & ~MXL86111_EXT_CHIP_CFG_RXDLY_MASK) |
+		FIELD_PREP(MXL86111_EXT_CHIP_CFG_RXDLY_MASK, 0);
+
+		/* Write Chip Configuration Register */
+		ret = mxl8611x_ext_write(phydev, MXL86111_EXT_CHIP_CFG_REG, val);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
 }
 
 static int mxl8611x_config(struct phy_device *phydev)
