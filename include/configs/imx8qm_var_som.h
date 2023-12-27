@@ -194,6 +194,35 @@
 				"booti; " \
 			"fi;" \
 		"fi;\0" \
+	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
+		"mmc dev ${mmcdev}; " \
+		"if mmc rescan; then " \
+			"if test ${use_m40} = yes && run loadm40bin; then " \
+				"run runm40bin; " \
+			"fi;" \
+			"if test ${use_m41} = yes && run loadm41bin; then " \
+				"run runm41bin; " \
+			"fi;" \
+			"if run loadbootscript; then " \
+				"run bootscript; " \
+			"else " \
+				"if test ${sec_boot} = yes; then " \
+					"if run loadcntr; then " \
+						"run mmcboot; " \
+					"else " \
+						"run netboot; " \
+					"fi;" \
+				"else " \
+					"if run loadimage; then " \
+						"run mmcboot; " \
+					"else " \
+						"run netboot; " \
+					"fi;" \
+				"fi;" \
+			"fi;" \
+		"else " \
+			"booti ${loadaddr} - ${fdt_addr}; " \
+		"fi;\0" \
 	"splashsourceauto=yes\0" \
 	"splashfile=/boot/splash.bmp\0" \
 	"splashimage=0x83100000\0" \
