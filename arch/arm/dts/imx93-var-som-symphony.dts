@@ -37,7 +37,7 @@
 	mdio {
 		ethphy1: ethernet-phy@5 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-            device_type = "ethernet-phy";
+			device_type = "ethernet-phy";
 			reg = <5>;
 			at803x,eee-disabled;
 			eee-broken-1000t;
@@ -49,13 +49,12 @@
 };
 
 &fec {
-       pinctrl-names = "default";
-       pinctrl-0 = <&pinctrl_fec>;
-       phy-mode = "rgmii";
-       phy-handle = <&ethphy1>;
-       status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec>;
+	phy-mode = "rgmii";
+	phy-handle = <&ethphy1>;
+	status = "okay";
 };
-
 
 &iomuxc {
 	pinctrl_fec: fecgrp {
