@@ -346,6 +346,9 @@ int board_init(void)
 		return ret;
 	}
 
+	imx9_scmi_power_domain_enable(IMX95_PD_DISPLAY, false);
+	imx9_scmi_power_domain_enable(IMX95_PD_CAMERA, false);
+
 #if defined(CONFIG_USB_TCPC)
 	setup_typec();
 #endif
