@@ -1072,6 +1072,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mq-ddr3l-val.dtb \
 	imx8mq-ddr4-val.dtb \
 	imx8mq-evk.dtb \
+	imx8mq-var-dart-dt8mcustomboard.dtb \
 	imx8mm-beacon-kit.dtb \
 	imx8mn-beacon-kit.dtb \
 	imx8mq-mnt-reform2.dtb \
