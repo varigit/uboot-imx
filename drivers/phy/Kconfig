@@ -293,6 +293,15 @@ config PHY_IMX93_MIPI_DPHY
 	  Enable this to add support for the Synopsys DW MIPI DPHY as found
 	  on NXP's i.MX93 SoC.
 
+config PHY_IMX8MP_LVDS_PHY
+	bool "NXP i.MX8MP/93/95 MIPI DPHY Driver"
+	depends on PHY
+	depends on ARCH_IMX9 || IMX8MP
+	select REGMAP
+	help
+	  Enable this to add support for the LDB PHY as found on NXP's
+	  i.MX8MP/i.MX93/i.MX95 SoC.
+
 config PHY_XILINX_ZYNQMP
 	tristate "Xilinx ZynqMP PHY driver"
 	depends on PHY && ARCH_ZYNQMP
