@@ -317,6 +317,11 @@ static void video_link_add_node(struct udevice *peer_dev, struct udevice *dev,
 	video_link_stack_push(dev, link_endpoint);
 
 	for_each_endpoint_of_node(dev_node, endpoint_node) {
+
+		/* To avoid dead loop for dual channel panel, directly break when it is panel device */
+		if (device_get_uclass_id(dev) == UCLASS_PANEL)
+			break;
+
 		remote = ofnode_graph_get_remote_port_parent(endpoint_node);
 		if (!ofnode_valid(remote))
 			continue;
