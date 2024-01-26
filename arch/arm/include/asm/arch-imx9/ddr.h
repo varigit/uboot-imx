@@ -157,6 +157,13 @@ struct ddrphy_qb_state {
 	u8 TrainedDRAMDCA_A1;
 	u8 TrainedDRAMDCA_B0;
 	u8 TrainedDRAMDCA_B1;
+	u16 QBPllUPllProg0;
+	u16 QBPllUPllProg1;
+	u16 QBPllUPllProg2;
+	u16 QBPllUPllProg3;
+	u16 QBPllCtrl1;
+	u16 QBPllCtrl4;
+	u16 QBPllCtrl5;
 	u16 csr[DDRPHY_QB_CSR_SIZE];
 	u16 acsm[DDRPHY_QB_ACSM_SIZE];
 	u16 pst[DDRPHY_QB_PST_SIZE];
