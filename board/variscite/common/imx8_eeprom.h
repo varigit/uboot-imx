@@ -23,6 +23,7 @@
 #define VAR_EEPROM_F_MX8M_LVDS		BIT(3)	/* i.MX8MM, i.MX8MN, i.MX8MQ only */
 #define VAR_EEPROM_F_MX8Q_SOC_ID	BIT(3)	/* 0 = i.MX8QM, 1 = i.MX8QP */
 #define VAR_EEPROM_F_NAND		BIT(4)
+#define VAR_EEPROM_F_WBE		BIT(5)
 
 /* SOM storage types */
 enum som_storage {
