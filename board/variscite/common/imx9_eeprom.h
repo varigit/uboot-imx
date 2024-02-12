@@ -16,10 +16,10 @@
 #define VAR_SOM_EEPROM_I2C_ADDR	0x52
 
 /* Optional SOM features */
-#define VAR_EEPROM_F_WIFI		(1 << 0)
-#define VAR_EEPROM_F_ETH		(1 << 1)
-#define VAR_EEPROM_F_AUDIO		(1 << 2)
-#define VAR_EEPROM_F_WBE		(1 << 3)
+#define VAR_EEPROM_F_WIFI		BIT(0)
+#define VAR_EEPROM_F_ETH		BIT(1)
+#define VAR_EEPROM_F_AUDIO		BIT(2)
+#define VAR_EEPROM_F_WBE		BIT(3)
 
 /* Helpers to extract the major and minor versions from somrev */
 #define SOMREV_MINOR(val) ((val) & GENMASK(4, 0))
