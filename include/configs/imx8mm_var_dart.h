@@ -104,8 +104,6 @@
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
 				"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
-			"elif test $carrier_rev = legacy; then " \
-				"setenv fdt_file imx8mm-var-dart-dt8mcustomboard-legacy.dtb; " \
 			"else " \
 				"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
 			"fi; " \
