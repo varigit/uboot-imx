@@ -175,21 +175,9 @@ void spl_board_init(void)
 int board_fit_config_name_match(const char *name)
 {
 	int board_id = var_detect_board_id();
-	struct var_carrier_eeprom carrier_eeprom;
-	static char carrier_rev[CARRIER_REV_LEN] = {0};
 
-	if (board_id == BOARD_ID_DART) {
-		if (!carrier_rev[0]) {
-			var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
-			var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
-		}
-
-		if ((!strcmp(carrier_rev, "legacy")) &&
-			!strcmp(name, "imx8mp-var-dart-dt8mcustomboard-legacy"))
-			return 0;
-		else if ((strcmp(carrier_rev, "legacy")) &&
-			!strcmp(name, "imx8mp-var-dart-dt8mcustomboard"))
-			return 0;
+	if ((board_id == BOARD_ID_DART) && !strcmp(name, "imx8mp-var-dart-dt8mcustomboard")) {
+		return 0;
 	} else if ((board_id == BOARD_ID_SOM) && !strcmp(name, "imx8mp-var-som-symphony")) {
 		return 0;
 	}

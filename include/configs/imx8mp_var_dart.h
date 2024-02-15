@@ -113,11 +113,7 @@
 					"setenv fdt_file imx8mp-var-som-symphony.dtb; " \
 				"fi; " \
 			"else " \
-				"if test $carrier_rev = legacy; then " \
-					"setenv fdt_file imx8mp-var-dart-dt8mcustomboard-legacy.dtb;" \
-				"else " \
-					"setenv fdt_file imx8mp-var-dart-dt8mcustomboard.dtb;" \
-				"fi; " \
+				"setenv fdt_file imx8mp-var-dart-dt8mcustomboard.dtb;" \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
