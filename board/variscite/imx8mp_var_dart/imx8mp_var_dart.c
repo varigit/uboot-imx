@@ -391,12 +391,14 @@ int board_init(void)
 }
 
 #define SDRAM_SIZE_STR_LEN 5
+#define SOMREV_LEN 5
 
 int board_late_init(void)
 {
 	int board_id;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	char som_rev[SOMREV_LEN] = {0};
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
@@ -409,6 +411,10 @@ int board_late_init(void)
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d",
 			(int) (gd->ram_size / 1024 / 1024));
 	env_set("sdram_size", sdram_size_str);
+
+	/* SoM Rev ENV*/
+	snprintf(som_rev, SOMREV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
+	env_set("som_rev", som_rev);
 
 	board_id = var_detect_board_id();
 	if (board_id == BOARD_ID_SOM) {

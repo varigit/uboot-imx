@@ -97,7 +97,11 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8M-PLUS; then " \
-				"setenv fdt_file imx8mp-var-som-symphony.dtb; " \
+				"if test ${som_rev} -lt 2; then " \
+					"setenv fdt_file imx8mp-var-som-1.x-symphony.dtb; " \
+				"else " \
+					"setenv fdt_file imx8mp-var-som-symphony.dtb; " \
+				"fi; " \
 			"else " \
 				"if test $dart_carrier_rev = legacy; then " \
 					"setenv fdt_file imx8mp-var-dart-dt8mcustomboard-legacy.dtb;" \
