@@ -1,0 +1,164 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 NXP
+ * Copyright 2020-2023 Variscite Ltd.
+ */
+#include "imx8mp-sec-def.h"
+
+#include "imx8mp-u-boot.dtsi"
+
+/ {
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		u-boot,dm-spl;
+	};
+
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+
+	mcu_rdc {
+		compatible = "imx8m,mcu_rdc";
+			    /* rdc config when MCU starts
+			     * memory:
+			     *   TCM    --> Only Domian 1 can access (0x7E0000~0x81FFFF)
+			     *   DDR    --> Only Domian 1 can access (0x80000000~0x81000000)
+			     * end.
+			     */
+		start-config = <
+			    RDC_MEM_REGION 22 TCM_START TCM_END MEM_D1_ACCESS
+			    RDC_MEM_REGION 39 M4_DDR_START M4_DDR_END MEM_D1_ACCESS
+			    0x0      0x0            0x0  0x0 0x0
+			  >;
+			    /* rdc config when MCU stops
+			     * memory:
+			     *   TCM    --> domain 0/1 can access (0x7E0000~0x81FFFF)
+			     *   DDR    --> domain 0/1 can access (0x80000000~0x81000000)
+			     * end.
+			     */
+		stop-config = <
+			    RDC_MEM_REGION 22 TCM_START TCM_END MEM_D0D1_ACCESS
+			    RDC_MEM_REGION 39 M4_DDR_START M4_DDR_END MEM_D0D1_ACCESS
+			    0x0      0x0            0x0  0x0 0x0
+			  >;
+	};
+};
+
+&pinctrl_reg_usdhc2_vmmc {
+	u-boot,dm-spl;
+	u-boot,off-on-delay-us = <20000>;
+};
+
+&reg_usdhc2_vmmc {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2_gpio {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc3 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_wdog {
+	u-boot,dm-spl;
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+};
+
+&gpio4 {
+	u-boot,dm-spl;
+};
+
+&gpio5 {
+	u-boot,dm-spl;
+};
+
+&crypto {
+	u-boot,dm-spl;
+};
+
+&sec_jr0 {
+	u-boot,dm-spl;
+};
+
+&sec_jr1 {
+	u-boot,dm-spl;
+};
+
+&sec_jr2 {
+	u-boot,dm-spl;
+};
+
+&i2c1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_i2c1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_i2c1_gpio {
+	u-boot,dm-spl;
+};
+
+&usdhc3 {
+	u-boot,dm-spl;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+	assigned-clocks = <&clk IMX8MP_CLK_USDHC3>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
+};
+
+&usdhc2 {
+	u-boot,dm-spl;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+	assigned-clocks = <&clk IMX8MP_CLK_USDHC2>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
+};
+
+&wdog1 {
+	u-boot,dm-spl;
+};
+
+&eqos {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+};
+
+&usb_dwc3_0 {
+	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>;
+	assigned-clock-rates = <400000000>;
+};
+
+&usb_dwc3_1 {
+	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>;
+	assigned-clock-rates = <400000000>;
+};
