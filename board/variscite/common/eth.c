@@ -18,6 +18,7 @@
 #define ADIN1300_EXT_REG_DATA		0x11
 #define ADIN1300_GE_RGMII_CFG		0xff23
 
+#define MXL611x_PHY_ID_1		0xc133
 
 int board_phy_config(struct phy_device *phydev)
 {
@@ -51,6 +52,9 @@ int board_phy_config(struct phy_device *phydev)
 		phy_write(phydev, MDIO_DEVAD_NONE, ADIN1300_EXT_REG_PTR, ADIN1300_GE_RGMII_CFG);
 		phy_write(phydev, MDIO_DEVAD_NONE, ADIN1300_EXT_REG_DATA, 0xe01);
 	break;
+	case MXL611x_PHY_ID_1:
+		/* phy initialization managed by driver */
+		break;
 	default:
 		printf("%s: unknown phy_id 0x%x at addr %d\n", __func__, phy_id_1, phydev->addr);
 		break;
