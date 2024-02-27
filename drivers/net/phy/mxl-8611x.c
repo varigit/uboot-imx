@@ -116,7 +116,6 @@ static int mxl8611x_extwrite(struct phy_device *phydev, int addr,
 
 static int mxl8611x_led_cfg(struct phy_device *phydev)
 {
-	int ret = 0;
 	int i;
 	char propname[25];
 	u32 val;
@@ -131,7 +130,7 @@ static int mxl8611x_led_cfg(struct phy_device *phydev)
 	/* Loop through three the LED registers */
 	for (i = 0; i < 3; i++) {
 		/* Read property from device tree */
-		ret = snprintf(propname, 25, "mxl-8611x,led%d_cfg", i);
+		snprintf(propname, 25, "mxl-8611x,led%d_cfg", i);
 		if (ofnode_read_u32(node, propname, &val))
 			continue;
 
