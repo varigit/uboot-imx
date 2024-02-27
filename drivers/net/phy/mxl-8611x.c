@@ -121,11 +121,23 @@ static int mxl8611x_led_cfg(struct phy_device *phydev)
 	u32 val;
 
 	ofnode node = phy_get_ofnode(phydev);
+	struct ofnode_phandle_args phandle;
+	int ret;
 
 	if (!ofnode_valid(node)) {
 		printf("%s: failed to get node\n", __func__);
 		return -EINVAL;
 	}
+
+	ret = ofnode_parse_phandle_with_args(node, "phy-handle", NULL,
+						     0, 0, &phandle);
+	/*
+	 * If a phy-handle is found, this indicates the node is incorrectly
+	 * pointing to the ethernet controller. Use the phy-handle to obtain
+	 * the ethernet phy node.
+	 */
+	if (!ret && ofnode_valid(phandle.node))
+		node = phandle.node;
 
 	/* Loop through three the LED registers */
 	for (i = 0; i < 3; i++) {
