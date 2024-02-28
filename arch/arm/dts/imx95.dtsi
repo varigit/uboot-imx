@@ -293,8 +293,8 @@
 	firmware {
 		scmi {
 			compatible = "arm,scmi";
-			mboxes = <&mu2 0>;
-			shmem = <&scmi_buf1>;
+			mboxes = <&mu2 5 0>, <&mu2 3 0>, <&mu2 3 1>;
+			shmem = <&scmi_buf0>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 
@@ -790,17 +790,30 @@
 			};
 
 			mu2: mailbox@445b0000 {
-				compatible = "nxp,imx-mu-mbox-imx95", "fsl,imx8ulp-mu";
-				reg = <0x445b0000 0x10000>;
+				compatible = "fsl,imx95-mu";
+				reg = <0x445b0000 0x1000>;
+				ranges;
 				interrupts = <GIC_SPI 226 IRQ_TYPE_LEVEL_HIGH>;
 				#address-cells = <1>;
 				#size-cells = <1>;
-				#mbox-cells = <1>;
-				status = "okay";
+				#mbox-cells = <2>;
 
-				scmi_buf1: scmi_buf1@0 {
-					compatible = "arm,scmi-shmem";
-					reg = <0x445b1000 0x400>;
+				sram0: sram@445b1000 {
+				        compatible = "mmio-sram";
+				        reg = <0x445b1000 0x400>;
+				        ranges = <0x0 0x445b1000 0x400>;
+				        #address-cells = <1>;
+				        #size-cells = <1>;
+
+				        scmi_buf0: scmi-sram-section@0 {
+				                compatible = "arm,scmi-shmem";
+				                reg = <0x0 0x400>;
+				        };
+
+				        scmi_buf1: scmi-sram-section@80 {
+				                compatible = "arm,scmi-shmem";
+				                reg = <0x80 0x80>;
+				        };
 				};
 			};
 

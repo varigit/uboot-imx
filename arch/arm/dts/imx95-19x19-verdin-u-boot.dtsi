@@ -72,6 +72,16 @@
 	bootph-pre-ram;
 };
 
+&sram0 {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&scmi_buf0 {
+	bootph-all;
+	bootph-pre-ram;
+};
+
 &scmi_buf1 {
 	bootph-all;
 	bootph-pre-ram;
