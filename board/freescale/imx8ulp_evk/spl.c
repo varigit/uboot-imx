@@ -137,7 +137,7 @@ void spl_board_init(void)
 	if (!m33_image_booted())
 		setup_iomux_pmic();
 
-	/* Load the lposc fuse to work around ROM issue. The fuse depends on S400 to read. */
+	/* Load the lposc fuse to work around ROM issue. The fuse depends on ELE to read. */
 	if (is_soc_rev(CHIP_REV_1_0))
 		load_lposc_fuse();
 
@@ -170,7 +170,7 @@ void spl_board_init(void)
 
 		/* Only two UCLASS_MISC devicese are present on the platform. There
 		 * are MU and CAAM. Here we initialize CAAM once it's released by
-		 * S400 firmware..
+		 * ELE firmware..
 		 */
 		if (IS_ENABLED(CONFIG_FSL_CAAM)) {
 			ret = uclass_get_device_by_driver(UCLASS_MISC, DM_DRIVER_GET(caam_jr), &dev);
