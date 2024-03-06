@@ -274,8 +274,10 @@ static int do_bootaux(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	addr = simple_strtoul(argv[1], NULL, 16);
 
-	if (!addr)
+	if ((core != CORE_CM7) && !addr) {
+		printf("Invalid address 0x%lx for core: %d\n", addr, core);
 		return CMD_RET_FAILURE;
+	}
 
 	if (!check_in_ddr(addr) && !check_in_tcm(core, addr, true) && !check_in_flexspi(addr)) {
 		printf("Error: Image's address 0x%lx is invalid\n", addr);

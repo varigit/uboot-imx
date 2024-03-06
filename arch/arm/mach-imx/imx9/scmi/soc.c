@@ -267,6 +267,14 @@ static struct mm_region imx9_mem_map[] = {
 		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
 			 PTE_BLOCK_NON_SHARE |
 			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
+       }, {
+               /* M7 TCM */
+               .virt = 0x203c0000UL,
+               .phys = 0x203c0000UL,
+               .size = 0x80000UL,
+               .attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+                        PTE_BLOCK_NON_SHARE |
+                        PTE_BLOCK_PXN | PTE_BLOCK_UXN
 	}, {
 		/* OCRAM */
 		.virt = 0x20480000UL,
