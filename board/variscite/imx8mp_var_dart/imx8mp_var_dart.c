@@ -103,6 +103,8 @@ int var_detect_board_id(void)
 		board_id = BOARD_ID_SOM;
 	else
 		board_id = BOARD_ID_DART;
+
+	gpio_free(BOARD_DETECT_GPIO);
 #else
 	if (of_machine_is_compatible("variscite,imx8mp-var-som"))
 		board_id = BOARD_ID_SOM;
