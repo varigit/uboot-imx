@@ -79,9 +79,11 @@ int board_early_init_f(void)
 #ifdef CONFIG_SPL_BUILD
 
 #define BOARD_DETECT_GPIO IMX_GPIO_NR(2, 11)
+#define SOM_WIFI_EN_GPIO IMX_GPIO_NR(2, 19)
 
 static iomux_v3_cfg_t const board_detect_pads[] = {
 	MX8MP_PAD_SD1_STROBE__GPIO2_IO11 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
+	MX8MP_PAD_SD2_RESET_B__GPIO2_IO19 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
 };
 #endif
 
@@ -96,6 +98,15 @@ int var_detect_board_id(void)
 	imx_iomux_v3_setup_multiple_pads(board_detect_pads,
 				ARRAY_SIZE(board_detect_pads));
 
+	/*
+	 * For VAR-SOM-MX8M-PLUS 2.x, the IW612 will pull BOARD_DETECT_GPIO
+	 * low when the module is powered down (PDn is asserted low).
+	 * To avoid this, assert PDn high so BOARD_DETECT_GPIO can be read.
+	 */
+	gpio_request(SOM_WIFI_EN_GPIO, "wifi_en");
+	gpio_direction_output(SOM_WIFI_EN_GPIO,1);
+	udelay(10);
+
 	gpio_request(BOARD_DETECT_GPIO, "board_detect");
 	gpio_direction_input(BOARD_DETECT_GPIO);
 
@@ -104,7 +115,11 @@ int var_detect_board_id(void)
 	else
 		board_id = BOARD_ID_DART;
 
+	if(board_id==BOARD_ID_SOM)
+		gpio_set_value(SOM_WIFI_EN_GPIO,0);
+
 	gpio_free(BOARD_DETECT_GPIO);
+	gpio_free(SOM_WIFI_EN_GPIO);
 #else
 	if (of_machine_is_compatible("variscite,imx8mp-var-som"))
 		board_id = BOARD_ID_SOM;
