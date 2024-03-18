@@ -71,6 +71,10 @@ config TARGET_VERDIN_IMX95_19X19
 	bool "imx95_verdin_evk"
 	select IMX95
 
+config TARGET_IMX95_15X15_EVK
+	bool "imx95_15x15_evk"
+	select IMX95
+
 endchoice
 
 source "board/freescale/imx91_evk/Kconfig"

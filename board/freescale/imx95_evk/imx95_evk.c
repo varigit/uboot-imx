@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  */
 
 #include <common.h>
@@ -41,11 +41,31 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_USB_TCPC
 struct tcpc_port port;
+#ifdef CONFIG_TARGET_IMX95_15X15_EVK
+struct tcpc_port portpd;
+struct tcpc_port_config port_config = {
+	.i2c_bus = 2, /* i2c3 */
+	.addr = 0x50,
+	.port_type = TYPEC_PORT_DFP,
+};
+
+struct tcpc_port_config portpd_config = {
+	.i2c_bus = 2, /*i2c3*/
+	.addr = 0x52,
+	.port_type = TYPEC_PORT_UFP,
+	.max_snk_mv = 20000,
+	.max_snk_ma = 3000,
+	.max_snk_mw = 15000,
+	.op_snk_mv = 9000,
+};
+#else
 struct tcpc_port_config port_config = {
 	.i2c_bus = 6, /* i2c7 */
 	.addr = 0x50,
 	.port_type = TYPEC_PORT_DFP,
 };
+#endif
+
 ulong tca_base;
 
 void tca_mux_select(enum typec_cc_polarity pol)
@@ -88,6 +108,14 @@ static void setup_typec(void)
 	int ret;
 
 	tca_base = USB1_BASE_ADDR + 0xfc000;
+
+#ifdef CONFIG_TARGET_IMX95_15X15_EVK
+	ret = tcpc_init(&portpd, portpd_config, NULL);
+	if (ret) {
+		printf("%s: tcpc portpd init failed, err=%d\n",
+		       __func__, ret);
+	}
+#endif
 
 	ret = tcpc_init(&port, port_config, &tca_mux_select);
 	if (ret) {
@@ -232,28 +260,28 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return ret;
 }
 
-static void netc_phy_rst(void)
+static void netc_phy_rst(const char *gpio_name, const char *label)
 {
 	int ret;
 	struct gpio_desc desc;
 
-	/* ENET1_RST_B */
-	ret = dm_gpio_lookup_name("i2c5_io@21_2", &desc);
+	/* ENET_RST_B */
+	ret = dm_gpio_lookup_name(gpio_name, &desc);
 	if (ret) {
-		printf("%s lookup i2c5_io@21_2 failed ret = %d\n", __func__, ret);
+		printf("%s lookup %s failed ret = %d\n", __func__, gpio_name, ret);
 		return;
 	}
 
-	ret = dm_gpio_request(&desc, "ENET1_RST_B");
+	ret = dm_gpio_request(&desc, label);
 	if (ret) {
-		printf("%s request ENET1_RST_B failed ret = %d\n", __func__, ret);
+		printf("%s request %s failed ret = %d\n", __func__, label, ret);
 		return;
 	}
 
-	/* assert the ENET1_RST_B */
+	/* assert the ENET_RST_B */
 	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE | GPIOD_ACTIVE_LOW);
 	udelay(10000);
-	dm_gpio_set_value(&desc, 0); /* deassert the ENET1_RST_B */
+	dm_gpio_set_value(&desc, 0); /* deassert the ENET_RST_B */
 	udelay(80000);
 
 }
@@ -271,8 +299,12 @@ void netc_init(void)
 
 	set_clk_netc(ENET_125MHZ);
 
-	netc_phy_rst();
-
+#ifdef CONFIG_TARGET_IMX95_15X15_EVK
+	netc_phy_rst("gpio@22_4", "ENET1_RST_B");
+	netc_phy_rst("gpio@22_5", "ENET2_RST_B");
+#else
+	netc_phy_rst("i2c5_io@21_2", "ENET1_RST_B");
+#endif
 	pci_init();
 }
 

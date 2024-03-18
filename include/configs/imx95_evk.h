@@ -31,7 +31,11 @@
 #define BOOTENV
 #endif
 
+#ifdef CONFIG_TARGET_IMX95_15X15_EVK
+#define JH_ROOT_DTB "imx95-15x15-evk-root.dtb"
+#else
 #define JH_ROOT_DTB "imx95-19x19-evk-root.dtb"
+#endif
 
 #define JAILHOUSE_ENV \
 	"jh_root_dtb=" JH_ROOT_DTB "\0" \
@@ -55,7 +59,7 @@
             "xenlinux_bootargs= \0" \
             "xenlinux_console=hvc0 earlycon=xen\0" \
             "xenlinux_addr=0x9c000000\0" \
-            "dom0fdt_file=imx95-19x19-evk.dtb\0" \
+            "dom0fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
             "xenboot_common=" \
                 "${get_cmd} ${loadaddr} xen;" \
                 "${get_cmd} ${fdt_addr} ${dom0fdt_file};" \
@@ -189,8 +193,12 @@
 #define CFG_SYS_SDRAM_BASE           0x90000000
 #define PHYS_SDRAM                      0x90000000
 /* Totally 16GB */
-#define PHYS_SDRAM_SIZE			0x70000000 /* 2GB  - 256MB DDR */
-#define PHYS_SDRAM_2_SIZE 		0x380000000 /* 14GB */
+#define PHYS_SDRAM_SIZE			0x70000000UL /* 2GB  - 256MB DDR */
+#ifdef CONFIG_TARGET_IMX95_15X15_EVK
+#define PHYS_SDRAM_2_SIZE 		0x180000000UL /* 4GB temp workaround, should be 8GB */
+#else
+#define PHYS_SDRAM_2_SIZE 		0x380000000UL /* 14GB */
+#endif
 
 #define CFG_SYS_FSL_USDHC_NUM	2
 
