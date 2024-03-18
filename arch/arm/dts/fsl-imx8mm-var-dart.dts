@@ -15,6 +15,7 @@
 
 /dts-v1/;
 
+#include <dt-bindings/net/mxl-8611x.h>
 #include "fsl-imx8mm.dtsi"
 
 / {
@@ -437,7 +438,7 @@
 	phy-supply = <&reg_eth_phy>;
 	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 	phy-reset-duration = <10>;
-	phy-reset-post-delay = <20>;
+	phy-reset-post-delay = <80>;
 	fsl,magic-packet;
 	status = "okay";
 
@@ -451,6 +452,16 @@
 			at803x,led-act-blind-workaround;
 			at803x,eee-okay;
 			at803x,vddio-1p8v;
+			mxl-8611x,led0_cfg = <(
+				MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON |
+				MXL8611X_LEDX_CFG_TRAFFIC_ACT_BLINK_IND
+			)>;
+			mxl-8611x,led1_cfg = <(
+				MXL8611X_LEDX_CFG_LINK_UP_10MB_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_100MB_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_1GB_ON
+			)>;
 		};
 	};
 };
