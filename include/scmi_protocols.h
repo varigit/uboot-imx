@@ -53,7 +53,8 @@ enum scmi_discovery_id {
 
 /* SCMI Base Protocol */
 enum scmi_misc_message_id {
-	SCMI_MISC_ROM_PASSOVER_GET = 0x7
+	SCMI_MISC_ROM_PASSOVER_GET = 0x7,
+	SCMI_MISC_CFG_INFO = 0xC
 };
 
 /*

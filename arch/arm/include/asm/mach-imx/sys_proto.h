@@ -265,6 +265,14 @@ struct scmi_rom_passover_get_out {
 	u32 passover[(sizeof(rom_passover_t) + 8) / 4];
 };
 
+#define SCMI_MISC_MAX_CFGNAME    16U
+
+struct scmi_cfg_info_out {
+	u32 status;
+	u32 msel;
+	u8 cfgname[SCMI_MISC_MAX_CFGNAME];
+};
+
 #endif
 
 /* For i.MX ULP */
