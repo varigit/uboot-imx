@@ -153,7 +153,11 @@
 					"setenv fdt_file imx8mm-var-som.dtb; " \
 				"fi;" \
 			"else " \
-				"setenv fdt_file imx8mm-var-dart.dtb;" \
+				"if test ${som_rev} -lt 2; then " \
+					"setenv fdt_file imx8mm-var-dart-1.x.dtb; " \
+				"else " \
+					"setenv fdt_file imx8mm-var-dart.dtb; " \
+				"fi; " \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \

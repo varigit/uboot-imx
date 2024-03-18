@@ -239,10 +239,13 @@ int board_init(void)
 }
 
 #define SDRAM_SIZE_STR_LEN 5
+#define SOMREV_LEN 5
+
 int board_late_init(void)
 {
 	struct var_eeprom eeprom;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
+	char som_rev[SOMREV_LEN] = {0};
 	int id = get_board_id();
 
 	var_eeprom_read_header(&eeprom);
@@ -254,6 +257,10 @@ int board_late_init(void)
 
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int) (gd->ram_size / 1024 / 1024));
 	env_set("sdram_size", sdram_size_str);
+
+	/* SoM Rev ENV*/
+	snprintf(som_rev, SOMREV_LEN, "%ld.%ld", SOMREV_MAJOR(eeprom.somrev), SOMREV_MINOR(eeprom.somrev));
+	env_set("som_rev", som_rev);
 
 	if (id == VAR_SOM_MX8M_MINI) {
 		env_set("board_name", "VAR-SOM-MX8M-MINI");
