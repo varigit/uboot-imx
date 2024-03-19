@@ -1021,9 +1021,6 @@ void dwc3_uboot_handle_interrupt(struct udevice *dev)
 	struct dwc3 *dwc = NULL;
 
 	list_for_each_entry(dwc, &dwc3_list, list) {
-		if (dwc->dev != dev)
-			continue;
-
 		dwc3_gadget_uboot_handle_interrupt(dwc);
 		break;
 	}
