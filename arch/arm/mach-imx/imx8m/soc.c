@@ -472,6 +472,10 @@ static u32 get_cpu_variant_type(u32 type)
 			return MXC_CPU_IMX8MPDSC;
 		case 0x3d6:
 			return MXC_CPU_IMX8MPSC;
+		case 0x4:
+			return MXC_CPU_IMX8MP5;
+		case 0x404:
+			return MXC_CPU_IMX8MPD2;
 		default:
 			break;
 		}
@@ -1776,14 +1780,16 @@ usb_modify_speed:
 		disable_npu_nodes(blob);
 
 	if (is_imx8mpul() || is_imx8mpl() ||
-		is_imx8mpsc() || is_imx8mpdsc())
+		is_imx8mpsc() || is_imx8mpdsc() ||
+		is_imx8mpd2() || is_imx8mp5())
 		disable_isp_nodes(blob);
 
 	if (is_imx8mpul() || is_imx8mpl() || is_imx8mp6() ||
-		is_imx8mpsc() || is_imx8mpdsc())
+		is_imx8mpsc() || is_imx8mpdsc() ||
+		is_imx8mpd2() || is_imx8mp5())
 		disable_dsp_nodes(blob);
 
-	if (is_imx8mpd() || is_imx8mpdsc())
+	if (is_imx8mpd() || is_imx8mpdsc() || is_imx8mpd2())
 		disable_cpu_nodes(blob, 2);
 #endif
 

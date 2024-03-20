@@ -51,6 +51,8 @@
 #define MXC_CPU_IMX8MPUL	0x189 /* dummy ID */
 #define MXC_CPU_IMX8MPSC	0x18a /* dummy ID */
 #define MXC_CPU_IMX8MPDSC	0x18b /* dummy ID */
+#define MXC_CPU_IMX8MPD2	0x18c /* dummy ID */
+#define MXC_CPU_IMX8MP5		0x18d /* dummy ID */
 #define MXC_CPU_IMX8QXP_A0	0x90 /* dummy ID */
 #define MXC_CPU_IMX8QM		0x91 /* dummy ID */
 #define MXC_CPU_IMX8QXP		0x92 /* dummy ID */
