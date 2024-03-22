@@ -778,7 +778,7 @@ void enable_caches(void)
 	/* Create map for registers access from 0x1c000000 to 0x80000000*/
 	imx8_mem_map[0].virt = 0x1c000000UL;
 	imx8_mem_map[0].phys = 0x1c000000UL;
-	imx8_mem_map[0].size = 0x64000000UL;
+	imx8_mem_map[0].size = 0x44000000UL;
 	imx8_mem_map[0].attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
 			 PTE_BLOCK_NON_SHARE | PTE_BLOCK_PXN | PTE_BLOCK_UXN;
 
