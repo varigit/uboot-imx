@@ -1148,6 +1148,7 @@ struct scmi_pin_config {
  */
 struct scmi_pinctrl_config_set_in {
 	uint32_t identifier;
+	uint32_t function_id;
 	uint32_t attributes;
 	struct scmi_pin_config configs[4];
 };

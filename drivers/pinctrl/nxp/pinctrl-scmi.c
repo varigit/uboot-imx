@@ -39,6 +39,7 @@ static int imx_pinconf_scmi_set(struct udevice *dev, u32 mux_ofs, u32 mux, u32 c
 	struct scmi_pinctrl_config_set_out out;
 	struct scmi_pinctrl_config_set_in in = {
 		.identifier = mux_ofs / 4,
+		.function_id = 0xFFFFFFFF,
 		.attributes = 0,
 	};
 	if (mux_ofs != 0) {
