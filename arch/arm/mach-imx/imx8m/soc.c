@@ -1342,7 +1342,9 @@ int disable_lvds_lcdif_nodes(void *blob)
 
 	static const char * const ldb_path_8mp[] = {
 		"/soc@0/bus@32c00000/ldb@32ec005c",
-		"/soc@0/bus@32c00000/phy@32ec0128"
+		"/soc@0/bus@32c00000/phy@32ec0128",
+		"/ldb-display-controller",
+		"/phy-lvds"
 	};
 
 	static const char * const lcdif_path_8mp[] = {
@@ -1351,11 +1353,15 @@ int disable_lvds_lcdif_nodes(void *blob)
 
 	static const char * const lcdif_ep_path_8mp[] = {
 		"/soc@0/bus@32c00000/lcd-controller@32e90000/port@0/endpoint@0",
-		"/soc@0/bus@32c00000/lcd-controller@32e90000/port@0/endpoint@1"
+		"/soc@0/bus@32c00000/lcd-controller@32e90000/port@0/endpoint@1",
+		"/soc@0/bus@32c00000/lcd-controller@32e90000/port/endpoint@0",
+		"/soc@0/bus@32c00000/lcd-controller@32e90000/port/endpoint@1"
 	};
 	static const char * const ldb_ep_path_8mp[] = {
 		"/soc@0/bus@32c00000/ldb@32ec005c/lvds-channel@0/port@0/endpoint",
-		"/soc@0/bus@32c00000/ldb@32ec005c/lvds-channel@1/port@0/endpoint"
+		"/soc@0/bus@32c00000/ldb@32ec005c/lvds-channel@1/port@0/endpoint",
+		"/ldb-display-controller/lvds-channel@0/port@0/endpoint",
+		"/ldb-display-controller/lvds-channel@1/port/endpoint"
 	};
 
 	ret = disable_fdt_nodes(blob, ldb_path_8mp, ARRAY_SIZE(ldb_path_8mp));
