@@ -34,6 +34,11 @@ choice
 	prompt  "NXP i.MX9 board select"
 	optional
 
+config TARGET_IMX91_11X11_EVK
+	bool "imx91_11x11_evk"
+	select OF_BOARD_FIXUP
+	select IMX91
+
 config TARGET_IMX93_14X14_EVK
 	bool "imx93_14x14_evk"
 	select IMX93
@@ -68,6 +73,7 @@ config TARGET_VERDIN_IMX95_19X19
 
 endchoice
 
+source "board/freescale/imx91_evk/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
 source "board/variscite/imx93_var_som/Kconfig"
