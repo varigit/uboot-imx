@@ -109,7 +109,10 @@
 #define LVDS_PHY_CTRL_CCM_MASK      (0x7<<14)
 #define LVDS_PHY_CTRL_CCM_SHIFT     (14)
 
-#define LVDS_PHY_CTRL_M_MASK        (0x3<<17)
-#define LVDS_PHY_CTRL_M_SHIFT       (17)
+#define LVDS_PHY_CTRL_M_MASK          (0x3<<17)
+#define LVDS_PHY_CTRL_M_SHIFT         (17)
+#define LVDS_PHY_CTRL_M__25MHz_43MHz  (2)
+#define LVDS_PHY_CTRL_M__44MHz_89MHz  (1)
+#define LVDS_PHY_CTRL_M__90MHz_165MHz (0)
 
 #endif	/* _IMX8_LVDS_H_ */

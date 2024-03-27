@@ -166,11 +166,13 @@ void imx8_ldb_configure(struct udevice *dev)
 			IMX_LVDS_SET_FIELD(LVDS_CTRL_CH0_DATA_WIDTH, LVDS_CTRL_CH0_DATA_WIDTH__24BIT) |
 			IMX_LVDS_SET_FIELD(LVDS_CTRL_CH0_BIT_MAP, LVDS_CTRL_CH0_BIT_MAP__JEIDA);
 
-		phy_setting = 0x4 << 5 | 0x4 << 2 | 1 << 1 | 0x1;
+		phy_setting = 0x6 << 5 | 0x4 << 2 | 1 << 1 | 0x1;
 		regmap_write(priv->gpr, LDB_PHY_OFFSET + LVDS_PHY_CTRL, phy_setting);
 		regmap_write(priv->gpr, LDB_PHY_OFFSET + LVDS_CTRL, mode);
 		regmap_write(priv->gpr, LDB_PHY_OFFSET + MIPIv2_CSR_TX_ULPS, 0);
 		regmap_write(priv->gpr, LDB_PHY_OFFSET + MIPIv2_CSR_PXL2DPI, MIPI_CSR_PXL2DPI_24_BIT);
+
+		regmap_write(priv->gpr, MIPI_PHY_OFFSET + DPHY_CO, 1);
 
 		/* Power up PLL in MIPI DSI PHY */
 		regmap_write(priv->gpr, MIPI_PHY_OFFSET + DPHY_PD_PLL, 0);
@@ -188,8 +190,9 @@ void imx8_ldb_configure(struct udevice *dev)
 		phy_setting =
 			LVDS_PHY_CTRL_RFB_MASK |
 			LVDS_PHY_CTRL_CH0_EN_MASK |
-			(0 << LVDS_PHY_CTRL_M_SHIFT) |
-			(0x04 << LVDS_PHY_CTRL_CCM_SHIFT) |
+			(LVDS_PHY_CTRL_M__44MHz_89MHz << LVDS_PHY_CTRL_M_SHIFT) |
+			(0x06 << LVDS_PHY_CTRL_CCM_SHIFT) |
+			(0x25 << LVDS_PHY_CTRL_TST_SHIFT) |
 			(0x04 << LVDS_PHY_CTRL_CA_SHIFT);
 		regmap_write(priv->gpr, LDB_PHY_OFFSET + LVDS_PHY_CTRL, phy_setting);
 	}
