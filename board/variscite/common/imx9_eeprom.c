@@ -96,7 +96,10 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 		return;
 
 #ifdef CONFIG_TARGET_IMX93_VAR_SOM
-	printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
+	if (of_machine_is_compatible("variscite,imx93-var-dart"))
+		printf("\nPart number: VSM-DT93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
+	else
+		printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 #endif
 
 	printf("Assembly: AS%.*s\n", (int)sizeof(ep->assembly), (char *)ep->assembly);

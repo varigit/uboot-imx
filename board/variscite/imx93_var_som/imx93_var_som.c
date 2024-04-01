@@ -22,6 +22,7 @@
 
 #include "../common/imx9_eeprom.h"
 #include "../common/extcon-ptn5150.h"
+#include "imx93_var_som.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -36,6 +37,43 @@ static iomux_v3_cfg_t const uart_pads[] = {
 };
 
 int var_setup_mac(struct var_eeprom *eeprom);
+
+int get_board_id(void)
+{
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+
+	if (!var_eeprom_is_valid(ep)) {
+		printf("%s: assuming VAR_SOM_MX93\n", __func__);
+		return VAR_SOM_MX93;
+	}
+
+	if (htons(ep->magic) == VAR_DART_EEPROM_MAGIC)
+		return DART_MX93;
+
+	return VAR_SOM_MX93;
+}
+
+#if defined(CONFIG_MULTI_DTB_FIT) && !defined(CONFIG_SPL_BUILD)
+int board_fit_config_name_match(const char *name)
+{
+	int board_id = get_board_id();
+
+	switch (board_id) {
+	case DART_MX93:
+		if (!strcmp(name, "imx93-var-dart-dt8mcustomboard"))
+			return 0;
+		break;
+	case VAR_SOM_MX93:
+		if (!strcmp(name, "imx93-var-som-symphony"))
+			return 0;
+		break;
+	default:
+		return -1;
+	}
+
+	return -1;
+}
+#endif
 
 int board_early_init_f(void)
 {
@@ -103,6 +141,7 @@ int board_init(void)
 int board_late_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	int id = get_board_id();
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
@@ -147,7 +186,17 @@ int board_late_init(void)
 #endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "VAR-SOM-MX93");
+	switch (id) {
+	case VAR_SOM_MX93:
+		env_set("board_name", "VAR-SOM-MX93");
+		break;
+	case DART_MX93:
+		env_set("board_name", "DART-MX93");
+		break;
+	default:
+		env_set("board_name", "UNKNOWN");
+		break;
+	}
 #endif
 	return 0;
 }

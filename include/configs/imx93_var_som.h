@@ -90,13 +90,18 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if test ${som_has_wbe} = 1; then " \
-				"setenv fdt_file imx93-var-som-wbe-symphony.dtb; " \
+			"if test $som_has_wbe = 1; then " \
+				"setenv WBE_SUFFIX -wbe; " \
 			"else " \
-				"setenv fdt_file imx93-var-som-symphony.dtb; " \
+				"setenv WBE_SUFFIX ; " \
+			"fi; " \
+			"if test $board_name = VAR-SOM-MX93; then " \
+				"setenv fdt_file imx93-var-som${WBE_SUFFIX}-symphony.dtb; " \
 				"if test ${som_rev} -lt 2; then " \
 					"echo \"Warning: Only SoM revisions >= 2.0 are supported\"; " \
 				"fi; " \
+			"else " \
+				"setenv fdt_file imx93-var-dart${WBE_SUFFIX}-dt8mcustomboard.dtb; " \
 			"fi; " \
 		"fi; " \
 		"echo fdt_file=${fdt_file};\0" \
