@@ -13,6 +13,9 @@
 #include <asm/io.h>
 #include <asm/mach-imx/regs-common.h>
 #include <fdt_support.h>
+#include <linux/psci.h>
+#include <dm.h>
+#include <command.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -182,3 +185,25 @@ int add_res_mem_dt_node(void *fdt, const char *name, phys_addr_t pa,
 	}
 	return 0;
 }
+
+#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_PSCI_BOARD_REBOOT)
+
+#define PSCI_SYSTEM_RESET2_AARCH64		0xc4000012
+#define PSCI_RESET2_SYSTEM_BOARD_RESET		0x80000002
+
+int do_board_reboot(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+{
+	struct udevice *dev;
+
+	uclass_get_device_by_name(UCLASS_FIRMWARE, "psci", &dev);
+	invoke_psci_fn(PSCI_SYSTEM_RESET2_AARCH64, PSCI_RESET2_SYSTEM_BOARD_RESET, 0, 0);
+
+	return CMD_RET_FAILURE;
+}
+
+U_BOOT_CMD(
+	reboot,	1,	1,	do_board_reboot,
+	"reboot\n",
+	"system board reboot for some i.MX devices\n"
+);
+#endif
