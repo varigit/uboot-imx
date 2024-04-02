@@ -135,6 +135,7 @@
 
 		fsl,pins = <
 			IMX95_PAD_XSPI1_SS1_B__GPIO5_IO_BIT11			0x3fe
+			IMX95_PAD_GPIO_IO12__TPM3_CH2           0x51e
 		>;
 	};
 };
@@ -236,4 +237,15 @@
 
 &pinctrl_flexspi1 {
 	bootph-pre-ram;
+};
+
+&dispmix_csr {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-rates;
+	/delete-property/ assigned-clock-parents;
+};
+
+&mipi_dsi {
+	assigned-clocks = <&scmi_clk IMX95_CLK_MIPIPHYPLLBYPASS>;
+	assigned-clock-parents = <&scmi_clk IMX95_CLK_VIDEOPLL1>;
 };
