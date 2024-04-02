@@ -25,6 +25,27 @@
 	};
 };
 
+&lpi2c2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	hdmi@3d {
+		compatible = "adi,adv7535";
+		reg = <0x3d>;
+		adi,addr-cec = <0x3c>;
+		adi,dsi-lanes = <4>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_mipi_dsi_csi>;
+		status = "okay";
+
+		port {
+			adv7535_to_dsi: endpoint {
+				remote-endpoint = <&dsi_to_adv7535>;
+			};
+		};
+	};
+};
+
 &display_pixel_link {
 	status = "okay";
 };
@@ -52,6 +73,14 @@
 
 			dsi_out: endpoint {
 				remote-endpoint = <&panel_in>;
+			};
+		};
+
+		port@2 {
+			reg = <2>;
+
+			dsi_to_adv7535: endpoint {
+				remote-endpoint = <&adv7535_to_dsi>;
 			};
 		};
 	};
