@@ -3,7 +3,7 @@
  * Common internal memory map for some Freescale SoCs
  *
  * Copyright 2014 Freescale Semiconductor, Inc.
- * Copyright 2018, 2021 NXP
+ * Copyright 2018, 2021, 2024 NXP
  */
 
 #ifndef __FSL_SEC_H
@@ -59,10 +59,16 @@ struct rng4tst {
 	u32 rtpkrrng;		/* poker range register */
 #ifdef CONFIG_MX6SX
 #define RTSDCTL_ENT_DLY		12000
+#define RTSDCTL_ENT_DLY_MAX	12000
+#elif CONFIG_IMX8ULP
+#define RTSDCTL_ENT_DLY		25000
+#define RTSDCTL_ENT_DLY_MAX	25000
+#define RTFRQMIN		5000
+#define RTFRQMAX		10000
 #else
 #define RTSDCTL_ENT_DLY		3200
-#endif
 #define RTSDCTL_ENT_DLY_MAX	12800
+#endif
 	union {
 		u32 rtpkrmax;	/* PRGM=1: poker max. limit register */
 		u32 rtpkrsq;	/* PRGM=0: poker square calc. result register */
@@ -86,7 +92,10 @@ struct rng4tst {
 #define RDSTA_MASK (RDSTA_PR(1) | RDSTA_PR(0) | RDSTA_IF(1) | RDSTA_IF(0))
 #define RDSTA_SKVN 0x40000000
 	u32 rdsta;		/*RNG DRNG Status Register*/
-	u32 rsvd2[15];
+	u32 rsvd2[10];
+#define OSC2_CTL_TRNG_ENT_CTL	1	/* TRNG_ENT_CTL(1-0) = 01 : dual oscillator mode */
+	u32 osc2_ctl;		/* RNG Oscillator 2 Control Register */
+	u32 rsvd3[4];
 };
 
 /* Version registers (Era 10+) */
