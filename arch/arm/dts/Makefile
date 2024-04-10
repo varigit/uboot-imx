@@ -1186,6 +1186,7 @@ dtb-$(CONFIG_ARCH_IMX9) += \
 	imx95-19x19-verdin.dtb \
 	imx91-11x11-evk.dtb \
 	imx91-11x11-evk-spinand.dtb \
+	imx91-11x11-evk-ontat-wvga-panel.dtb \
 	imx93-11x11-evk.dtb \
 	imx93-11x11-evk-pmic-pf0900.dtb \
 	imx93-14x14-evk.dtb \
