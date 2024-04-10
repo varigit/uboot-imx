@@ -1218,6 +1218,9 @@ static int fecmxc_set_ref_clk(struct clk *clk_ref, phy_interface_t interface)
 	else
 		return -EINVAL;
 
+	if (is_imx93())
+		freq = freq << 1;
+
 	ret = clk_set_rate(clk_ref, freq);
 	if (ret < 0)
 		return ret;
