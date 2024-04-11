@@ -101,7 +101,7 @@ struct dram_timing_info {
 
 extern struct dram_timing_info dram_timing;
 
-#if defined(CONFIG_IMX93)	/* CONFIG_IMX93 */
+#if defined(CONFIG_IMX93) || defined(CONFIG_IMX91)	/* CONFIG_IMX93 or CONFIG_IMX91 */
 #if (defined(CONFIG_IMX_SNPS_DDR_PHY_QB_GEN) || defined(CONFIG_IMX_SNPS_DDR_PHY_QB))
 #define DDRPHY_QB_FSP_SIZE	3
 #define DDRPHY_QB_ERR_SIZE	6
