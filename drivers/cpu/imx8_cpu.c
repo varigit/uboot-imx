@@ -66,7 +66,7 @@ static const char *get_imx_type_str(u32 imxtype)
 
 static const char *get_imx_rev_str(u32 rev)
 {
-	static char revision[4];
+	static char revision[4] = "1.0";
 
 	if (IS_ENABLED(CONFIG_IMX8)) {
 		switch (rev) {
