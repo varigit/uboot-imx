@@ -56,7 +56,6 @@ void ddr_load_train_firmware(enum fw_type type)
 	unsigned long imem_start = (unsigned long)_end + fw_offset;
 	unsigned long dmem_start;
 	unsigned long imem_len = IMEM_LEN, dmem_len = DMEM_LEN;
-	static enum fw_type last_type = -1;
 #if defined(CONFIG_IMX_SNPS_DDR_PHY_QB)
 	unsigned long qbst_start;
 	unsigned long qbst_len = sizeof(struct ddrphy_qb_state);
@@ -66,12 +65,6 @@ void ddr_load_train_firmware(enum fw_type type)
 #else
 	u32 error = 0;
 #endif
-
-	/* If FW doesn't change, we can save the loading. */
-	if (last_type == type)
-		return;
-
-	last_type = type;
 
 #ifdef CONFIG_SPL_OF_CONTROL
 	if (gd->fdt_blob && !fdt_check_header(gd->fdt_blob)) {
