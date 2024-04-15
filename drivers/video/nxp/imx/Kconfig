@@ -138,3 +138,59 @@ config VIDEO_IMX93_PARALLEL_DISPLAY_FORMAT
 	help
 	  Choose this to enable the internal parallel display format
 	  configuration found on i.MX93 processors.
+
+config VIDEO_IMX95_LVDS
+	bool "i.MX95 LDVS bridge support"
+	default n
+	depends on IMX95 && VIDEO
+	select DISPLAY
+	select VIDEO_LINK
+	help
+	  Support for i.IMX95 LDVS bridge controller for i.IMX95 processors.
+
+config VIDEO_IMX95_DW_DSI
+	bool "Enable iMX95 Synopsys DW DSI video support"
+	default n
+	depends on IMX95 && VIDEO
+	select VIDEO_BRIDGE
+	select VIDEO_DW_MIPI_DSI
+	select VIDEO_LINK
+	select REGMAP
+	select SYSCON
+	select MULTIPLEXER
+	select MUX_MMIO
+	help
+	  This option enables support i.MX95 DSI internal bridge which can be used on
+	  devices which have DSI devices connected.
+
+config VIDEO_IMX95_DPU
+	bool "i.MX95 display controller support"
+	default n
+	depends on VIDEO && IMX95
+	select VIDEO_LINK
+	select REGMAP
+	select SYSCON
+	help
+	  Support for i.MX95 Display controller.
+
+config VIDEO_IMX95_PIXEL_LINK
+	bool "Enable iMX95 displaymix pixel link support"
+	default n
+	depends on VIDEO && IMX95
+	select VIDEO_BRIDGE
+	select VIDEO_LINK
+	select REGMAP
+	select SYSCON
+	help
+	  Support for i.MX95 pixel link.
+
+config VIDEO_IMX95_PIXEL_INTERLEAVER
+	bool "Enable iMX95 displaymix pixel interleaver support"
+	default n
+	depends on VIDEO && IMX95
+	select VIDEO_BRIDGE
+	select VIDEO_LINK
+	select REGMAP
+	select SYSCON
+	help
+	  Support for i.MX95 pixel interleaver.
