@@ -585,7 +585,7 @@ const char *requested_partitions_recovery[] = {"recovery", NULL};
 static int get_boot_header_version(void)
 {
 	size_t size;
-	struct andr_img_hdr hdr;
+	struct andr_boot_img_hdr_v0 hdr;
 	char partition_name[20];
 
 #ifdef CONFIG_ANDROID_AB_SUPPORT
@@ -606,7 +606,7 @@ static int get_boot_header_version(void)
 
 	/* Read boot header to find the version */
 	if (fsl_avb_ops.read_from_partition(&fsl_avb_ops, partition_name,
-					    0, sizeof(struct andr_img_hdr),
+					    0, sizeof(struct andr_boot_img_hdr_v0),
 					    (void *)&hdr, &size)) {
 		printf("%s load error!\n", partition_name);
 		return -1;
@@ -655,7 +655,7 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
 	bool with_init_boot = false;
 
 	/* 'hdr' should point to boot.img */
-	struct andr_img_hdr *hdr = NULL;
+	struct andr_boot_img_hdr_v0 *hdr = NULL;
 	struct boot_img_hdr_v3 *hdr_v3 = NULL;
 	struct vendor_boot_img_hdr_v3 *vendor_boot_hdr_v3 = NULL;
 	struct boot_img_hdr_v4 *hdr_v4 = NULL;
@@ -788,8 +788,8 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
 				goto fail;
 			}
 		} else {
-			hdr = (struct andr_img_hdr *)avb_loadpart->data;
-			if (android_image_check_header(hdr)) {
+			hdr = (struct andr_boot_img_hdr_v0 *)avb_loadpart->data;
+			if (is_android_boot_image_header((void *)hdr)) {
 				printf("boota: bad boot image magic\n");
 				goto fail;
 			}
