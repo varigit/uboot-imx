@@ -70,6 +70,7 @@ struct sfdp_parameter_header {
 					 * Status, Control and Configuration
 					 * Register Map.
 					 */
+#define SFDP_CMD_SEQ_OCT_DDR	0xff0a	/* cmd seq to change to octal ddr*/
 
 #define SFDP_SIGNATURE		0x50444653U
 #define SFDP_JESD216_MAJOR	1
@@ -2639,6 +2640,22 @@ out:
 }
 
 /**
+ * spi_nor_cmd_seq_to_octal_ddr() - Convert the command sequence to Octal DDR
+ *				    mode.
+ * @nor:	pointer to a 'struct spi_nor'
+ *
+ * Return: 0 on success, -errno otherwise.
+ * If there is a parameter table that indicates the command sequence to change
+ * to Octal DDR mode, we can set a flag to show that the Nor chip can support
+ * Octal DDR mode.
+ */
+static int spi_nor_cmd_seq_to_octal_ddr(struct spi_nor *nor)
+{
+	nor->flags |= SNOR_F_CMD_SEQ_TO_OCT_DDR;
+	return 0;
+}
+
+/**
  * spi_nor_parse_sfdp() - parse the Serial Flash Discoverable Parameters.
  * @nor:		pointer to a 'struct spi_nor'
  * @params:		pointer to the 'struct spi_nor_flash_parameter' to be
@@ -2746,6 +2763,10 @@ static int spi_nor_parse_sfdp(struct spi_nor *nor,
 
 		case SFDP_SCCR_MAP_ID:
 			err = spi_nor_parse_sccr(nor, param_header);
+			break;
+
+		case SFDP_CMD_SEQ_OCT_DDR:
+			err = spi_nor_cmd_seq_to_octal_ddr(nor);
 			break;
 
 		default:
@@ -3855,7 +3876,8 @@ static int spi_nor_octal_dtr_enable(struct spi_nor *nor)
 	      nor->write_proto == SNOR_PROTO_8_8_8_DTR))
 		return 0;
 
-	if (!(nor->flags & SNOR_F_IO_MODE_EN_VOLATILE))
+	if (!(nor->flags & SNOR_F_IO_MODE_EN_VOLATILE) &&
+	    !(nor->flags & SNOR_F_CMD_SEQ_TO_OCT_DDR))
 		return 0;
 
 	ret = nor->octal_dtr_enable(nor);
@@ -4022,6 +4044,8 @@ void spi_nor_set_fixups(struct spi_nor *nor)
 
 #ifdef CONFIG_SPI_FLASH_MT35XU
 	if (!strcmp(nor->info->name, "mt35xu512aba"))
+		nor->fixups = &mt35xu512aba_fixups;
+	if (!strcmp(nor->info->name, "mt35xu01gaba"))
 		nor->fixups = &mt35xu512aba_fixups;
 #endif
 
