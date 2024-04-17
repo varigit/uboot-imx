@@ -13,9 +13,11 @@
 #include <dm.h>
 #include <log.h>
 #include <linux/err.h>
+#include <dm/device-internal.h>
 
 struct clk_fixed_factor {
 	struct clk parent;
+	struct clk clk;
 	unsigned int div;
 	unsigned int mult;
 };
@@ -53,6 +55,11 @@ static int clk_fixed_factor_of_to_plat(struct udevice *dev)
 
 		ff->div = dev_read_u32_default(dev, "clock-div", 1);
 		ff->mult = dev_read_u32_default(dev, "clock-mult", 1);
+
+		dev_set_uclass_priv(dev, &ff->clk);
+
+		ff->clk.dev = dev;
+		ff->clk.enable_count = 0;
 	}
 
 	return 0;
