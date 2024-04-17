@@ -110,10 +110,30 @@ static void setup_typec(void)
 	tca_base = USB1_BASE_ADDR + 0xfc000;
 
 #ifdef CONFIG_TARGET_IMX95_15X15_EVK
+	struct gpio_desc ext_12v_desc;
+
 	ret = tcpc_init(&portpd, portpd_config, NULL);
 	if (ret) {
 		printf("%s: tcpc portpd init failed, err=%d\n",
 		       __func__, ret);
+	} else if (tcpc_pd_sink_check_charging(&portpd)) {
+		printf("Power supply on USB PD\n");
+
+		/* Enable EXT 12V */
+		ret = dm_gpio_lookup_name("gpio@22_1", &ext_12v_desc);
+		if (ret) {
+			printf("%s lookup gpio@22_1 failed ret = %d\n", __func__, ret);
+			return;
+		}
+
+		ret = dm_gpio_request(&ext_12v_desc, "ext_12v_en");
+		if (ret) {
+			printf("%s request ext_12v_en failed ret = %d\n", __func__, ret);
+			return;
+		}
+
+		/* Enable PER 12V regulator */
+		dm_gpio_set_dir_flags(&ext_12v_desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE);
 	}
 #endif
 
