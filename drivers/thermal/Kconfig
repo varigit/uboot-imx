@@ -35,6 +35,17 @@ config IMX_TMU
 	  The boot is hold to the cool device to throttle CPUs when the
 	  passive trip is crossed
 
+config IMX_TDC
+    bool "Temperature sensor driver for NXP i.MX91"
+    depends on IMX91
+	help
+	  Support for Temperature sensors on NXP i.MX91.
+	  It supports programmable temperature threshold comparators for
+	  both normal and privileged accesses and allows a programmable
+	  measurement frequency for the Periodic One-Shot Measurement mode.
+	  Additionally, it provides status registers for indicating the
+	  end of measurement and threshold violation events.
+
 config IMX_PMC_TEMPERATURE
 	bool "PMC Temperature Sensor driver for NXP i.MX8ULP"
 	depends on ARCH_IMX8ULP
