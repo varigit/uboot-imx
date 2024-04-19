@@ -468,19 +468,15 @@
 
 			anatop: anatop@44480000 {
 				compatible = "fsl,imx91-anatop", "syscon";
-				reg = <0x44480000 0x10000>;
-				#address-cells = <1>;
-				#size-cells = <1>;
-				ranges;
-				status = "disabled";
+				reg = <0x44480000 0x2000>;
+			};
 
-				tempsense0: thermal-sensor@44482000 {
-					compatible = "fsl,imx95-tdc";
-					reg = <0x44482000 0x1000>;
-					#thermal-sensor-cells = <0>;
-					clocks = <&clk IMX91_CLK_TMC_GATE>;
-					status = "disabled";
-				};
+			tempsense0: thermal-sensor@44482000 {
+				compatible = "fsl,imx91-tdc";
+				reg = <0x44482000 0x1000>;
+				#thermal-sensor-cells = <0>;
+				clocks = <&clk IMX91_CLK_TMC_GATE>;
+				status = "disabled";
 			};
 
 			micfil: micfil@44520000 {
