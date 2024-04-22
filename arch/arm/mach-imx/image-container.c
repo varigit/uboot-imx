@@ -372,6 +372,13 @@ int spl_mmc_emmc_boot_partition(struct mmc *mmc)
 {
 	int part;
 
+#ifdef CONFIG_DUAL_BOOTLOADER
+	/* Bootloader is stored in eMMC user partition for
+	 * dual bootloader.
+	 */
+	part = 0;
+#else
+
 	part = EXT_CSD_EXTRACT_BOOT_PART(mmc->part_config);
 	if (part == 1 || part == 2) {
 		unsigned long sec_set_off = 0;
@@ -383,6 +390,7 @@ int spl_mmc_emmc_boot_partition(struct mmc *mmc)
 	} else if (part == 7) {
 		part = 0;
 	}
+#endif
 
 	return part;
 }
