@@ -107,6 +107,31 @@ static void imx8m_xhci_ref_clk_period(struct dwc3 *dwc3_reg,
 	writel(reg, &dwc3_reg->g_fladj);
 }
 
+/* Workaround for i.MX95(A) USB3 Host Controller TXFIFO bug (TKT0633161)
+ *
+ * On i.MX95(A) Soc, USB3 TXFIFO(RAM1) memory range 0x84800-0x88000 is
+ * inaccessible, if write data to this memory the content is unchanged.
+ * When the host controller fetch data from this memory range and transmit
+ * the data to USB bus, data transfer error will occur. This issue happens
+ * when the controller use default configuration of TXFIFO (automatically
+ * calculated by HW). However, we can change the TXFIFO configuration by
+ * GTXFIFOSIZE* to workaround this issue.
+ *
+ * The default value of GTXFIFOSIZE2 is 0x02060811 and it means use memory
+ * 0x81030-0x850B8. With this change GTXFIFOSIZE2 will use memory 0x88000-
+ * 0x8C400.
+ * The default value of GTXFIFOSIZE3 is 0A170022 and it means use memory
+ * 0x850B8-0x851C8. With this change GTXFIFOSIZE3 will use memory 0x81030-
+ * 0x81140.
+ *
+ * This workaround is only for host mode.
+ */
+static void imx8m_xhci_set_txfifo(struct dwc3 *dwc3_reg)
+{
+	writel(0x10000880, &dwc3_reg->g_txfifosiz[2]);
+	writel(0x02060022, &dwc3_reg->g_txfifosiz[3]);
+}
+
 static int imx8m_xhci_core_init(struct dwc3 *dwc3_reg,
 	struct xhci_imx8m_plat *plat)
 {
@@ -200,7 +225,15 @@ static int xhci_imx8m_probe(struct udevice *dev)
 	      (uintptr_t)hccr, (uintptr_t)hcor,
 	      (uintptr_t)HC_LENGTH(xhci_readl(&(hccr)->cr_capbase)));
 
-	return xhci_register(dev, hccr, hcor);
+	ret = xhci_register(dev, hccr, hcor);
+	if (ret != 0)
+		return ret;
+
+	/* Workaround for i.MX95(A) USB3 Host Controller */
+	if (device_is_compatible(dev, "fsl,imx95a-dwc3"))
+		imx8m_xhci_set_txfifo(dwc3_reg);
+
+	return 0;
 }
 
 static int xhci_imx8m_remove(struct udevice *dev)
