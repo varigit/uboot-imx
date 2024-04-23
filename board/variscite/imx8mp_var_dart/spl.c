@@ -31,6 +31,7 @@
 #include <dm/uclass-internal.h>
 #include <dm/device-internal.h>
 #include <asm/arch/ddr.h>
+#include <dm/root.h>
 
 #include "../common/imx8_eeprom.h"
 #include "imx8mp_var_dart.h"
@@ -229,6 +230,235 @@ struct i2c_pads_info i2c_pads_som = {
 };
 #endif
 
+#ifndef CONFIG_SPL_BOOTROM_SUPPORT
+/* When SPL loads image from SD Card, to make it work on imx8mp-var-som-symphony
+ * with CONFIG_DEFAULT_DEVICE_TREE set to imx8mp-var-dart-dt8mcustomboard, we need
+ * to fix gpios properties of the mmc node for BOARD_ID_SOM.
+ */
+static void spl_fdtdec_board_fixup(void) {
+
+	if ((var_detect_board_id() == BOARD_ID_SOM) && !strcmp(CONFIG_DEFAULT_DEVICE_TREE,
+							"imx8mp-var-dart-dt8mcustomboard")) {
+		const char *node_path;
+		int node_offset, ret;
+		u32 phandle, phandle_with_args[3], states[4], fsl_pins[6];
+
+		void *fdt_blob = (void *)gd->fdt_blob;
+
+		ret = fdt_increase_size(fdt_blob, 1024);
+		if (ret) {
+			printf("WARNING: no space for dtb fixups\n");
+			return;
+		}
+
+		node_path = "/soc@0/bus@30000000/gpio@30200000";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+
+		phandle = fdt_get_phandle(fdt_blob, node_offset);
+		phandle_with_args[0] = cpu_to_fdt32(phandle);
+		phandle_with_args[1] = cpu_to_fdt32(14);
+		phandle_with_args[2] = cpu_to_fdt32(1);
+
+		node_path = "/soc@0/bus@30800000/mmc@30b50000";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+
+		ret = fdt_setprop(fdt_blob, node_offset, "cd-gpios",
+					phandle_with_args, sizeof(phandle_with_args));
+		if (ret < 0) {
+			printf("WARNING: couldn't set cd-gpios for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+
+		node_path = "/soc@0/bus@30000000/gpio@30230000";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+
+		phandle = fdt_get_phandle(fdt_blob, node_offset);
+		phandle_with_args[0] = cpu_to_fdt32(phandle);
+		phandle_with_args[1] = cpu_to_fdt32(22);
+		phandle_with_args[2] = cpu_to_fdt32(0);
+
+		node_path = "/regulator-usdhc2-vmmc";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+		ret = fdt_setprop(fdt_blob, node_offset, "gpio",
+					phandle_with_args, sizeof(phandle_with_args));
+		if (ret < 0) {
+			printf("WARNING: couldn't set cd-gpios for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+
+		node_path = "/soc@0/bus@30000000/pinctrl@30330000/regusdhc2vmmc";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+		/* MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22    0x1A0 0x400 0x000 0x5 0x0 */
+		fsl_pins[0] = cpu_to_fdt32(0x1A0);
+		fsl_pins[1] = cpu_to_fdt32(0x400);
+		fsl_pins[2] = cpu_to_fdt32(0x000);
+		fsl_pins[3] = cpu_to_fdt32(0x5);
+		fsl_pins[4] = cpu_to_fdt32(0x0);
+		fsl_pins[5] = cpu_to_fdt32(0x10);
+
+		ret = fdt_setprop(fdt_blob, node_offset, "fsl,pins", fsl_pins, sizeof(fsl_pins));
+		if (ret < 0) {
+			printf("WARNING: couldn't set fsl,pins for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+
+		node_path = "/soc@0/bus@30000000/pinctrl@30330000/usdhc2gpiogrp";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+		/* MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14    0x04C 0x2AC 0x000 0x0 0x0 0x1c4*/
+		fsl_pins[0] = cpu_to_fdt32(0x04C);
+		fsl_pins[1] = cpu_to_fdt32(0x2AC);
+		fsl_pins[2] = cpu_to_fdt32(0x000);
+		fsl_pins[3] = cpu_to_fdt32(0x0);
+		fsl_pins[4] = cpu_to_fdt32(0x0);
+		fsl_pins[5] = cpu_to_fdt32(0x1c4);
+
+		ret = fdt_setprop(fdt_blob, node_offset, "fsl,pins", fsl_pins, sizeof(fsl_pins));
+		if (ret < 0) {
+			printf("WARNING: couldn't set fsl,pins for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+
+		node_path = "/soc@0/bus@30000000/gpio@30210000";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+		phandle = fdt_get_phandle(fdt_blob, node_offset);
+		phandle_with_args[0] = cpu_to_fdt32(phandle);
+		phandle_with_args[1] = cpu_to_fdt32(12);
+		phandle_with_args[2] = cpu_to_fdt32(0);
+
+		node_path = "/soc@0/bus@30000000/pinctrl@30330000";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+
+		node_path = "usdhc2-vqmmcreggrp";
+		node_offset = fdt_add_subnode(fdt_blob, node_offset, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't create node %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+		/* MX8MP_IOMUXC_SD2_CD_B__GPIO2_IO12    0x0BC 0x31C 0x000 0x5 0x0 0xc0 */
+		fsl_pins[0] = cpu_to_fdt32(0x0BC);
+		fsl_pins[1] = cpu_to_fdt32(0x31C);
+		fsl_pins[2] = cpu_to_fdt32(0x000);
+		fsl_pins[3] = cpu_to_fdt32(0x5);
+		fsl_pins[4] = cpu_to_fdt32(0x0);
+		fsl_pins[5] = cpu_to_fdt32(0xc0);
+
+		ret = fdt_setprop(fdt_blob, node_offset, "fsl,pins", fsl_pins, sizeof(fsl_pins));
+		if (ret < 0) {
+			printf("WARNING: couldn't set fsl,pins for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+		phandle = fdt_create_phandle(fdt_blob, node_offset);
+		if (!phandle) {
+			printf("Could not add phandle property to node %s: %s\n", node_path,
+			fdt_strerror(phandle));
+			return;
+		}
+
+		node_path = "/";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+
+		node_path = "regulator-usdhc2-vqmmc";
+		node_offset = fdt_add_subnode(fdt_blob, node_offset, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't create node %s: %s\n", node_path,
+			fdt_strerror(node_offset));
+			return;
+		}
+		fdt_setprop_string(fdt_blob, node_offset, "compatible", "regulator-gpio");
+		fdt_setprop_string(fdt_blob, node_offset, "pinctrl-names", "default");
+		ret = fdt_setprop_u32(fdt_blob, node_offset, "pinctrl-0", phandle);
+		if (ret < 0) {
+			printf("WARNING: couldn't set pinctrl-0 for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+
+		fdt_setprop_string(fdt_blob, node_offset, "regulator-name", "VSD_VSEL");
+		fdt_setprop_u32(fdt_blob, node_offset, "regulator-min-microvolt", 1800000);
+		fdt_setprop_u32(fdt_blob, node_offset, "regulator-max-microvolt", 3300000);
+
+		ret = fdt_setprop(fdt_blob, node_offset, "gpios",
+					phandle_with_args, sizeof(phandle_with_args));
+		if (ret < 0) {
+			printf("WARNING: couldn't set gpios for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+		states[0] = cpu_to_fdt32(3300000);
+		states[1] = cpu_to_fdt32(0);
+		states[2] = cpu_to_fdt32(1800000);
+		states[3] = cpu_to_fdt32(1);
+
+		ret = fdt_setprop(fdt_blob, node_offset, "states",
+					states, sizeof(states));
+		if (ret < 0) {
+			printf("WARNING: couldn't set states for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+		phandle = fdt_create_phandle(fdt_blob, node_offset);
+		if (!phandle) {
+			printf("Could not add phandle property to node %s: %s\n", node_path,
+			fdt_strerror(phandle));
+			return;
+		}
+
+		node_path = "/soc@0/bus@30800000/mmc@30b50000";
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		ret = fdt_setprop_u32(fdt_blob, node_offset, "vqmmc-supply", phandle);
+		if (ret < 0) {
+			printf("WARNING: couldn't set vqmmc-supply for %s: %s\n", node_path,
+			fdt_strerror(ret));
+			return;
+		}
+
+		dm_uninit();
+		dm_init_and_scan(true);
+	}
+}
+#endif
+
 void board_init_f(ulong dummy)
 {
 	int ret;
@@ -284,6 +514,10 @@ void board_init_f(ulong dummy)
 
 	/* DDR initialization */
 	spl_dram_init();
+
+#ifndef CONFIG_SPL_BOOTROM_SUPPORT
+	spl_fdtdec_board_fixup();
+#endif
 
 	board_init_r(NULL, 0);
 }
