@@ -192,7 +192,7 @@
 };
 
 &usb3_dwc3 {
-	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+	compatible = "fsl,imx95a-dwc3", "fsl,imx8mq-dwc3", "snps,dwc3";
 };
 &elemu3 {
 	status = "okay";
