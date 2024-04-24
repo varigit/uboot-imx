@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
  * Copyright 2008-2014 Freescale Semiconductor, Inc.
- * Copyright 2018, 2021-2022 NXP
+ * Copyright 2018, 2021-2022, 2024 NXP
  *
  * Based on CAAM driver in drivers/crypto/caam in Linux
  */
@@ -671,8 +671,22 @@ static void kick_trng(u32 ent_delay, ccsr_sec_t *sec)
 	 * for the freq_mul and the limits of the interval are used to compute
 	 * rtfrqmin, rtfrqmax
 	 */
-	sec_out32(&rng->rtfreqmin, ent_delay >> 1);
-	sec_out32(&rng->rtfreqmax, ent_delay << 7);
+	if (IS_ENABLED(CONFIG_IMX8ULP)) {
+		sec_out32(&rng->rtfreqmin, RTFRQMIN);
+		sec_out32(&rng->rtfreqmax, RTFRQMAX);
+		val = sec_in32(&rng->osc2_ctl);
+		/*
+		 * OSC2_CTL: Oscillator 2 Control Register
+		 * TRNG_ENT_CTL(1-0) = 00 : OSC1 default
+		 *                     01 : dual oscillator mode
+		 * setting the dual oscillator mode in OSC2_CTL
+		 */
+		val |= OSC2_CTL_TRNG_ENT_CTL;
+		sec_out32(&rng->osc2_ctl, val);
+	} else {
+		sec_out32(&rng->rtfreqmin, ent_delay >> 1);
+		sec_out32(&rng->rtfreqmax, ent_delay << 7);
+	}
 
 	sec_out32(&rng->rtscmisc, (retries << 16) | lrun_max);
 	sec_out32(&rng->rtpkrmax, poker_max);
@@ -776,7 +790,7 @@ static int rng_init(uint8_t sec_idx, ccsr_sec_t *sec)
 		 * if worst case value for ent_dly is identified,
 		 * loop can be skipped for that platform.
 		 */
-		if (IS_ENABLED(CONFIG_MX6SX))
+		if (IS_ENABLED(CONFIG_MX6SX) || IS_ENABLED(CONFIG_IMX8ULP))
 			break;
 
 	} while ((ret == -1) && (ent_delay < RTSDCTL_ENT_DLY_MAX));
