@@ -671,7 +671,7 @@ static void kick_trng(u32 ent_delay, ccsr_sec_t *sec)
 	 * for the freq_mul and the limits of the interval are used to compute
 	 * rtfrqmin, rtfrqmax
 	 */
-	if (IS_ENABLED(CONFIG_IMX8ULP)) {
+#if IS_ENABLED(CONFIG_IMX8ULP)
 		sec_out32(&rng->rtfreqmin, RTFRQMIN);
 		sec_out32(&rng->rtfreqmax, RTFRQMAX);
 		val = sec_in32(&rng->osc2_ctl);
@@ -683,10 +683,10 @@ static void kick_trng(u32 ent_delay, ccsr_sec_t *sec)
 		 */
 		val |= OSC2_CTL_TRNG_ENT_CTL;
 		sec_out32(&rng->osc2_ctl, val);
-	} else {
+#else
 		sec_out32(&rng->rtfreqmin, ent_delay >> 1);
 		sec_out32(&rng->rtfreqmax, ent_delay << 7);
-	}
+#endif
 
 	sec_out32(&rng->rtscmisc, (retries << 16) | lrun_max);
 	sec_out32(&rng->rtpkrmax, poker_max);
