@@ -105,7 +105,7 @@ int ele_release_container(u32 *response)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret;
 
 	if (!dev) {
@@ -300,7 +300,7 @@ int ele_get_fw_version(u32 *fw_version, u32 *sha1, u32 *response)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret;
 
 	if (!dev) {
@@ -341,7 +341,7 @@ int ele_dump_buffer(u32 *buffer, u32 buffer_length)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret, i = 0;
 
 	if (!dev) {
@@ -406,7 +406,7 @@ int ele_get_fw_status(u32 *status, u32 *response)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret;
 
 	if (!dev) {
@@ -436,7 +436,7 @@ int ele_release_m33_trout(void)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret;
 
 	if (!dev) {
@@ -488,7 +488,7 @@ int ele_get_events(u32 *events, u32 *events_cnt, u32 *response)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret, i = 0;
 	u32 actual_events;
 
@@ -533,7 +533,7 @@ int ele_start_rng(void)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret;
 
 	if (!dev) {
@@ -684,7 +684,7 @@ int ele_v2x_get_state(struct v2x_get_state *state, u32 *response)
 {
 	struct udevice *dev = gd->arch.ele_dev;
 	int size = sizeof(struct ele_msg);
-	struct ele_msg msg;
+	struct ele_msg msg = {};
 	int ret;
 
 	if (!dev) {
