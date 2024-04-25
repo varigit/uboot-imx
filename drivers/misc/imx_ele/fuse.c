@@ -209,7 +209,7 @@ int fuse_sense(u32 bank, u32 word, u32 *val)
 	word_index = map_ele_fuse_index(bank, word);
 	if (word_index >= 0) {
 		u32 data[4];
-		u32 res, size = 4;
+		u32 res = 0, size = 4;
 		int ret;
 
 		/* Only UID return 4 words */
@@ -269,7 +269,7 @@ int fuse_sense(u32 bank, u32 word, u32 *val)
 
 	if (word_index >= 0) {
 		u32 data;
-		u32 res, size = 1;
+		u32 res = 0, size = 1;
 		int ret;
 
 		ret = ele_read_common_fuse(word_index, &data, size, &res);
@@ -294,7 +294,7 @@ int fuse_read(u32 bank, u32 word, u32 *val)
 
 int fuse_prog(u32 bank, u32 word, u32 val)
 {
-	u32 res;
+	u32 res = 0;
 	int ret;
 	bool lock = false;
 
