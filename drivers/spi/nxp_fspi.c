@@ -1197,9 +1197,9 @@ static int nxp_fspi_claim_bus(struct udevice *dev)
 static int nxp_fspi_set_speed(struct udevice *bus, uint speed)
 {
 	ulong rate;
+	struct nxp_fspi *f = dev_get_priv(bus);
 
 #if CONFIG_IS_ENABLED(CLK)
-	struct nxp_fspi *f = dev_get_priv(bus);
 	int ret;
 
 	nxp_fspi_clk_disable_unprep(f);
