@@ -708,7 +708,7 @@ int print_cpuinfo(void)
 
 void build_info(void)
 {
-	u32 fw_version, sha1, res, status;
+	u32 fw_version, sha1, res = 0, status;
 	int ret;
 
 	printf("\nBuildInfo:\n");

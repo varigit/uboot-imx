@@ -22,7 +22,7 @@
 static int do_v2x_status(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	int ret;
-	u32 resp;
+	u32 resp = 0;
 	struct v2x_get_state state;
 
 	if (!is_imx95()) {
@@ -46,7 +46,7 @@ static int do_v2x_status(struct cmd_tbl *cmdtp, int flag, int argc, char *const 
 static int do_ele_info(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	int ret;
-	u32 res;
+	u32 res = 0;
 	struct ele_get_info_data *info;
 
 	/* ELE can't access full DDR */
