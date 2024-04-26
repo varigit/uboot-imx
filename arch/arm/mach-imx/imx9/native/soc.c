@@ -551,7 +551,7 @@ void imx_get_mac_from_fuse(int dev_id, unsigned char *mac)
 		if (ret)
 			goto err;
 
-		if (is_soc_rev(CHIP_REV_1_0)) {
+		if (is_imx93() && is_soc_rev(CHIP_REV_1_0)) {
 			mac[0] = val[1] >> 24;
 			mac[1] = val[1] >> 16;
 			mac[2] = val[0] >> 24;
