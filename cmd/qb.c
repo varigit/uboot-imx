@@ -100,13 +100,14 @@ static int do_qb_check(struct cmd_tbl *cmdtp, int flag,
 static unsigned long get_boot_device_offset(void *dev, int dev_type)
 {
 	unsigned long offset = 0;
+	struct mmc *mmc;
 
 	switch (dev_type) {
 	case ROM_API_DEV:
 		offset = (unsigned long)dev;
 		break;
 	case MMC_DEV:
-		struct mmc *mmc = (struct mmc *)dev;
+		mmc = (struct mmc *)dev;
 
 		if (IS_SD(mmc) || mmc->part_config == MMCPART_NOAVAILABLE) {
 			offset = CONTAINER_HDR_MMCSD_OFFSET;
@@ -169,6 +170,8 @@ static int get_dev_qbdata_offset(void *dev, int dev_type, unsigned long offset, 
 	void *buf = malloc(CONTAINER_HDR_ALIGNMENT);
 	int ret = 0;
 	char cmd[128];
+	unsigned long count = 0;
+	struct mmc *mmc;
 
 	if (!buf) {
 		printf("Malloc buffer failed\n");
@@ -177,8 +180,7 @@ static int get_dev_qbdata_offset(void *dev, int dev_type, unsigned long offset, 
 
 	switch (dev_type) {
 	case MMC_DEV:
-		unsigned long count = 0;
-		struct mmc *mmc = (struct mmc *)dev;
+		mmc = (struct mmc *)dev;
 
 		count = blk_dread(mmc_get_blk_desc(mmc),
 				  offset / mmc->read_bl_len,
