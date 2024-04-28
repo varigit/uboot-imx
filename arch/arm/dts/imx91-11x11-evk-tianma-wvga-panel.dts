@@ -9,13 +9,17 @@
 / {
 	backlight: backlight {
 		compatible = "gpio-backlight";
-		gpios = <&pcal6524 8 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_bl>;
+		gpios = <&gpio2 26 GPIO_ACTIVE_LOW>;
 	};
 
 	panel {
-		compatible = "ontat,kd50g21-40nt-a1", "simple-panel";
+		compatible = "simple-panel";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_panel>;
 		backlight = <&backlight>;
-		enable-gpios = <&adp5585gpio 4 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&gpio2 27 GPIO_ACTIVE_HIGH>;
 		power-supply = <&reg_vrpi_3v3>;
 
 		port {
@@ -41,6 +45,20 @@
 				hsync-active = <0>;
 			};
 		};
+	};
+};
+
+&iomuxc {
+	pinctrl_bl: blgrp {
+		fsl,pins = <
+			MX91_PAD_GPIO_IO26__GPIO2_IO26    0x31e
+		>;
+	};
+
+	pinctrl_panel: panelgrp {
+		fsl,pins = <
+			MX91_PAD_GPIO_IO27__GPIO2_IO27    0x31e
+		>;
 	};
 };
 
