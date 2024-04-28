@@ -210,3 +210,12 @@
 	assigned-clocks = <&scmi_clk IMX95_CLK_MIPIPHYPLLBYPASS>;
 	assigned-clock-parents = <&scmi_clk IMX95_CLK_VIDEOPLL1>;
 };
+
+
+&lpi2c3 {
+	bootph-some-ram;
+};
+
+&pinctrl_lpi2c3 {
+	bootph-some-ram;
+};
