@@ -21,6 +21,7 @@
 #include <netdev.h>
 #include <asm/gpio.h>
 #include <asm/mach-imx/sys_proto.h>
+#include <i2c.h>
 
 #ifdef CONFIG_SCMI_FIRMWARE
 #include <scmi_agent.h>
@@ -403,6 +404,56 @@ void board_quiesce_devices(void)
 }
 
 #if IS_ENABLED(CONFIG_OF_BOARD_FIXUP)
+
+#if IS_ENABLED(CONFIG_TARGET_IMX95_15X15_EVK)
+static void change_fdt_mido_pins(void *fdt)
+{
+	int nodeoff, ret;
+	u32 enet1_pins[12] = { 0x00B8, 0x02BC, 0x0424, 0x00, 0x00, 0x57e,
+		0x00BC, 0x02C0, 0x0428, 0x00, 0x00, 0x97e};
+
+	nodeoff = fdt_path_offset(fdt, "/firmware/scmi/protocol@19/emdiogrp");
+	if (nodeoff > 0) {
+
+		int i;
+		for (i = 0; i < 12; i++) {
+			enet1_pins[i] = cpu_to_fdt32(enet1_pins[i]);
+		}
+
+		ret = fdt_setprop(fdt, nodeoff, "fsl,pins", enet1_pins, 12 * sizeof(u32));
+		if (ret)
+			printf("fdt_setprop fsl,pins error %d\n", ret);
+		else
+			debug("Update MDIO pins ok\n");
+	}
+}
+
+static int board_fix_15x15_evk(void *fdt)
+{
+	int ret;
+	struct udevice *bus;
+	struct udevice *i2c_dev = NULL;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, 2, &bus);
+	if (ret) {
+		printf("%s: Can't find I2C bus 2\n", __func__);
+		return 0;
+	}
+
+	ret = dm_i2c_probe(bus, 0x50, 0, &i2c_dev);
+	if (ret) {
+		ret = dm_i2c_probe(bus, 0x20, 0, &i2c_dev);
+		if (!ret) {
+			debug("Find Audio board\n");
+			change_fdt_mido_pins(fdt);
+		}
+	}
+
+	return 0;
+}
+
+#else
+
 static int imx9_scmi_misc_cfginfo(u32 *msel, char *cfgname)
 {
 	struct scmi_cfg_info_out out;
@@ -448,7 +499,7 @@ set_status:
 	}
 }
 
-int board_fix_fdt(void *fdt)
+static int board_fix_19x19_evk(void *fdt)
 {
 	char cfgname[SCMI_MISC_MAX_CFGNAME];
 	u32 msel;
@@ -463,5 +514,15 @@ int board_fix_fdt(void *fdt)
 	}
 
 	return 0;
+}
+#endif
+
+int board_fix_fdt(void *fdt)
+{
+#if IS_ENABLED(CONFIG_TARGET_IMX95_15X15_EVK)
+	return board_fix_15x15_evk(fdt);
+#else
+	return board_fix_19x19_evk(fdt);
+#endif
 }
 #endif
