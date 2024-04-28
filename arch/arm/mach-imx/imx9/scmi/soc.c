@@ -953,6 +953,13 @@ int timer_init(void)
 #ifdef CONFIG_SPL_BUILD
 	unsigned long freq = 24000000;
 	asm volatile("msr cntfrq_el0, %0" : : "r" (freq) : "memory");
+
+	/* Clear the compare frame interrupt */
+	unsigned long sctr_cmpcr_addr = SYSCNT_CMP_BASE_ADDR + 0x2c;
+	unsigned long sctr_cmpcr = readl(sctr_cmpcr_addr);
+
+	sctr_cmpcr &= ~0x1;
+	writel(sctr_cmpcr, sctr_cmpcr_addr);
 #endif
 
 	return 0;
