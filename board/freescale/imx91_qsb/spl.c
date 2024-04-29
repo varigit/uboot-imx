@@ -98,6 +98,12 @@ int power_init_board(void)
 	/* 1.1v for LPDDR4 */
 	pmic_reg_write(dev, PF9453_BUCK1OUT, 0x14);
 
+	ret = pmic_reg_read(dev, PF9453_CONFIG1);
+	if (ret < 0)
+		return ret;
+	/*The timer default is 8sec and too long, so change to 100ms.*/
+	pmic_reg_write(dev, PF9453_CONFIG1, ~PF9453_RESETKEY_TIMER_MASK & ret);
+
 	/* set WDOG_B_CFG to cold reset */
 	pmic_reg_write(dev, PF9453_RESET_CTRL, 0xA0);
 	return 0;
