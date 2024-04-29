@@ -631,6 +631,39 @@ int get_reset_reason(bool sys, bool lm)
 	return 0;
 }
 
+/* name: SM CFG name */
+int power_on_m7(char *name)
+{
+	struct scmi_imx_misc_cfg_info_out out = { 0 };
+	struct scmi_msg msg = SCMI_MSG(SCMI_IMX_PROTOCOL_ID_MISC,
+				       SCMI_IMX_MISC_CFG_INFO, out);
+	int ret;
+
+	ret = devm_scmi_process_msg(gd->arch.scmi_dev, &msg);
+	if (out.status) {
+		printf("%s:%d fail\n", __func__, out.status);
+		return ret;
+	}
+
+	if (strncmp(out.cfgname, name, MISC_MAX_CFGNAME)) {
+		printf("cfg name not match %s:%s, ignore\n", name, out.cfgname);
+		return -EINVAL;
+	}
+
+	/* Power up M7MIX */
+	ret = scmi_pwd_state_set(gd->arch.scmi_dev, 0, IMX95_PD_M7, 0);
+	if (ret) {
+		printf("Power M7 failed\n");
+		return -EIO;
+	}
+
+	/* In case OEI not init ECC, do it here */
+	memset_io((void *)0x203c0000, 0, 0x40000);
+	memset_io((void *)0x20400000, 0, 0x40000);
+
+	return 0;
+}
+
 const char *get_imx_type(u32 imxtype)
 {
 	switch (imxtype) {

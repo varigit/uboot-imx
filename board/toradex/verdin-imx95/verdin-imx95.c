@@ -20,7 +20,7 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <asm/gpio.h>
-#include <asm/mach-imx/sys_proto.h>
+#include <asm/arch/sys_proto.h>
 #include <i2c.h>
 
 #ifdef CONFIG_SCMI_FIRMWARE
@@ -299,6 +299,8 @@ int board_init(void)
 #endif
 
 	netc_init();
+
+	power_on_m7("mx95alt");
 
 	return 0;
 }
