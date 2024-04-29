@@ -60,6 +60,10 @@
 	};
 };
 
+&mt35xu01gbba {
+		spi-max-frequency = <133000000>;
+};
+
 &ptn5110 {
 	reg = <0x52>;
 };
