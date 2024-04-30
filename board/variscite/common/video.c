@@ -9,6 +9,7 @@
 #include <common.h>
 #include <splash.h>
 #include <mmc.h>
+#include <env.h>
 
 #ifdef CONFIG_SPLASH_SCREEN
 static int check_env(char *var, char *val)
