@@ -19,6 +19,7 @@
 	};
 
 	chosen {
+		bootargs = "console=ttyLP0,115200 earlycon";
 		stdout-path = &lpuart1;
 	};
 
