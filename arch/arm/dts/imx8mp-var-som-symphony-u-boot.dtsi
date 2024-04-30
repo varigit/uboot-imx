@@ -6,18 +6,18 @@
 
 #include "imx8mp-var-common-u-boot.dtsi"
 
-&pinctrl_uart2 {
-	u-boot,dm-spl;
-};
-
-&uart2 {
-	u-boot,dm-spl;
-};
-
 &pinctrl_reg_usdhc2_vqmmc {
 	u-boot,dm-spl;
 };
 
+&pinctrl_uart2 {
+	u-boot,dm-spl;
+};
+
 &reg_usdhc2_vqmmc {
+	u-boot,dm-spl;
+};
+
+&uart2 {
 	u-boot,dm-spl;
 };

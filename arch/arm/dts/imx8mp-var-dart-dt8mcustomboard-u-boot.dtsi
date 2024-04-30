@@ -6,10 +6,10 @@
 
 #include "imx8mp-var-common-u-boot.dtsi"
 
-&uart1 {
+&pinctrl_uart1 {
 	u-boot,dm-spl;
 };
 
-&pinctrl_uart1 {
+&uart1 {
 	u-boot,dm-spl;
 };

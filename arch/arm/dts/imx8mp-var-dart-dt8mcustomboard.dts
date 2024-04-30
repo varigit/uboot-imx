@@ -38,9 +38,31 @@
 	};
 };
 
-&uart1 {
+&eqos {
+	mdio {
+		ethphy1: ethernet-phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <1>;
+			at803x,eee-disabled;
+			eee-broken-1000t;
+			reset-gpios = <&pca6408_2 0 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <20000>;
+			vddio-supply = <&vddio1>;
+
+			vddio1: vddio-regulator {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+			};
+		};
+	};
+};
+
+&fec {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1>;
+	pinctrl-0 = <&pinctrl_fec>;
+	phy-mode = "rgmii";
+	phy-handle = <&ethphy1>;
 	status = "okay";
 };
 
@@ -96,6 +118,12 @@
 	};
 };
 
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	status = "okay";
+};
+
 &usb3_phy0 {
 	fsl,phy-tx-vref-tune = <0xe>;
 	fsl,phy-tx-preemp-amp-tune = <3>;
@@ -136,34 +164,6 @@
 	status = "okay";
 };
 
-&eqos {
-	mdio {
-		ethphy1: ethernet-phy@1 {
-			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <1>;
-			at803x,eee-disabled;
-			eee-broken-1000t;
-			reset-gpios = <&pca6408_2 0 GPIO_ACTIVE_LOW>;
-			reset-assert-us = <10000>;
-			reset-deassert-us = <20000>;
-			vddio-supply = <&vddio1>;
-
-			vddio1: vddio-regulator {
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-			};
-		};
-	};
-};
-
-&fec {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_fec>;
-	phy-mode = "rgmii";
-	phy-handle = <&ethphy1>;
-	status = "okay";
-};
-
 &usdhc2 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
@@ -177,10 +177,20 @@
 };
 
 &iomuxc {
-	pinctrl_uart1: uart1grp {
+	pinctrl_fec: fecgrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_UART1_RXD__UART1_DCE_RX				0x40
-			MX8MP_IOMUXC_UART1_TXD__UART1_DCE_TX				0x40
+			MX8MP_IOMUXC_SAI1_RXD4__ENET1_RGMII_RD0                         0x90
+			MX8MP_IOMUXC_SAI1_RXD5__ENET1_RGMII_RD1                         0x90
+			MX8MP_IOMUXC_SAI1_RXD6__ENET1_RGMII_RD2                         0x90
+			MX8MP_IOMUXC_SAI1_RXD7__ENET1_RGMII_RD3                         0x90
+			MX8MP_IOMUXC_SAI1_TXC__ENET1_RGMII_RXC                          0x90
+			MX8MP_IOMUXC_SAI1_TXFS__ENET1_RGMII_RX_CTL                      0x90
+			MX8MP_IOMUXC_SAI1_TXD0__ENET1_RGMII_TD0                         0x00
+			MX8MP_IOMUXC_SAI1_TXD1__ENET1_RGMII_TD1                         0x00
+			MX8MP_IOMUXC_SAI1_TXD2__ENET1_RGMII_TD2                         0x00
+			MX8MP_IOMUXC_SAI1_TXD3__ENET1_RGMII_TD3                         0x00
+			MX8MP_IOMUXC_SAI1_TXD4__ENET1_RGMII_TX_CTL                      0x00
+			MX8MP_IOMUXC_SAI1_TXD5__ENET1_RGMII_TXC                         0x00
 		>;
 	};
 
@@ -232,6 +242,13 @@
 		>;
 	};
 
+	pinctrl_uart1: uart1grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART1_RXD__UART1_DCE_RX                            0x40
+			MX8MP_IOMUXC_UART1_TXD__UART1_DCE_TX                            0x40
+		>;
+	};
+
 	pinctrl_usdhc2: usdhc2grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_SD2_CLK__USDHC2_CLK				0x190
@@ -271,23 +288,6 @@
 	pinctrl_usdhc2_gpio: usdhc2gpiogrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_SD2_CD_B__GPIO2_IO12				0x1c4
-		>;
-	};
-
-	pinctrl_fec: fecgrp {
-		fsl,pins = <
-			MX8MP_IOMUXC_SAI1_RXD4__ENET1_RGMII_RD0				0x90
-			MX8MP_IOMUXC_SAI1_RXD5__ENET1_RGMII_RD1				0x90
-			MX8MP_IOMUXC_SAI1_RXD6__ENET1_RGMII_RD2				0x90
-			MX8MP_IOMUXC_SAI1_RXD7__ENET1_RGMII_RD3				0x90
-			MX8MP_IOMUXC_SAI1_TXC__ENET1_RGMII_RXC				0x90
-			MX8MP_IOMUXC_SAI1_TXFS__ENET1_RGMII_RX_CTL			0x90
-			MX8MP_IOMUXC_SAI1_TXD0__ENET1_RGMII_TD0				0x00
-			MX8MP_IOMUXC_SAI1_TXD1__ENET1_RGMII_TD1				0x00
-			MX8MP_IOMUXC_SAI1_TXD2__ENET1_RGMII_TD2				0x00
-			MX8MP_IOMUXC_SAI1_TXD3__ENET1_RGMII_TD3				0x00
-			MX8MP_IOMUXC_SAI1_TXD4__ENET1_RGMII_TX_CTL			0x00
-			MX8MP_IOMUXC_SAI1_TXD5__ENET1_RGMII_TXC				0x00
 		>;
 	};
 };

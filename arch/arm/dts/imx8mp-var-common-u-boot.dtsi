@@ -8,12 +8,6 @@
 #include "imx8mp-u-boot.dtsi"
 
 / {
-	wdt-reboot {
-		compatible = "wdt-reboot";
-		wdt = <&wdog1>;
-		u-boot,dm-spl;
-	};
-
 	firmware {
 		optee {
 			compatible = "linaro,optee-tz";
@@ -46,31 +40,22 @@
 			    0x0      0x0            0x0  0x0 0x0
 			  >;
 	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		u-boot,dm-spl;
+	};
 };
 
-&pinctrl_reg_usdhc2_vmmc {
-	u-boot,dm-spl;
-	u-boot,off-on-delay-us = <20000>;
-};
-
-&reg_usdhc2_vmmc {
-	u-boot,dm-spl;
-};
-
-&pinctrl_usdhc2_gpio {
+&crypto {
 	u-boot,dm-spl;
 };
 
-&pinctrl_usdhc2 {
-	u-boot,dm-spl;
-};
-
-&pinctrl_usdhc3 {
-	u-boot,dm-spl;
-};
-
-&pinctrl_wdog {
-	u-boot,dm-spl;
+&eqos {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
 };
 
 &gpio1 {
@@ -93,7 +78,40 @@
 	u-boot,dm-spl;
 };
 
-&crypto {
+&i2c1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_i2c1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_i2c1_gpio {
+	u-boot,dm-spl;
+};
+
+&pinctrl_reg_usdhc2_vmmc {
+	u-boot,dm-spl;
+	u-boot,off-on-delay-us = <20000>;
+};
+
+&pinctrl_usdhc2_gpio {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc3 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_wdog {
+	u-boot,dm-spl;
+};
+
+&reg_usdhc2_vmmc {
 	u-boot,dm-spl;
 };
 
@@ -109,27 +127,6 @@
 	u-boot,dm-spl;
 };
 
-&i2c1 {
-	u-boot,dm-spl;
-};
-
-&pinctrl_i2c1 {
-	u-boot,dm-spl;
-};
-
-&pinctrl_i2c1_gpio {
-	u-boot,dm-spl;
-};
-
-&usdhc3 {
-	u-boot,dm-spl;
-	mmc-hs400-1_8v;
-	mmc-hs400-enhanced-strobe;
-	assigned-clocks = <&clk IMX8MP_CLK_USDHC3>;
-	assigned-clock-rates = <400000000>;
-	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
-};
-
 &usdhc2 {
 	u-boot,dm-spl;
 	sd-uhs-sdr104;
@@ -139,14 +136,13 @@
 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
 };
 
-&wdog1 {
+&usdhc3 {
 	u-boot,dm-spl;
-};
-
-&eqos {
-	/delete-property/ assigned-clocks;
-	/delete-property/ assigned-clock-parents;
-	/delete-property/ assigned-clock-rates;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+	assigned-clocks = <&clk IMX8MP_CLK_USDHC3>;
+	assigned-clock-rates = <400000000>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
 };
 
 &usb_dwc3_0 {
@@ -161,4 +157,8 @@
 	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>;
 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>;
 	assigned-clock-rates = <400000000>;
+};
+
+&wdog1 {
+	u-boot,dm-spl;
 };
