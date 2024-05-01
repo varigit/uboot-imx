@@ -68,9 +68,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define DEFAULT_TRIM1_CONFIG 0xB561BC2DU
 #define DEFAULT_TRIM2_CONFIG 0x65D4U
 
-#define IMX_TDC_POLLING_DELAY_MS      5000
+#define IMX_TMU_POLLING_DELAY_MS      5000
 
-struct imx_tdc {
+struct imx91_tmu {
 	struct udevice *dev;
 	void __iomem *iobase;
 	struct clk clk;
@@ -79,18 +79,18 @@ struct imx_tdc {
 	int passive;
 };
 
-int imx_tdc_get_temp(struct udevice *dev, int *temp)
+int imx91_tmu_get_temp(struct udevice *dev, int *temp)
 {
-	struct imx_tdc *tdc = dev_get_priv(dev);
+	struct imx91_tmu *tmu = dev_get_priv(dev);
 	u32 val;
 	int ret;
 
-	ret = readl_poll_sleep_timeout(tdc->iobase + STAT0, val,
+	ret = readl_poll_sleep_timeout(tmu->iobase + STAT0, val,
 				       (val & STAT0_DRDY0_IF_MASK), 1000, 40000);
 	if (ret)
 		return -EAGAIN;
 
-	val = readl_relaxed(tdc->iobase + DATA0) & 0xffffU;
+	val = readl_relaxed(tmu->iobase + DATA0) & 0xffffU;
 	*temp = (int)val * 1000LL / 64LL / 1000LL;
 	if (*temp < TMU_TEMP_LOW_LIMIT || *temp > TMU_TEMP_HIGH_LIMIT)
 		return -EAGAIN;
@@ -98,27 +98,27 @@ int imx_tdc_get_temp(struct udevice *dev, int *temp)
 	return 0;
 }
 
-static const struct dm_thermal_ops imx_tdc_ops = {
-	.get_temp	= imx_tdc_get_temp,
+static const struct dm_thermal_ops imx91_tmu_ops = {
+	.get_temp	= imx91_tmu_get_temp,
 };
 
-static void imx_tdc_start(struct imx_tdc *tdc, bool start)
+static void imx91_tmu_start(struct imx91_tmu *tmu, bool start)
 {
 	if (start)
-		writel_relaxed(CTRL1_START, tdc->iobase + CTRL1_SET);
+		writel_relaxed(CTRL1_START, tmu->iobase + CTRL1_SET);
 	else
-		writel_relaxed(CTRL1_STOP, tdc->iobase + CTRL1_SET);
+		writel_relaxed(CTRL1_STOP, tmu->iobase + CTRL1_SET);
 }
 
-static void imx_tdc_enable(struct imx_tdc *tdc, bool enable)
+static void imx91_tmu_enable(struct imx91_tmu *tmu, bool enable)
 {
 	if (enable)
-		writel_relaxed(CTRL1_EN, tdc->iobase + CTRL1_SET);
+		writel_relaxed(CTRL1_EN, tmu->iobase + CTRL1_SET);
 	else
-		writel_relaxed(CTRL1_EN, tdc->iobase + CTRL1_CLR);
+		writel_relaxed(CTRL1_EN, tmu->iobase + CTRL1_CLR);
 }
 
-static int imx_init_from_fuse(struct imx_tdc *tdc)
+static int imx_init_from_fuse(struct imx91_tmu *tmu)
 {
 	int ret;
 	u32 trim_val[2] = {};
@@ -134,38 +134,38 @@ static int imx_init_from_fuse(struct imx_tdc *tdc)
 	if (trim_val[0] == 0 || trim_val[1] == 0)
 		return -EINVAL;
 
-	writel_relaxed(trim_val[0], tdc->iobase + TRIM1);
-	writel_relaxed(trim_val[1], tdc->iobase + TRIM2);
+	writel_relaxed(trim_val[0], tmu->iobase + TRIM1);
+	writel_relaxed(trim_val[1], tmu->iobase + TRIM2);
 
 	return 0;
 }
 
-static int imx_tdc_default_setup(struct imx_tdc *tdc)
+static int imx91_tmu_default_setup(struct imx91_tmu *tmu)
 {
 	int ret;
 	unsigned long rate;
 	u32 div;
 
 #if (IS_ENABLED(CONFIG_CLK))
-	ret = clk_enable(&tdc->clk);
+	ret = clk_enable(&tmu->clk);
 	if (ret)
 		return ret;
 #endif
 
 	/* disable the monitor during initialization */
-	imx_tdc_enable(tdc, false);
-	imx_tdc_start(tdc, false);
+	imx91_tmu_enable(tmu, false);
+	imx91_tmu_start(tmu, false);
 
-	ret = imx_init_from_fuse(tdc);
+	ret = imx_init_from_fuse(tmu);
 	if (ret) {
-		dev_dbg(tdc->dev, "fail to get trim info %d, so use default configuration\n", ret);
-		writel_relaxed(DEFAULT_TRIM1_CONFIG, tdc->iobase + TRIM1);
-		writel_relaxed(DEFAULT_TRIM2_CONFIG, tdc->iobase + TRIM2);
+		dev_dbg(tmu->dev, "fail to get trim info %d, so use default configuration\n", ret);
+		writel_relaxed(DEFAULT_TRIM1_CONFIG, tmu->iobase + TRIM1);
+		writel_relaxed(DEFAULT_TRIM2_CONFIG, tmu->iobase + TRIM2);
 	}
 
 #if (IS_ENABLED(CONFIG_CLK))
 	/* The typical conv clk is 4MHz, the output freq is 'rate / (div + 1)' */
-	rate = clk_get_rate(&tdc->clk);
+	rate = clk_get_rate(&tmu->clk);
 	div = (rate / 4000000) - 1;
 #else
 	/* default clk is 'rate / 6' */
@@ -173,10 +173,10 @@ static int imx_tdc_default_setup(struct imx_tdc *tdc)
 #endif
 
 	/* Set divider value and enable divider */
-	writel_relaxed(DIV_EN | FIELD_PREP(DIV_MASK, div), tdc->iobase + REF_DIV);
+	writel_relaxed(DIV_EN | FIELD_PREP(DIV_MASK, div), tmu->iobase + REF_DIV);
 
 	/* Set max power up delay: 'Tpud(ms) = 0xFF * 1000 / 4000000' */
-	writel_relaxed(FIELD_PREP(PUDL_MASK, 100U), tdc->iobase + PUD_ST_CTRL);
+	writel_relaxed(FIELD_PREP(PUDL_MASK, 100U), tmu->iobase + PUD_ST_CTRL);
 
 	/*
 	 * Set resolution mode
@@ -185,8 +185,8 @@ static int imx_tdc_default_setup(struct imx_tdc *tdc)
 	 * 10b - Conversion time = 2.12925 ms
 	 * 11b - Conversion time = 4.17725 ms
 	 */
-	writel_relaxed(FIELD_PREP(CTRL1_RES_MASK, 0x3), tdc->iobase + CTRL1_CLR);
-	writel_relaxed(FIELD_PREP(CTRL1_RES_MASK, 0x1), tdc->iobase + CTRL1_SET);
+	writel_relaxed(FIELD_PREP(CTRL1_RES_MASK, 0x3), tmu->iobase + CTRL1_CLR);
+	writel_relaxed(FIELD_PREP(CTRL1_RES_MASK, 0x1), tmu->iobase + CTRL1_SET);
 
 	/*
 	 * Set measure mode
@@ -194,8 +194,8 @@ static int imx_tdc_default_setup(struct imx_tdc *tdc)
 	 * 01b - Continuous measurement
 	 * 10b - Periodic oneshot measurement
 	 */
-	writel_relaxed(FIELD_PREP(CTRL1_MEAS_MODE_MASK, 0x3), tdc->iobase + CTRL1_CLR);
-	writel_relaxed(FIELD_PREP(CTRL1_MEAS_MODE_MASK, 0x1), tdc->iobase + CTRL1_SET);
+	writel_relaxed(FIELD_PREP(CTRL1_MEAS_MODE_MASK, 0x3), tmu->iobase + CTRL1_CLR);
+	writel_relaxed(FIELD_PREP(CTRL1_MEAS_MODE_MASK, 0x1), tmu->iobase + CTRL1_SET);
 
 	/*
 	 * Set Periodic Measurement Frequency to 25Hz:
@@ -208,47 +208,47 @@ static int imx_tdc_default_setup(struct imx_tdc *tdc)
 	 * tMEAS_FREQ > (tCONV + tPUD + 6 * tCONV_CLK).
 	 * tCONV is conversion time determined by CTRL1[RESOLUTION].
 	 */
-	writel_relaxed(FIELD_PREP(MEAS_FREQ_MASK, 0x27100), tdc->iobase + PERIOD_CTRL);
+	writel_relaxed(FIELD_PREP(MEAS_FREQ_MASK, 0x27100), tmu->iobase + PERIOD_CTRL);
 
 	/* enable the monitor */
-	imx_tdc_enable(tdc, true);
-	imx_tdc_start(tdc, true);
+	imx91_tmu_enable(tmu, true);
+	imx91_tmu_start(tmu, true);
 
 	return 0;
 }
 
-static int imx_tdc_probe(struct udevice *dev)
+static int imx91_tmu_probe(struct udevice *dev)
 {
-	struct imx_tdc *tdc = dev_get_priv(dev);
+	struct imx91_tmu *tmu = dev_get_priv(dev);
 	int ret;
 
-	ret = imx_tdc_default_setup(tdc);
+	ret = imx91_tmu_default_setup(tmu);
 	if (ret)
-		dev_err(dev, "imx tdc default setup fail %d\n", ret);
+		dev_err(dev, "imx tmu default setup fail %d\n", ret);
 
 	return 0;
 }
 
-static const struct udevice_id imx_tdc_ids[] = {
-	{ .compatible = "fsl,imx91-tdc" },
+static const struct udevice_id imx91_tmu_ids[] = {
+	{ .compatible = "fsl,imx91-tmu" },
 	{ }
 };
 
-static int imx_tdc_of_to_plat(struct udevice *dev)
+static int imx91_tmu_of_to_plat(struct udevice *dev)
 {
-	struct imx_tdc *tdc = dev_get_priv(dev);
+	struct imx91_tmu *tmu = dev_get_priv(dev);
 	ofnode trips_np;
 	void *iobase;
 	int ret;
 
-	tdc->dev = dev;
+	tmu->dev = dev;
 
 	iobase = dev_read_addr_ptr(dev);
 	if (!iobase) {
-		dev_err(dev, "tdc regs missing\n");
+		dev_err(dev, "tmu regs missing\n");
 		return -EINVAL;
 	}
-	tdc->iobase = iobase;
+	tmu->iobase = iobase;
 
 	trips_np = ofnode_path("/thermal-zones/a55/trips");
 	ofnode_for_each_subnode(trips_np, trips_np) {
@@ -258,33 +258,33 @@ static int imx_tdc_of_to_plat(struct udevice *dev)
 		if (!type)
 			continue;
 		if (!strcmp(type, "critical"))
-			tdc->critical = ofnode_read_u32_default(trips_np, "temperature", 85);
+			tmu->critical = ofnode_read_u32_default(trips_np, "temperature", 85);
 		else if (strcmp(type, "passive") == 0)
-			tdc->passive = ofnode_read_u32_default(trips_np, "temperature", 80);
+			tmu->passive = ofnode_read_u32_default(trips_np, "temperature", 80);
 		else
 			continue;
 	}
 
 #if (IS_ENABLED(CONFIG_CLK))
-	ret = clk_get_by_index(dev, 0, &tdc->clk);
+	ret = clk_get_by_index(dev, 0, &tmu->clk);
 	if (ret) {
-		dev_err(dev, "failed to get tdc clock\n");
+		dev_err(dev, "failed to get tmu clock\n");
 		return ret;
 	}
 #endif
 
 	dev_dbg(dev, "polling_delay %d, critical %d, alert %d\n",
-		tdc->polling_delay, tdc->critical, tdc->passive);
+		tmu->polling_delay, tmu->critical, tmu->passive);
 	return 0;
 }
 
-U_BOOT_DRIVER(imx_tdc) = {
-	.name	= "imx_tdc",
+U_BOOT_DRIVER(imx91_tmu) = {
+	.name	= "imx91_tmu",
 	.id	= UCLASS_THERMAL,
-	.ops	= &imx_tdc_ops,
-	.of_to_plat = imx_tdc_of_to_plat,
-	.of_match = imx_tdc_ids,
-	.probe	= imx_tdc_probe,
-	.priv_auto	= sizeof(struct imx_tdc),
+	.ops	= &imx91_tmu_ops,
+	.of_to_plat = imx91_tmu_of_to_plat,
+	.of_match = imx91_tmu_ids,
+	.probe	= imx91_tmu_probe,
+	.priv_auto	= sizeof(struct imx91_tmu),
 	.flags  = DM_FLAG_PRE_RELOC,
 };

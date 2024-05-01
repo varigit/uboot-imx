@@ -35,7 +35,7 @@ config IMX_TMU
 	  The boot is hold to the cool device to throttle CPUs when the
 	  passive trip is crossed
 
-config IMX_TDC
+config IMX91_TMU
     bool "Temperature sensor driver for NXP i.MX91"
     depends on IMX91
 	help
