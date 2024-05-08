@@ -672,6 +672,9 @@ void ft_cpu_setup(void *blob, struct bd_info *bd)
 #ifdef CONFIG_SYS_DPAA_QBMAN
 	fdt_fixup_bportals(blob);
 	fdt_fixup_qportals(blob);
+
+	fdt_fixup_qbman_reserved_mem(blob);
+
 	do_fixup_by_compat_u32(blob, "fsl,qman",
 			       "clock-frequency", get_qman_freq(), 1);
 #endif

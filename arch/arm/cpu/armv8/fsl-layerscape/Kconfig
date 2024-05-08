@@ -135,6 +135,7 @@ config ARCH_LS1046A
 	select SYS_I2C_MXC_I2C2 if !DM_I2C
 	select SYS_I2C_MXC_I2C3 if !DM_I2C
 	select SYS_I2C_MXC_I2C4 if !DM_I2C
+	select RESV_RAM if SYS_DPAA_QBMAN
 	imply ID_EEPROM
 	imply SCSI
 	imply SCSI_AHCI

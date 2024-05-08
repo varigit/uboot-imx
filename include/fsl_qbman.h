@@ -71,4 +71,12 @@ struct ccsr_bman {
 	u8	res7[0x2f4];
 };
 
+#ifdef CONFIG_RESV_RAM
+void fdt_fixup_qbman_reserved_mem(void *fdt);
+#else
+static inline void fdt_fixup_qbman_reserved_mem(void *fdt)
+{
+}
+#endif
+
 #endif /* __FSL_QBMAN_H__ */

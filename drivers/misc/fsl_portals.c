@@ -20,6 +20,11 @@
 #endif
 #include <fsl_qbman.h>
 
+#ifdef CONFIG_RESV_RAM
+#include <asm/global_data.h>
+DECLARE_GLOBAL_DATA_PTR;
+#endif
+
 #define MAX_BPORTALS (CFG_SYS_BMAN_CINH_SIZE / CFG_SYS_BMAN_SP_CINH_SIZE)
 #define MAX_QPORTALS (CFG_SYS_QMAN_CINH_SIZE / CFG_SYS_QMAN_SP_CINH_SIZE)
 void setup_qbman_portals(void)
@@ -184,6 +189,151 @@ static int fdt_qportal(void *blob, int off, int id, char *name,
 	return ret;
 }
 #endif /* CONFIG_PPC */
+
+#ifdef CONFIG_RESV_RAM
+/**
+ * fdt_fixup_dynamic_reserved_mem(): Convert a dynamic reserved-memory node to static
+ *
+ * @fdt: Pointer to flat device tree blob
+ * @offset: Property offset within flat device tree blob
+ * @path: String holding the property path, used for printing
+ * @na: #address-cells of /reserved-memory node
+ * @ns: #size-cells of /reserved-memory node
+ *
+ * Takes add a reserved memory region under a reserved-memory node. Uses
+ * gd->arch.resv_ram to carve out memory and convert a dynamic allocation
+ * (using "size" and "alignment") to a static one (using "reg").
+ *
+ * Implementation inspired by fdtdec_add_reserved_memory(). While the existing
+ * API inserts a new node, we only need to insert the 'reg' property, if
+ * absent, in existing nodes.
+ *
+ * The gd->arch.resv_ram address is updated after alignment, so that successive
+ * calls do not result in overlapping memory regions.
+ */
+static void fdt_fixup_dynamic_reserved_mem(void *fdt, int offset, const char *path,
+					   int na, int ns)
+{
+	fdt32_t cells[4] = {}, *ptr = cells;
+	u64 base = gd->arch.resv_ram;
+	u64 size, alignment;
+	const fdt32_t *prop;
+	u32 upper, lower;
+	int err;
+
+	prop = fdt_getprop(fdt, offset, "reg", NULL);
+	if (prop) {
+		log_debug("node \"%s\" already contains \"reg\" property, skipping fixup\n",
+			  path);
+		return;
+	}
+
+	/* Read the size and alignment from the device tree */
+	prop = fdt_getprop(fdt, offset, "size", NULL);
+	if (!prop) {
+		log_warning("No \"size\" property for node \"%s\", aborting fixup\n",
+			    path);
+		return;
+	}
+
+	size = fdt_read_number(prop, na);
+
+	prop = fdt_getprop(fdt, offset, "alignment", NULL);
+	if (!prop) {
+		log_warning("No \"alignment\" property for node \"%s\", aborting fixup\n",
+			    path);
+		return;
+	}
+	alignment = fdt_read_number(prop, na);
+
+	/* Align the base address */
+	base = ALIGN_DOWN(base - size, alignment);
+	upper = upper_32_bits(base);
+	lower = lower_32_bits(base);
+
+	if (na > 1)
+		*ptr++ = cpu_to_fdt32(upper);
+
+	*ptr++ = cpu_to_fdt32(lower);
+
+	upper = upper_32_bits(size);
+	lower = lower_32_bits(size);
+
+	if (ns > 1)
+		*ptr++ = cpu_to_fdt32(upper);
+
+	*ptr++ = cpu_to_fdt32(lower);
+
+	err = fdt_setprop(fdt, offset, "reg", cells, (na + ns) * sizeof(*cells));
+	if (err < 0) {
+		log_warning("Failed to add reserved memory for node \"%s\": %d\n",
+			    path, err);
+		return;
+	}
+
+	/* We don't need these anymore */
+	fdt_delprop(fdt, offset, "size");
+	fdt_delprop(fdt, offset, "alignment");
+	fdt_delprop(fdt, offset, "alloc-ranges");
+
+	log_debug("Added reservation of size 0x%llx at address 0x%llx for node \"%s\"\n",
+		  size, base, path);
+
+	gd->arch.resv_ram = base;
+}
+
+static void fdt_fixup_qbman_reserved_mem_one(void *fdt, const char *alias,
+					     int na, int ns)
+{
+	const char *path = fdt_get_alias(fdt, alias);
+	int offset;
+
+	if (!path) {
+		log_debug("No \"%s\" alias found, skipping base address fixup\n",
+			  alias);
+		return;
+	}
+
+	offset = fdt_path_offset(fdt, path);
+	if (offset < 0) {
+		log_debug("Failed to find offset for path \"%s\"\n", path);
+		return;
+	}
+
+	fdt_fixup_dynamic_reserved_mem(fdt, offset, path, na, ns);
+}
+
+/* Reserve memory in RAM for the QBMan FBPR, FQD and PFDR private memory
+ * regions. Update the device tree with the corresponding addresses.
+ *
+ * The regions are accessed in Linux and can be configured in BAR registers
+ * only once per SoC reset. In order to guarantee the same memory regions
+ * are used by successive kernels without a reset (e.g. kexec), reserve the
+ * regions from the bootloader so they persist between kernels.
+ */
+void fdt_fixup_qbman_reserved_mem(void *fdt)
+{
+	int offset = fdt_path_offset(fdt, "/reserved-memory");
+	int na, ns;
+
+	if (offset < 0) {
+		log_warning("No \"/reserved-memory\" node, aborting QBMan fixup\n");
+		return;
+	}
+
+	na = fdt_address_cells(fdt, offset);
+	ns = fdt_size_cells(fdt, offset);
+
+	/* Reserve memory regions for each area. The calling order here
+	 * should be kept the same as their relative ordering within the
+	 * /reserved-memory node, if U-Boot should reserve the same addresses
+	 * as Linux. The gd->arch.resv_ram address is updated in each call.
+	 */
+	fdt_fixup_qbman_reserved_mem_one(fdt, "bman_fbpr", na, ns);
+	fdt_fixup_qbman_reserved_mem_one(fdt, "qman_fqd", na, ns);
+	fdt_fixup_qbman_reserved_mem_one(fdt, "qman_pfdr", na, ns);
+}
+#endif
 
 void fdt_fixup_qportals(void *blob)
 {
