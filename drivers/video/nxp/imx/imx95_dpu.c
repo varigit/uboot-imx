@@ -26,6 +26,49 @@
 #include <regmap.h>
 #include <syscon.h>
 
+#if defined(CONFIG_ANDROID_SUPPORT) && defined(CONFIG_IMX_TRUSTY_OS)
+#include <trusty/trusty_dev.h>
+#include "../lib/trusty/ql-tipc/arch/arm/smcall.h"
+
+#define SMC_ENTITY_IMX_LINUX_OPT 54
+#define SMC_IMX_ECHO SMC_FASTCALL_NR(SMC_ENTITY_IMX_LINUX_OPT, 0)
+#define SMC_IMX_DPU_REG_WRITE SMC_FASTCALL_NR(SMC_ENTITY_IMX_LINUX_OPT, 3)
+#define SMC_IMX_DPU_REG_READ SMC_FASTCALL_NR(SMC_ENTITY_IMX_LINUX_OPT, 4)
+
+#ifdef writel
+#undef writel
+#define writel(v, a) trusty_simple_fast_call32(SMC_IMX_DPU_REG_WRITE, (fdt_addr_t)(a), (v), 0)
+#endif
+#ifdef clrsetbits_le32
+#undef clrsetbits_le32
+#define clrsetbits_le32(addr, clear, set) \
+        { \
+                u32 dpu_reg_value = trusty_simple_fast_call32(SMC_IMX_DPU_REG_READ, (fdt_addr_t)(addr), 0, 0); \
+                dpu_reg_value &= ~(clear); \
+                dpu_reg_value |= (set); \
+                trusty_simple_fast_call32(SMC_IMX_DPU_REG_WRITE, (fdt_addr_t)(addr), (dpu_reg_value), 0); \
+        }
+#endif
+
+#ifdef readl_poll_timeout
+#undef readl_poll_timeout
+#define readl_poll_timeout(addr, val, cond, timeout_us) \
+({ \
+        unsigned long timeout = timer_get_us() + timeout_us; \
+        for (;;) { \
+                (val) = trusty_simple_fast_call32(SMC_IMX_DPU_REG_READ, (fdt_addr_t)(addr), 0, 0); \
+                if (cond) \
+                        break; \
+                if (timeout_us && time_after(timer_get_us(), timeout)) { \
+                        val = trusty_simple_fast_call32(SMC_IMX_DPU_REG_READ, (fdt_addr_t)(addr), 0, 0); \
+                        break; \
+                } \
+        } \
+        (cond) ? 0 : -ETIMEDOUT; \
+})
+#endif
+
+#endif
 
 #define  LINEWIDTH(w)			(((w) - 1) & 0x3fff)
 #define  LINECOUNT(h)			((((h) - 1) & 0x3fff) << 16)
@@ -943,6 +986,14 @@ static int imx95_dpu_probe(struct udevice *dev)
 	mmu_set_region_dcache_behaviour(fb_start, fb_end - fb_start,
 					DCACHE_WRITEBACK);
 	video_set_flush_dcache(dev, true);
+
+#if defined(CONFIG_ANDROID_SUPPORT) && defined(CONFIG_IMX_TRUSTY_OS)
+	ret = trusty_simple_fast_call32(SMC_IMX_ECHO, 0, 0, 0);
+	if (ret) {
+		printf("failed to get response of echo. Trusty may not be active.\n"); \
+		return ret;
+	}
+#endif
 
 	ret = imx95_dpu_path_config(dev, 0, 1, 0, priv->disp_id, priv->disp_id, priv->disp_id);
 	if (ret) {
