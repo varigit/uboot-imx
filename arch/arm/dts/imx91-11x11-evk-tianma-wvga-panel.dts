@@ -68,8 +68,9 @@
 };
 
 &parallel_disp_fmt {
-	pinctrl-names = "default";
+	pinctrl-names = "default", "gpio";
 	pinctrl-0 = <&pinctrl_lcdif>;
+	pinctrl-1 = <&pinctrl_lcdif_gpio>;
 	fsl,interface-pix-fmt = "rgb666";
 	status = "okay";
 
