@@ -52,14 +52,14 @@ enum {
 	MX91_PAD_GPIO_IO01__LPI2C5_SCL                                                  = IOMUX_PAD(0x01C4, 0x0014, 0x06, 0x0400, 0x00, 0x00),
 	MX91_PAD_GPIO_IO01__FLEXIO1_FLEXIO1                                             = IOMUX_PAD(0x01C4, 0x0014, 0x07, 0x0370, 0x00, 0x00),
 
-	MX91_PAD_GPIO_IO02__GPIO2_IO3                                                   = IOMUX_PAD(0x01C8, 0x0018, 0x00, 0x0000, 0x00, 0x00),
+	MX91_PAD_GPIO_IO02__GPIO2_IO2                                                   = IOMUX_PAD(0x01C8, 0x0018, 0x00, 0x0000, 0x00, 0x00),
 	MX91_PAD_GPIO_IO02__LPI2C4_SDA                                                  = IOMUX_PAD(0x01C8, 0x0018, 0x01, 0x03FC, 0x00, 0x00),
 	MX91_PAD_GPIO_IO02__MEDIAMIX_CAM_VSYNC                                          = IOMUX_PAD(0x01C8, 0x0018, 0x02, 0x04C0, 0x00, 0x00),
 	MX91_PAD_GPIO_IO02__MEDIAMIX_DISP_VSYNC                                         = IOMUX_PAD(0x01C8, 0x0018, 0x03, 0x0000, 0x00, 0x00),
 	MX91_PAD_GPIO_IO02__LPSPI6_SOUT                                                 = IOMUX_PAD(0x01C8, 0x0018, 0x04, 0x0000, 0x00, 0x00),
 	MX91_PAD_GPIO_IO02__LPUART5_CTS_B                                               = IOMUX_PAD(0x01C8, 0x0018, 0x05, 0x0484, 0x01, 0x00),
 	MX91_PAD_GPIO_IO02__LPI2C6_SDA                                                  = IOMUX_PAD(0x01C8, 0x0018, 0x06, 0x040C, 0x00, 0x00),
-	MX91_PAD_GPIO_IO02__FLEXIO1_FLEXIO3                                             = IOMUX_PAD(0x01C8, 0x0018, 0x07, 0x0374, 0x00, 0x00),
+	MX91_PAD_GPIO_IO02__FLEXIO1_FLEXIO2                                             = IOMUX_PAD(0x01C8, 0x0018, 0x07, 0x0374, 0x00, 0x00),
 
 	MX91_PAD_GPIO_IO03__GPIO2_IO3                                                   = IOMUX_PAD(0x01CC, 0x001C, 0x00, 0x0000, 0x00, 0x00),
 	MX91_PAD_GPIO_IO03__LPI2C4_SCL                                                  = IOMUX_PAD(0x01CC, 0x001C, 0x01, 0x03F8, 0x00, 0x00),
