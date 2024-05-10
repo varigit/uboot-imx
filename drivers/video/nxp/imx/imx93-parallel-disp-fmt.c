@@ -18,6 +18,7 @@
 #include <linux/iopoll.h>
 #include <linux/err.h>
 #include <media_bus_format.h>
+#include <dm/pinctrl.h>
 
 #define	DISPLAY_MUX_CTRL        0x60
 #define	PARALLEL_DISP_FORMAT   0x700
@@ -122,9 +123,14 @@ static int imx93_pdf_probe(struct udevice *dev)
 static int imx93_pdf_remove(struct udevice *dev)
 {
 	struct imx93_pdf_priv *priv = dev_get_priv(dev);
+	int ret;
 
 	if (priv->panel)
 		device_remove(priv->panel, DM_REMOVE_NORMAL);
+
+	ret = pinctrl_select_state(dev, "gpio");
+	if (ret && ret != -ENOSYS)
+		dev_err(dev, "fail to set gpio pinctrl state, %d\n", ret);
 
 	return 0;
 }
