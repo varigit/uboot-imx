@@ -69,6 +69,9 @@ int board_early_init_f(void)
 	struct gpio_regs *gpio2 = (struct gpio_regs *)(GPIO2_BASE_ADDR + 0x40);
 	setbits_le32(&gpio2->gpio_pcor, 0xf);
 	setbits_le32(&gpio2->gpio_pddr, 0xf);
+	/* Set GPIO2_26 to output high to disable panel backlight at default */
+	setbits_le32(&gpio2->gpio_psor, BIT(26));
+	setbits_le32(&gpio2->gpio_pddr, BIT(26));
 
 	init_uart_clk(LPUART1_CLK_ROOT);
 
@@ -269,6 +272,8 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
+struct gpio_desc ext_pwren_desc, exp_sel_desc;
+
 static void board_gpio_init(void)
 {
 	struct gpio_desc desc;
@@ -299,27 +304,27 @@ static void board_gpio_init(void)
 	dm_gpio_set_value(&desc, 1);
 
 	/* Enable EXT_PWREN for vRPi 5V */
-	ret = dm_gpio_lookup_name("gpio@22_8", &desc);
+	ret = dm_gpio_lookup_name("gpio@22_8", &ext_pwren_desc);
 	if (ret)
 		return;
 
-	ret = dm_gpio_request(&desc, "EXT_PWREN");
+	ret = dm_gpio_request(&ext_pwren_desc, "EXT_PWREN");
 	if (ret)
 		return;
 
-	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
-	dm_gpio_set_value(&desc, 1);
+	dm_gpio_set_dir_flags(&ext_pwren_desc, GPIOD_IS_OUT);
+	dm_gpio_set_value(&ext_pwren_desc, 1);
 
-	ret = dm_gpio_lookup_name("adp5585-gpio4", &desc);
+	ret = dm_gpio_lookup_name("adp5585-gpio4", &exp_sel_desc);
 	if (ret)
 		return;
 
-	ret = dm_gpio_request(&desc, "EXP_SEL");
+	ret = dm_gpio_request(&exp_sel_desc, "EXP_SEL");
 	if (ret)
 		return;
 
-	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
-	dm_gpio_set_value(&desc, 1);
+	dm_gpio_set_dir_flags(&exp_sel_desc, GPIOD_IS_OUT);
+	dm_gpio_set_value(&exp_sel_desc, 1);
 }
 
 int board_init(void)
@@ -349,4 +354,13 @@ int board_late_init(void)
 	env_set("board_rev", "iMX93");
 #endif
 	return 0;
+}
+
+void board_quiesce_devices(void)
+{
+	/* Turn off 5V for backlight */
+	dm_gpio_set_value(&ext_pwren_desc, 0);
+
+	/* Turn off MUX for rpi */
+	dm_gpio_set_value(&exp_sel_desc, 0);
 }
