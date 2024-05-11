@@ -14,6 +14,8 @@
 #include <netdev.h>
 #include <asm/gpio.h>
 #include <i2c.h>
+#include <dm/uclass.h>
+#include <dm/uclass-internal.h>
 #include <power-domain.h>
 #include <dt-bindings/power/imx8ulp-power.h>
 
@@ -263,10 +265,19 @@ int is_recovery_key_pressing(void)
 
 void board_quiesce_devices(void)
 {
+	int ret;
+	struct uclass *uc_dev;
+
+	ret = uclass_get(UCLASS_SPI_FLASH, &uc_dev);
+	if (uc_dev)
+		ret = uclass_destroy(uc_dev);
+	if (ret)
+		printf("Couldn't remove SPI FLASH devices\n");
+
 	/* Disable the power domains may used in u-boot before entering kernel */
 #if CONFIG_IS_ENABLED(POWER_DOMAIN)
 	struct udevice *scmi_devpd;
-	int ret, i;
+	int i;
 	struct power_domain pd;
 	ulong ids[] = {
 		IMX8ULP_PD_FLEXSPI2, IMX8ULP_PD_USB0, IMX8ULP_PD_USDHC0,
