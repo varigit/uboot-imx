@@ -182,7 +182,8 @@ U_BOOT_CMD(
 	"lock_status");
 #endif
 
-#if defined(CONFIG_FLASH_MCUFIRMWARE_SUPPORT) && defined(CONFIG_ARCH_IMX8M)
+#ifdef CONFIG_FLASH_MCUFIRMWARE_SUPPORT
+#if defined (CONFIG_IMX95) || defined(CONFIG_ARCH_IMX8M)
 static int do_bootmcu(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
 {
 	int ret;
@@ -196,9 +197,15 @@ static int do_bootmcu(struct cmd_tbl *cmdtp, int flag, int argc, char * const ar
 		printf("Read MCU images failed!\n");
 		return 1;
 	} else {
+#ifdef CONFIG_ARCH_IMX8M
 		printf("run command: 'bootaux 0x%x'\n",(unsigned int)(ulong)mcu_base_addr);
 
 		sprintf(command, "bootaux 0x%x", (unsigned int)(ulong)mcu_base_addr);
+#else
+		printf("run command: 'bootaux 0 1'\n");
+
+		sprintf(command, "bootaux 0 1");
+#endif
 		ret = run_command(command, 0);
 		if (ret) {
 			printf("run 'bootaux' command failed!\n");
@@ -213,6 +220,7 @@ U_BOOT_CMD(
 	"boot mcu images\n",
 	"boot mcu images from 'mcu_os' partition, only support images run from TCM"
 );
+#endif
 #endif
 
 #ifdef CONFIG_CMD_BOOTA

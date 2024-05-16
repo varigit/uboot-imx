@@ -56,6 +56,7 @@
 #define TCMU_BASE_MCORE_NSEC_ADDR   (0x20000000UL)
 #define TCMU_SIZE                   (0x20000U)
 
+#define MCU_BOOTROM_BASE_ADDR (0x203C0000UL)
 #define M7_TCML_BASE_ADDR              (0x20380000UL)
 #define M7_TCML_BASE_MCORE_ADDR    (0x0UL)
 #define M7_TCML_MAX_SIZE                (0x80000U) /* Could configure to 512KB TCML */
