@@ -608,8 +608,8 @@ int ele_return_lifecycle_update(ulong signed_msg_blk, u32 *response)
 
 	ret = misc_call(dev, false, &msg, size, &msg, size);
 	if (ret)
-		printf("Error: %s: ret %d, response 0x%x, failed fuse row index %u\n",
-		       __func__, ret, msg.data[0], msg.data[1]);
+		printf("Error: %s: ret %d, response 0x%x\n",
+		       __func__, ret, msg.data[0]);
 
 	if (response)
 		*response = msg.data[0];
