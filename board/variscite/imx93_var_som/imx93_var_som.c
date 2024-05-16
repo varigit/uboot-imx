@@ -148,6 +148,7 @@ int board_late_init(void)
 	char som_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_EXTCON_PTN5150
+	if (id == VAR_SOM_MX93)
 		extcon_ptn5150_setup(&usb_ptn5150);
 #endif
 
