@@ -250,7 +250,7 @@ static int imx91_tmu_of_to_plat(struct udevice *dev)
 	}
 	tmu->iobase = iobase;
 
-	trips_np = ofnode_path("/thermal-zones/a55/trips");
+	trips_np = ofnode_path("/thermal-zones/cpu-thermal/trips");
 	ofnode_for_each_subnode(trips_np, trips_np) {
 		const char *type;
 
