@@ -28,7 +28,7 @@ static struct boot_img_t *read_auth_image(struct spl_image_info *spl_image,
 					  ulong container_offset)
 {
 	struct boot_img_t *images;
-	ulong offset, overhead, size;
+	ulong offset, size;
 
 	if (image_index > container->num_images) {
 		debug("Invalid image number\n");
@@ -50,7 +50,7 @@ static struct boot_img_t *read_auth_image(struct spl_image_info *spl_image,
 	debug("%s: container: %p offset: %lu size: %lu\n", __func__,
 	      container, offset, size);
 	if (info->read(info, offset, size,
-		       map_sysmem(images[image_index].dst - overhead,
+		       map_sysmem(images[image_index].dst,
 				  images[image_index].size)) <
 	    images[image_index].size) {
 		printf("%s wrong\n", __func__);
