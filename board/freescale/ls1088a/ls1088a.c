@@ -435,8 +435,14 @@ void board_retimer_init(void)
 	i2c_write(I2C_RETIMER_ADDR, 0xff, 1, &reg, 1);
 #else
 	struct udevice *dev;
+	int ret;
 
-	i2c_get_chip_for_busnum(0, I2C_RETIMER_ADDR, 1, &dev);
+	ret = i2c_get_chip_for_busnum(0, I2C_RETIMER_ADDR, 1, &dev);
+	if (ret) {
+		printf("%s: Cannot find retimer dev\n",
+		       __func__);
+		return;
+	}
 	dm_i2c_write(dev, 0xff, &reg, 1);
 #endif
 
@@ -524,7 +530,12 @@ void board_retimer_init(void)
 #if !CONFIG_IS_ENABLED(DM_I2C)
 	i2c_write(I2C_RETIMER_ADDR2, 0xff, 1, &reg, 1);
 #else
-	i2c_get_chip_for_busnum(0, I2C_RETIMER_ADDR2, 1, &dev);
+	ret = i2c_get_chip_for_busnum(0, I2C_RETIMER_ADDR2, 1, &dev);
+	if (ret) {
+		printf("%s: Cannot find retimer2 dev\n",
+		       __func__);
+		return;
+	}
 	dm_i2c_write(dev, 0xff, &reg, 1);
 #endif
 
