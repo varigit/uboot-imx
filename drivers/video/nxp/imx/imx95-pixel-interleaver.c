@@ -166,7 +166,7 @@ static int imx95_pinter_probe(struct udevice *dev)
 {
 	struct imx95_pinter *pinter = dev_get_priv(dev);
 	u8 inter_stream;
-	int ret;
+	int ret = 0;
 
 	/* Only probe for channel  */
 	if (dev->plat_ != NULL) {
