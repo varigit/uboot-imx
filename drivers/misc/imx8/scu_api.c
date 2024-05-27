@@ -896,7 +896,7 @@ int sc_pm_reset_reason(sc_ipc_t ipc, sc_pm_reset_reason_t *reason)
 
 	ret = misc_call(dev, SC_FALSE, &msg, size, &msg, size);
 	if (ret)
-		printf("%s: res:%d\n", __func__, RPC_U8(&msg, 0U));
+		printf("%s: res:%d\n", __func__, RPC_R8(&msg));
 
 	if (reason)
 		*reason = RPC_U8(&msg, 0U);
