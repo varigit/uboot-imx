@@ -81,7 +81,7 @@ static int imx93_pdf_probe(struct udevice *dev)
 {
 	struct imx93_pdf_priv *priv = dev_get_priv(dev);
 	const char *fmt;
-	u32 bus_format;
+	u32 bus_format = 0;
 	int ret;
 
 	priv->addr = (void __iomem *)dev_read_addr(dev_get_parent(dev));
