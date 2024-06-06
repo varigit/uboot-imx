@@ -107,7 +107,7 @@ int power_init_board(void)
 
 void display_ele_fw_version(void)
 {
-	u32 fw_version, sha1, res;
+	u32 fw_version, sha1, res = 0;
 	int ret;
 
 	ret = ele_get_fw_version(&fw_version, &sha1, &res);

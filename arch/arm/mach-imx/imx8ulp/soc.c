@@ -1178,7 +1178,7 @@ static int disable_cpu_nodes(void *blob, u32 disabled_cores)
 int ft_system_setup(void *blob, struct bd_info *bd)
 {
 	u32 uid[4];
-	u32 res;
+	u32 res = 0;
 	int ret;
 	int nodeoff = fdt_path_offset(blob, "/soc");
 	/* Nibble 1st for major version
