@@ -20,3 +20,10 @@ jobs:
         arm64:imx8mp_var_dart_android_trusty_defconfig
         arm64:imx8mp_var_dart_android_trusty_dual_defconfig
         arm64:imx8mp_var_dart_android_trusty_secure_unlock_dual_defconfig
+        arm64:imx8mm_var_dart_android_defconfig
+        arm64:imx8mm_var_dart_android_dual_defconfig
+        arm64:imx8mm_var_dart_android_trusty_defconfig
+        arm64:imx8mm_var_dart_android_trusty_dual_defconfig
+        arm64:imx8mm_var_dart_android_trusty_secure_unlock_dual_defconfig
+        arm64:imx8mm_var_dart_android_uuu_defconfig
+        arm64:imx8mm_var_dart_defconfig
