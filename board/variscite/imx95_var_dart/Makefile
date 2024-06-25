@@ -6,6 +6,7 @@
 #
 
 obj-y += imx95_var_dart.o
+obj-$(CONFIG_TARGET_IMX95_VAR_DART) += ../common/imx9_eeprom.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
