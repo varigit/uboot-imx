@@ -161,6 +161,7 @@
 #define PHYS_SDRAM_SIZE			0x70000000 /* 2GB  - 256MB DDR */
 #define PHYS_SDRAM_2_SIZE 		0x180000000 /* 6GB */
 
+#define DEFAULT_SDRAM_SIZE		(4UL * SZ_1G) /* 4GB Minimum DDR5, see get_dram_size */
 #define CFG_SYS_FSL_USDHC_NUM	2
 
 /* Using ULP WDOG for reset */
