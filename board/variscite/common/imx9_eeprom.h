@@ -56,7 +56,11 @@ struct __attribute__((packed)) var_eeprom
 	u8 fsp_bypass;			/* 84-0x54 - Bitfield for ddr_dram_fsp_cfg[i].bypass */
 };
 
+#ifdef CONFIG_TARGET_IMX93_VAR_SOM
 #define VAR_EEPROM_DATA ((struct var_eeprom *)VAR_EEPROM_DRAM_START)
+#else /* CONFIG_TARGET_IMX95_VAR_DART */
+#define VAR_EEPROM_DATA ((struct var_eeprom *)0xA0000000) /* DRAM is already initialized */
+#endif
 
 #define VAR_CARRIER_EEPROM_MAGIC	0x5643 /* == HEX("VC") */
 

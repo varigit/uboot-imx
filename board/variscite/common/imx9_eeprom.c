@@ -12,6 +12,12 @@
 #include <u-boot/crc.h>
 #include <asm/arch-imx9/ddr.h>
 
+#ifdef CONFIG_SCMI_FIRMWARE
+#include <scmi_agent.h>
+#include <scmi_protocols.h>
+#include <scmi_nxp_protocols.h>
+#endif
+
 #include "imx9_eeprom.h"
 
 struct mx9_ddr_adjust {
@@ -20,6 +26,7 @@ struct mx9_ddr_adjust {
 	unsigned int cfg_num;
 };
 
+#ifdef CONFIG_TARGET_IMX93_VAR_SOM
 static int var_eeprom_get_dev(struct udevice **devp)
 {
 	int ret;
@@ -42,10 +49,77 @@ static int var_eeprom_get_dev(struct udevice **devp)
 
 	return 0;
 }
+#endif
+
+#if defined(CONFIG_TARGET_IMX95_VAR_DART) && defined(CONFIG_SCMI_FIRMWARE)
+#define VAR_FLUSH_CACHES() \
+	do { \
+		flush_dcache_all(); \
+		invalidate_icache_all(); \
+	} while (0)
+
+static int var_scmi_eeprom_read(uintptr_t addr, u32 size)
+{
+	int ret;
+	typedef struct {
+		u32 devId;
+		u32 dir;
+		u32 offset;
+		u32 buffer;
+		u32 len;
+	} scmi_eeprom_xfer_in_t;
+
+	scmi_eeprom_xfer_in_t xfer_in = {
+		.devId = VAR_SOM_EEPROM_I2C_ADDR,
+		.dir = 0, /* READ */
+		.offset = 0,
+		.buffer = (u32)addr,
+		.len = size,
+	};
+
+	typedef struct {
+		u32 status;
+	} scmi_eeprom_xfer_out_t;
+
+	scmi_eeprom_xfer_out_t xfer_out;
+
+	struct scmi_msg msg = SCMI_MSG_IN(SCMI_PROTOCOL_ID_MISC,
+					  0xC, /* SCMI_MISC_EEPROM_XFER */
+					  xfer_in, xfer_out);
+
+	VAR_FLUSH_CACHES();
+	ret = devm_scmi_process_msg(gd->arch.scmi_dev, gd->arch.scmi_channel, &msg);
+	VAR_FLUSH_CACHES();
+
+	if (ret)
+		return ret;
+
+	if (xfer_out.status) {
+		debug("%s: EEPROM SCMI command failed (status=%d)\n", __func__, xfer_out.status);
+		return -1;
+	}
+
+	return 0;
+}
+
+int var_scmi_eeprom_read_header(struct var_eeprom *e)
+{
+	int ret;
+
+	ret = var_scmi_eeprom_read((uintptr_t)e, sizeof(*e));
+	if (ret) {
+		printf("%s: SCMI EEPROM read failed, ret=%d\n", __func__, ret);
+		return ret;
+	}
+
+	return 0;
+}
+#endif
 
 int var_eeprom_read_header(struct var_eeprom *e)
 {
 	int ret;
+#ifdef CONFIG_TARGET_IMX93_VAR_SOM
 	struct udevice *dev;
 
 	ret = var_eeprom_get_dev(&dev);
@@ -60,6 +134,14 @@ int var_eeprom_read_header(struct var_eeprom *e)
 		debug("%s: EEPROM read failed, ret=%d\n", __func__, ret);
 		return ret;
 	}
+#elif defined(CONFIG_TARGET_IMX95_VAR_DART) && defined(CONFIG_SCMI_FIRMWARE)
+	printf("%s: Calling SCMI to read EEPROM\n", __func__);
+	ret = var_scmi_eeprom_read_header(e);
+	if (ret) {
+		printf("%s: SCMI EEPROM read failed, ret=%d\n", __func__, ret);
+		return ret;
+	}
+#endif
 
 	return 0;
 }
@@ -100,6 +182,8 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 		printf("\nPart number: VSM-DT93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 	else
 		printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
+#else /* CONFIG_TARGET_IMX95_VAR_DART */
+	printf("\nPart number: VSM-DT95-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 #endif
 
 	printf("Assembly: AS%.*s\n", (int)sizeof(ep->assembly), (char *)ep->assembly);
@@ -123,7 +207,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 }
 #endif
 
-#if defined(CONFIG_SPL_BUILD)
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_TARGET_IMX93_VAR_SOM)
 static int var_eeprom_crc32(struct var_eeprom *ep, const uint32_t offset,
 							const uint32_t len, uint32_t * crc32_val) {
 	uint32_t i;
