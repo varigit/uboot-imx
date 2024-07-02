@@ -275,7 +275,7 @@ static int mxl86111_config(struct phy_device *phydev)
 	return mxl8611x_config(phydev);
 }
 
-static struct phy_driver mxl86110_driver = {
+U_BOOT_PHY_DRIVER(MXL86110) = {
 	.name = "MXL86110",
 	.uid = PHY_ID_MXL86110,
 	.mask = 0xffffffff,
@@ -287,7 +287,7 @@ static struct phy_driver mxl86110_driver = {
 	.writeext = mxl8611x_extwrite,
 };
 
-static struct phy_driver mxl86111_driver = {
+U_BOOT_PHY_DRIVER(MXL86111) = {
 	.name = "MXL86111",
 	.uid = PHY_ID_MXL86111,
 	.mask = 0xffffffff,
@@ -298,11 +298,3 @@ static struct phy_driver mxl86111_driver = {
 	.readext = mxl8611x_extread,
 	.writeext = mxl8611x_extwrite,
 };
-
-int phy_mxl8611x_init(void)
-{
-	phy_register(&mxl86110_driver);
-	phy_register(&mxl86111_driver);
-
-	return 0;
-}
