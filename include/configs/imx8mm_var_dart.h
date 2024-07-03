@@ -122,8 +122,10 @@
 			"setenv cma_size cma=320M; " \
 		"elif test $sdram_size -le 1024; then " \
 			"setenv cma_size cma=576M; " \
-		"else " \
+		"elif test $sdram_size -le 2048; then " \
 			"setenv cma_size cma=640M; " \
+		"else " \
+			"setenv cma_size cma=640M@0x96000000; " \
 		"fi;\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
