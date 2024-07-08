@@ -69,6 +69,8 @@ int board_early_init_f(void)
 #define PHY_CTRL6_ALT_CLK_EN		BIT(1)
 #define PHY_CTRL6_ALT_CLK_SEL		BIT(0)
 
+int var_setup_mac(struct var_eeprom *eeprom);
+
 static struct dwc3_device dwc3_device_data = {
 #ifdef CONFIG_SPL_BUILD
 	.maximum_speed = USB_SPEED_HIGH,
@@ -269,6 +271,7 @@ int board_init(void)
 int board_late_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	char som_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
@@ -279,6 +282,18 @@ int board_late_init(void)
 	env_set("sec_boot", "yes");
 #endif
 
+	/* SoM Features ENV */
+	if (ep->features & VAR_EEPROM_F_WBE)
+		env_set("som_has_wbe", "1");
+	else
+		env_set("som_has_wbe", "0");
+
+	/* SoM Rev and Board name ENV */
+	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
+	env_set("som_rev", som_rev);
+	env_set("board_name", "DART-MX95");
+
+	var_setup_mac(ep);
 	var_eeprom_print_prod_info(ep);
 
 	return 0;
