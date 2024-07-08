@@ -29,6 +29,8 @@
 #include <dt-bindings/power/fsl,imx95-power.h>
 #endif
 
+#include "../common/imx9_eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 int board_early_init_f(void)
@@ -266,6 +268,8 @@ int board_init(void)
 
 int board_late_init(void)
 {
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
@@ -274,6 +278,8 @@ int board_late_init(void)
 #ifdef CONFIG_AHAB_BOOT
 	env_set("sec_boot", "yes");
 #endif
+
+	var_eeprom_print_prod_info(ep);
 
 	return 0;
 }
