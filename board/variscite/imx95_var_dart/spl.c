@@ -36,6 +36,8 @@
 #include <dt-bindings/power/fsl,imx95-power.h>
 #endif
 
+#include "../common/imx9_eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 static struct udevice *scmi_dev __maybe_unused;
@@ -155,6 +157,9 @@ void board_init_f(ulong dummy)
 	}
 
 	flexspi_nor_reset();
+
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	var_eeprom_read_header(ep);
 
 	board_init_r(NULL, 0);
 }
