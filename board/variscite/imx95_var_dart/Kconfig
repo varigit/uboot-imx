@@ -1,0 +1,14 @@
+if TARGET_IMX95_VAR_DART
+
+config SYS_BOARD
+	default "imx95_var_dart"
+
+config SYS_VENDOR
+	default "variscite"
+
+config SYS_CONFIG_NAME
+	default "imx95_var_dart"
+
+source "board/variscite/common/Kconfig"
+
+endif
