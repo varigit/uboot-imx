@@ -7,4 +7,3 @@ Variscite
    :maxdepth: 2
 
    imx8mn_var_som
-   imx93_var_som
