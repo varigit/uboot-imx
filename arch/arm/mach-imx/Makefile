@@ -14,7 +14,7 @@ ifneq ($(CONFIG_SPL_BUILD),y)
 obj-$(CONFIG_IMX_BOOTAUX) += imx_bootaux.o
 obj-$(CONFIG_CMD_PROVISION_KEY) += cmd_prov_key.o
 endif
-obj-y += mmc_env.o
+obj-$(CONFIG_ENV_IS_IN_MMC) += mmc_env.o
 obj-$(CONFIG_FEC_MXC) += mac.o
 obj-$(CONFIG_DWC_ETH_QOS) += mac.o
 obj-$(CONFIG_SYS_I2C_MXC) += i2c-mxv7.o
@@ -41,7 +41,7 @@ endif
 ifeq ($(SOC),$(filter $(SOC),mx7))
 obj-y	+= cpu.o
 obj-$(CONFIG_SYS_I2C_MXC) += i2c-mxv7.o
-obj-y += mmc_env.o
+obj-$(CONFIG_ENV_IS_IN_MMC) += mmc_env.o
 endif
 ifeq ($(SOC),$(filter $(SOC),mx7 imx8 imx8m))
 ifneq ($(CONFIG_SPL_BUILD),y)
