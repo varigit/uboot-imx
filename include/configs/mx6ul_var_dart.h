@@ -202,19 +202,25 @@
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
+			"setenv codec_suffix '';" \
+			"if test -n $codec && test $codec = wm8731; then " \
+				"setenv codec_suffix -wm8731;" \
+			"else " \
+				"setenv codec_suffix '';" \
+			"fi; " \
 			"if test $boot_dev = sd; then " \
 				"if test $som_storage = emmc || test $som_storage = none; then " \
 					"if test $soc_type = imx6ull; then " \
-						"setenv fdt_file imx6ull-var-dart-sd_emmc.dtb; " \
+						"setenv fdt_file imx6ull-var-dart-sd_emmc${codec_suffix}.dtb; " \
 					"else " \
-						"setenv fdt_file imx6ul-var-dart-sd_emmc.dtb; " \
+						"setenv fdt_file imx6ul-var-dart-sd_emmc${codec_suffix}.dtb; " \
 					"fi; " \
 				"fi; " \
 				"if test $som_storage = nand; then " \
 					"if test $soc_type = imx6ull; then " \
-						"setenv fdt_file imx6ull-var-dart-sd_nand.dtb; " \
+						"setenv fdt_file imx6ull-var-dart-sd_nand${codec_suffix}.dtb; " \
 					"else " \
-						"setenv fdt_file imx6ul-var-dart-sd_nand.dtb; " \
+						"setenv fdt_file imx6ul-var-dart-sd_nand${codec_suffix}.dtb; " \
 					"fi; " \
 				"fi; " \
 			"fi; " \
@@ -222,22 +228,22 @@
 				"if test $wifi = yes; then " \
 					"if test $soc_type = imx6ull; then " \
 						"if test $som_rev = 5G; then " \
-							"setenv fdt_file imx6ull-var-dart-5g-emmc_wifi.dtb; " \
+							"setenv fdt_file imx6ull-var-dart-5g-emmc_wifi${codec_suffix}.dtb; " \
 						"else " \
-							"setenv fdt_file imx6ull-var-dart-emmc_wifi.dtb; " \
+							"setenv fdt_file imx6ull-var-dart-emmc_wifi${codec_suffix}.dtb; " \
 						"fi; " \
 					"else " \
 						"if test $som_rev = 5G; then " \
-							"setenv fdt_file imx6ul-var-dart-5g-emmc_wifi.dtb; " \
+							"setenv fdt_file imx6ul-var-dart-5g-emmc_wifi${codec_suffix}.dtb; " \
 						"else " \
-							"setenv fdt_file imx6ul-var-dart-emmc_wifi.dtb; " \
+							"setenv fdt_file imx6ul-var-dart-emmc_wifi${codec_suffix}.dtb; " \
 						"fi; " \
 					"fi; " \
 				"else " \
 					"if test $soc_type = imx6ull; then " \
-						"setenv fdt_file imx6ull-var-dart-sd_emmc.dtb; " \
+						"setenv fdt_file imx6ull-var-dart-sd_emmc${codec_suffix}.dtb; " \
 					"else " \
-						"setenv fdt_file imx6ul-var-dart-sd_emmc.dtb; " \
+						"setenv fdt_file imx6ul-var-dart-sd_emmc${codec_suffix}.dtb; " \
 					"fi; " \
 				"fi; " \
 			"fi; " \
@@ -245,22 +251,22 @@
 				"if test $wifi = yes; then " \
 					"if test $soc_type = imx6ull; then " \
 						"if test $som_rev = 5G; then " \
-							"setenv fdt_file imx6ull-var-dart-5g-nand_wifi.dtb; " \
+							"setenv fdt_file imx6ull-var-dart-5g-nand_wifi${codec_suffix}.dtb; " \
 						"else " \
-							"setenv fdt_file imx6ull-var-dart-nand_wifi.dtb; " \
+							"setenv fdt_file imx6ull-var-dart-nand_wifi${codec_suffix}.dtb; " \
 						"fi; " \
 					"else " \
 						"if test $som_rev = 5G; then " \
-							"setenv fdt_file imx6ul-var-dart-5g-nand_wifi.dtb; " \
+							"setenv fdt_file imx6ul-var-dart-5g-nand_wifi${codec_suffix}.dtb; " \
 						"else " \
-							"setenv fdt_file imx6ul-var-dart-nand_wifi.dtb; " \
+							"setenv fdt_file imx6ul-var-dart-nand_wifi${codec_suffix}.dtb; " \
 						"fi; " \
 					"fi; " \
 				"else " \
 					"if test $soc_type = imx6ull; then " \
-						"setenv fdt_file imx6ull-var-dart-sd_nand.dtb; " \
+						"setenv fdt_file imx6ull-var-dart-sd_nand${codec_suffix}.dtb; " \
 					"else " \
-						"setenv fdt_file imx6ul-var-dart-sd_nand.dtb; " \
+						"setenv fdt_file imx6ul-var-dart-sd_nand${codec_suffix}.dtb; " \
 					"fi; " \
 				"fi; " \
 			"fi; " \
