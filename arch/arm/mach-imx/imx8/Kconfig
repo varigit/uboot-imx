@@ -207,7 +207,7 @@ source "board/toradex/apalis-imx8/Kconfig"
 source "board/toradex/colibri-imx8x/Kconfig"
 source "board/siemens/capricorn/Kconfig"
 source "board/variscite/imx8qxp_var_som/Kconfig"
-source "board/variscite/imx8qm_var_som/Kconfig
+source "board/variscite/imx8qm_var_som/Kconfig"
 
 config SNVS_SEC_SC
 	bool "Support SNVS configuration"
