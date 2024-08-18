@@ -8,4 +8,6 @@ jobs:
     uses: varigit-dev/action-workflows/.github/workflows/defconfig-check.yml@master
     with:
       defconfig: >-
+        arm64:imx8qxp_var_som_android_defconfig
+        arm64:imx8qxp_var_som_android_uuu_defconfig
         arm64:imx8qxp_var_som_defconfig
