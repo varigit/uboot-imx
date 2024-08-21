@@ -145,7 +145,7 @@ int var_eeprom_read_header(struct var_eeprom *e)
 		return ret;
 	}
 #elif defined(CONFIG_TARGET_IMX95_VAR_DART) && defined(CONFIG_SCMI_FIRMWARE)
-	printf("%s: Calling SCMI to read EEPROM\n", __func__);
+	debug("%s: Calling SCMI to read EEPROM\n", __func__);
 	ret = var_scmi_eeprom_read_header(e);
 	if (ret) {
 		printf("%s: SCMI EEPROM read failed, ret=%d\n", __func__, ret);
