@@ -111,19 +111,6 @@ static int var_scmi_eeprom_read(u8 *buf, u32 size)
 
 	return 0;
 }
-
-int var_scmi_eeprom_read_header(struct var_eeprom *e)
-{
-	int ret;
-
-	ret = var_scmi_eeprom_read((u8 *)e, sizeof(*e));
-	if (ret) {
-		printf("%s: SCMI EEPROM read failed, ret=%d\n", __func__, ret);
-		return ret;
-	}
-
-	return 0;
-}
 #endif
 
 int var_eeprom_read_header(struct var_eeprom *e)
@@ -146,7 +133,7 @@ int var_eeprom_read_header(struct var_eeprom *e)
 	}
 #elif defined(CONFIG_TARGET_IMX95_VAR_DART) && defined(CONFIG_SCMI_FIRMWARE)
 	debug("%s: Calling SCMI to read EEPROM\n", __func__);
-	ret = var_scmi_eeprom_read_header(e);
+	ret = var_scmi_eeprom_read((u8 *)e, sizeof(*e));
 	if (ret) {
 		printf("%s: SCMI EEPROM read failed, ret=%d\n", __func__, ret);
 		return ret;
