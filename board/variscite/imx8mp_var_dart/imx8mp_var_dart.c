@@ -370,28 +370,30 @@ int board_late_init(void)
 	env_set("sdram_size", sdram_size_str);
 
 	board_id = var_detect_board_id();
-	if (board_id == BOARD_ID_SOM) {
-		env_set("board_name", "VAR-SOM-MX8M-PLUS");
-		env_set("console", "ttymxc1,115200");
+	if (board_id != BOARD_ID_UNDEF) {
+		if (board_id == BOARD_ID_SOM) {
+			env_set("board_name", "VAR-SOM-MX8M-PLUS");
+			env_set("console", "ttymxc1,115200");
 
-		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+			var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM, CARRIER_EEPROM_ADDR,
+						&carrier_eeprom);
+		} else if (board_id == BOARD_ID_DART) {
+			env_set("board_name", "DART-MX8M-PLUS");
+
+			var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR,
+						&carrier_eeprom);
+		}
+
 		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
 		env_set("carrier_rev", carrier_rev);
 
-	/* SoM Features ENV */
-	env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
+		/* SoM Features ENV */
+		env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
 
-
-	/* SoM Rev ENV*/
-	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
-	env_set("som_rev", som_rev);
-
-	} else if (board_id == BOARD_ID_DART) {
-		env_set("board_name", "DART-MX8M-PLUS");
-
-		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
-		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
-		env_set("carrier_rev", carrier_rev);
+		/* SoM Rev ENV*/
+		snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev),
+			 SOMREV_MINOR(ep->somrev));
+		env_set("som_rev", som_rev);
 	}
 
 	var_setup_mac(ep);
