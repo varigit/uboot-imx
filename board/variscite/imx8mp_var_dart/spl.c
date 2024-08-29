@@ -177,8 +177,14 @@ int board_fit_config_name_match(const char *name)
 {
 	int board_id = var_detect_board_id();
 
-	if ((board_id == BOARD_ID_DART) && !strcmp(name, "imx8mp-var-dart-dt8mcustomboard")) {
-		return 0;
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	int som_rev = SOMREV_MAJOR(ep->somrev);
+
+	if (board_id == BOARD_ID_DART) {
+		if (som_rev >= 2 && !strcmp(name, "imx8mp-var-dart-dt8mcustomboard"))
+			return 0;
+		else if (som_rev < 2 && !strcmp(name, "imx8mp-var-dart-1.x-dt8mcustomboard"))
+			return 0;
 	} else if ((board_id == BOARD_ID_SOM) && !strcmp(name, "imx8mp-var-som-symphony")) {
 		return 0;
 	}
