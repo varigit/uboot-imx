@@ -90,15 +90,6 @@
 	status = "okay";
 };
 
-&gpio2 {
-	eth0_phy_pwr_hog {
-		gpio-hog;
-		gpios = <20 0>;
-		output-high;
-		line-name = "eth0_phy_pwr";
-	};
-};
-
 &iomuxc {
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <

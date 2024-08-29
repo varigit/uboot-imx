@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device tree overlay to support the DART-MX8M-PLUS 1.x
+ *
+ * Copyright 2024 Variscite Ltd.
+ */
+
+#include "imx8mp-var-dart.dtsi"
+
+&gpio2 {
+	eth0_phy_pwr_hog {
+		gpio-hog;
+		gpios = <20 0>;
+		output-high;
+		line-name = "eth0_phy_pwr";
+	};
+};
