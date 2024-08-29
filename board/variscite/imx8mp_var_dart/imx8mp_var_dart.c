@@ -154,6 +154,51 @@ int var_detect_dart_carrier_rev(void)
 	return dart_carrier_rev;
 }
 
+#define PCA9450_I2C_BUS	0
+#define PCA9450_I2C_ADDR	0x25
+#define PCA9450_LSW_CTRL_ADDR	0x2A
+#define REG_DATA_SIZE		1
+int setup_sw_en_pmic(void)
+{
+	struct udevice *bus;
+	struct udevice *dev;
+	u8 reg_data[REG_DATA_SIZE];
+	int ret;
+
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	int board_id = var_detect_board_id();
+	int som_rev = SOMREV_MAJOR(ep->somrev);
+
+	/* On DART-MX8M-PLUS v2.0, SW_EN must be set by software to ensure
+	 * that the ethernet PHY is powered up. Set bit 0 of LOADSW_CTRL.
+	 */
+	if (board_id == BOARD_ID_DART && som_rev >= 2) {
+		ret = uclass_get_device_by_seq(UCLASS_I2C, PCA9450_I2C_BUS, &bus);
+		if (ret) {
+			printf("Can't find I2C bus %d\n", PCA9450_I2C_BUS);
+			return ret;
+		}
+		ret = dm_i2c_probe(bus, PCA9450_I2C_ADDR, 0, &dev);
+		if (ret) {
+			printf("Can't find device at address 0x%x\n", PCA9450_I2C_ADDR);
+			return ret;
+		}
+		ret = dm_i2c_read(dev, PCA9450_LSW_CTRL_ADDR, reg_data, REG_DATA_SIZE);
+		if (ret) {
+			printf("Failed to read address 0x%x\n", PCA9450_I2C_ADDR);
+			return ret;
+		}
+		/* Enable SW_EN by setting LOADSW_CTRL bit 0 */
+		reg_data[0] |= 0x01;
+		ret = dm_i2c_write(dev, PCA9450_LSW_CTRL_ADDR, reg_data, REG_DATA_SIZE);
+		if (ret) {
+			printf("Failed to write at address 0x%x\n", PCA9450_I2C_ADDR);
+			return ret;
+		}
+	}
+	return 0;
+}
+
 #ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, bd_t *bd)
 {
@@ -390,6 +435,12 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
+	int ret;
+
+	ret = setup_sw_en_pmic();
+	if (ret)
+		return ret;
+
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
 #endif
