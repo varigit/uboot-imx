@@ -3,9 +3,9 @@
  * Copyright 2024 Variscite Ltd.
  */
 
+#define DART_REV_1X
 #include "imx8mp-var-dart-dt8mcustomboard.dtsi"
 
 / {
-
-	model = "Variscite DART-MX8M-PLUS 2.x on DT8MCustomBoard 2.0 and above";
+	model = "Variscite DART-MX8M-PLUS 1.x on DT8MCustomBoard 2.0 and above";
 };

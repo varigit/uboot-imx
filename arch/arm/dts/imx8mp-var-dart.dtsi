@@ -59,15 +59,6 @@
 	};
 };
 
-&gpio2 {
-	eth0_phy_pwr_hog {
-		gpio-hog;
-		gpios = <20 0>;
-		output-high;
-		line-name = "eth0_phy_pwr";
-	};
-};
-
 &i2c1 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default", "gpio";
