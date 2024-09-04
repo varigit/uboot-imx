@@ -954,6 +954,12 @@ int board_late_init(void)
 	case 0x1:
 		env_set("som_rev", "5G");
 		break;
+	case 0x2:
+		env_set("som_rev", "5G IW611");
+		break;
+	case 0x3:
+		env_set("som_rev", "5G IW612");
+		break;
 	default:
 		env_set("som_rev", "unknown");
 		break;

@@ -232,8 +232,20 @@ void var_eeprom_v2_print_som_info(const struct var_eeprom_v2_cfg *p_var_eeprom_v
 	}
 	if (p_var_eeprom_v2_cfg->som_info & 0x04)
 		puts("WiFi");
-	if (((p_var_eeprom_v2_cfg->som_info >> 3) & 0x3) == 1)
-		puts(" (5G)");
+
+	switch ((p_var_eeprom_v2_cfg->som_info >> 3) & 0x3) {
+	case 0x0:
+		break;
+	case 0x1:
+		puts(" 5G");
+		break;
+	case 0x2:
+		puts(" 5G (IW611)");
+		break;
+	case 0x3:
+		puts(" 5G (IW612)");
+		break;
+	}
 	puts("\n");
 }
 #else
@@ -319,6 +331,12 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 		break;
 	case 0x1:
 		puts(", SOM Rev 2 (5G)\n");
+		break;
+	case 0x2:
+		puts(", SOM Rev 2 (5G) (IW611)\n");
+		break;
+	case 0x3:
+		puts(", SOM Rev 2 (5G) (IW612)\n");
 		break;
 	default:
 		puts(", SOM Rev ilegal!\n");
