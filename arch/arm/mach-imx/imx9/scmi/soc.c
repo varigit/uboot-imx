@@ -511,7 +511,7 @@ void imx_get_mac_from_fuse(int dev_id, unsigned char *mac)
 
 	num_of_macs = (val[1] >> 24) & 0xff;
 	if (num_of_macs <= (dev_id * 3)) {
-		printf("WARNING: no MAC address assigned for MAC%d\n", dev_id);
+		printf("WARNING: no MAC address from fuses assigned for MAC%d\n", dev_id);
 		goto err;
 	}
 
