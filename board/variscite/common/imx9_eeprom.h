@@ -12,6 +12,7 @@
 #endif
 
 #define VAR_SOM_EEPROM_MAGIC	0x4D58 /* == HEX("MX") */
+#define VAR_DART_EEPROM_MAGIC	0x4454 /* == HEX("DT") */
 
 #define VAR_SOM_EEPROM_I2C_ADDR	0x52
 
@@ -70,12 +71,11 @@ struct __attribute__((packed)) var_carrier_eeprom
 
 static inline int var_eeprom_is_valid(struct var_eeprom *ep)
 {
-	if (htons(ep->magic) != VAR_SOM_EEPROM_MAGIC) {
-		debug("Invalid EEPROM magic 0x%hx, expected 0x%hx\n",
-			htons(ep->magic), VAR_SOM_EEPROM_MAGIC);
+	if ((htons(ep->magic) != VAR_SOM_EEPROM_MAGIC) &&
+	    (htons(ep->magic) != VAR_DART_EEPROM_MAGIC)) {
+		printf("Invalid EEPROM magic 0x%hx\n", htons(ep->magic));
 		return 0;
 	}
-
 	return 1;
 }
 
