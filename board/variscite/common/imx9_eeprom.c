@@ -52,51 +52,61 @@ static int var_eeprom_get_dev(struct udevice **devp)
 #endif
 
 #if defined(CONFIG_TARGET_IMX95_VAR_DART) && defined(CONFIG_SCMI_FIRMWARE)
-#define VAR_FLUSH_CACHES() \
-	do { \
-		flush_dcache_all(); \
-		invalidate_icache_all(); \
-	} while (0)
+#define SCMI_EEPROM_XFER_CMD 		0x1a /* COMMAND_MISC_EEPROM_XFER defined by Variscite in the imx-sm sources */
+#define SCMI_EEPROM_XFER_DIR_RD		0
+#define SCMI_EEPROM_XFER_MAX_SIZE 	64
 
-static int var_scmi_eeprom_read(uintptr_t addr, u32 size)
+typedef struct {
+	u32 dir;
+	u32 offset;
+	u32 len;
+	u8 buffer[SCMI_EEPROM_XFER_MAX_SIZE];
+} scmi_eeprom_xfer_in_t;
+
+typedef struct {
+	s32 status;
+	u32 len;
+	u8 buffer[SCMI_EEPROM_XFER_MAX_SIZE];
+} scmi_eeprom_xfer_out_t;
+
+static int var_scmi_eeprom_read(u8 *buf, u32 size)
 {
 	int ret;
-	typedef struct {
-		u32 devId;
-		u32 dir;
-		u32 offset;
-		u32 buffer;
-		u32 len;
-	} scmi_eeprom_xfer_in_t;
+	int offset = 0;
 
-	scmi_eeprom_xfer_in_t xfer_in = {
-		.devId = VAR_SOM_EEPROM_I2C_ADDR,
-		.dir = 0, /* READ */
-		.offset = 0,
-		.buffer = (u32)addr,
-		.len = size,
-	};
+	while (size) {
+		scmi_eeprom_xfer_in_t xfer_in = {
+			.dir = SCMI_EEPROM_XFER_DIR_RD,
+			.offset = offset,
+			.len = size > SCMI_EEPROM_XFER_MAX_SIZE ?
+				SCMI_EEPROM_XFER_MAX_SIZE : size,
+			.buffer = {0},
+		};
 
-	typedef struct {
-		u32 status;
-	} scmi_eeprom_xfer_out_t;
+		scmi_eeprom_xfer_out_t xfer_out = {
+			.status = 0,
+			.len = 0,
+			.buffer = {0},
+		};
 
-	scmi_eeprom_xfer_out_t xfer_out;
+		struct scmi_msg msg = SCMI_MSG_IN(SCMI_PROTOCOL_ID_MISC,
+						  SCMI_EEPROM_XFER_CMD,
+						  xfer_in, xfer_out);
 
-	struct scmi_msg msg = SCMI_MSG_IN(SCMI_PROTOCOL_ID_MISC,
-					  0xC, /* SCMI_MISC_EEPROM_XFER */
-					  xfer_in, xfer_out);
+		ret = devm_scmi_process_msg(gd->arch.scmi_dev, &msg);
 
-	VAR_FLUSH_CACHES();
-	ret = devm_scmi_process_msg(gd->arch.scmi_dev, &msg);
-	VAR_FLUSH_CACHES();
+		if (ret)
+			return ret;
 
-	if (ret)
-		return ret;
+		if (xfer_out.status) {
+			debug("%s: EEPROM SCMI command failed (status=%d)\n", __func__, xfer_out.status);
+			return scmi_to_linux_errno(xfer_out.status);
+		}
 
-	if (xfer_out.status) {
-		debug("%s: EEPROM SCMI command failed (status=%d)\n", __func__, xfer_out.status);
-		return -1;
+		memcpy(buf, xfer_out.buffer, xfer_out.len);
+		buf += xfer_out.len;
+		size -= xfer_out.len;
+		offset += xfer_out.len;
 	}
 
 	return 0;
@@ -106,7 +116,7 @@ int var_scmi_eeprom_read_header(struct var_eeprom *e)
 {
 	int ret;
 
-	ret = var_scmi_eeprom_read((uintptr_t)e, sizeof(*e));
+	ret = var_scmi_eeprom_read((u8 *)e, sizeof(*e));
 	if (ret) {
 		printf("%s: SCMI EEPROM read failed, ret=%d\n", __func__, ret);
 		return ret;
