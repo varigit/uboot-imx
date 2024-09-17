@@ -35,9 +35,15 @@
 #define eeprom_v2_debug(M, ...)
 #endif
 
+/*
+ * EEPROM command structure (2 bytes per command). This structure holds
+ * an index into the address and value tables for EEPROM commands.
+ */
 struct __attribute__((packed)) eeprom_command
 {
+	/* 00-0x00: Index into the address table (1 byte) */
 	u8 address_index;
+	/* 01-0x01: Index into the value table (1 byte) */
 	u8 value_index;
 };
 
@@ -64,17 +70,27 @@ struct __attribute__((packed)) eeprom_command
  */
 struct __attribute__((packed)) var_eeprom_v2_cfg
 {
-	u32 variscite_magic; /* == HEX("VAR2")? */
+	/* 00-0x00: EEPROM Magic number (4 bytes) == HEX("VAR2")? */
+	u32 variscite_magic;
+	/* 04-0x04: Part number string (16 bytes) */
 	u8 part_number[16];
+	/* 20-0x14: Assembly number string (16 bytes) */
 	u8 assembly[16];
+	/* 36-0x24: Build date string (12 bytes) */
 	u8 date[12];
-	/* Contains addresses and values not present in .inc files */
+	/* 48-0x30: Custom addresses/values (128 bytes)
+	 * Contains addresses and values not present in .inc files
+	 */
 	u32 custom_addresses_values[32];
+	/* 176-0xB0: EEPROM commands array (300 bytes) */
 	struct eeprom_command commands[MAX_NUM_OF_COMMANDS];
+	/* 476-0x1DC: Reserved space for future use (33 bytes) */
 	u8 reserved[33];
+	/* 509-0x1FD: SOM information (1 byte) */
 	u8 som_info;
-	/* DRAM size in 128MiB unit */
+	/* 510-0x1FE: DRAM size in 128MiB units (1 byte) */
 	u8 dram_size;
+	/* 511-0x1FF: CRC for data integrity (1 byte) */
 	u8 crc;
 };
 
