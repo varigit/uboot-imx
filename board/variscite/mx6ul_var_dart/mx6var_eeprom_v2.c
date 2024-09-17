@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015-2017 Variscite Ltd.
  *
- * Setup DRAM parametes and calibration values
+ * Setup DRAM parameters and calibration values
  * for the specific DRAM on the board.
  * The parameters were provided by
  * i.MX6 DDR Stress Test Tool and saved on EEPROM.
@@ -227,7 +227,7 @@ void var_eeprom_v2_print_som_info(const struct var_eeprom_v2_cfg *p_var_eeprom_v
 		puts("eMMC ");
 		break;
 	case 0x03:
-		puts("Ilegal !!! ");
+		puts("Illegal! ");
 		break;
 	}
 	if (p_var_eeprom_v2_cfg->som_info & 0x04)
@@ -318,7 +318,7 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 		puts("eMMC");
 		break;
 	case 0x03:
-		puts("Ilegal!");
+		puts("Illegal!");
 		break;
 	}
 
@@ -339,7 +339,7 @@ static int do_var_eeprom_params(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 		puts(", SOM Rev 2 (5G) (IW612)\n");
 		break;
 	default:
-		puts(", SOM Rev ilegal!\n");
+		puts(", SOM Rev illegal!\n");
 		break;
 	}
 
