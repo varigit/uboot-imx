@@ -41,6 +41,27 @@ struct __attribute__((packed)) eeprom_command
 	u8 value_index;
 };
 
+/*
+ * EEPROM SOM Info Bits Description
+ *
+ * Bit(s)   Description
+ * ------------------------------------------------------------------------
+ * 0-1      Storage Type
+ *              00 = SD card only
+ *              01 = NAND flash
+ *              10 = eMMC
+ *              11 = Illegal
+ *
+ * 2        Wi-Fi
+ *              0 = No Wi-Fi
+ *              1 = Wi-Fi
+ *
+ * 3-4      SOM Revision / Configuration
+ *              00 = DART-6UL
+ *              01 = DART-6UL-5G
+ *              10 = DART-6UL-5G (IW611)
+ *              11 = DART-6UL-5G (IW612)
+ */
 struct __attribute__((packed)) var_eeprom_v2_cfg
 {
 	u32 variscite_magic; /* == HEX("VAR2")? */
