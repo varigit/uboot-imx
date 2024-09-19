@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
- * Copyright (C) 2015-2019 Variscite Ltd.
+ * Copyright (C) 2015-2024 Variscite Ltd.
  *
  * Configuration settings for Variscite i.MX6UL/L DART-6UL board family.
  *

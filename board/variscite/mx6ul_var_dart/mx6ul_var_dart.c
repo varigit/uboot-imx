@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
- * Copyright (C) 2015-2019 Variscite Ltd.
+ * Copyright (C) 2015-2024 Variscite Ltd.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */

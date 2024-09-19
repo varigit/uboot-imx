@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Variscite Ltd.
+ * Copyright (C) 2015-2024 Variscite Ltd.
  *
  * Setup DRAM parameters and calibration values
  * for the specific DRAM on the board.
