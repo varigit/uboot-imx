@@ -1491,6 +1491,44 @@ static int eqos_remove_resources_stm32(struct udevice *dev)
 	return 0;
 }
 
+static int eqos_phy_init(struct eqos_priv *eqos, struct udevice *dev)
+{
+	int ret = -1;
+	int addr = eqos_get_phy_addr(eqos, dev);
+
+#ifdef DWC_NET_PHYADDR
+	addr = DWC_NET_PHYADDR;
+#endif
+	eqos->phy = phy_connect(eqos->mii, addr, dev,
+					eqos->config->interface(dev));
+
+	if (!eqos->phy) {
+		pr_err("%s: phy_connect() failed\n", dev->name);
+		return -ENODEV;
+	}
+
+	if (eqos->max_speed) {
+		ret = phy_set_supported(eqos->phy, eqos->max_speed);
+		if (ret < 0) {
+		        pr_err("%s: phy_set_supported() failed: %d", dev->name, ret);
+		        goto err_shutdown_phy;
+		}
+	}
+
+	eqos->phy->node = eqos->phy_of_node;
+	ret = phy_config(eqos->phy);
+	if (ret < 0) {
+		pr_err("%s: phy_config() failed: %d", dev->name, ret);
+		goto err_shutdown_phy;
+	}
+
+	return 0;
+
+err_shutdown_phy:
+        phy_shutdown(eqos->phy);
+        return ret;
+}
+
 static int eqos_probe(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
@@ -1556,6 +1594,10 @@ static int eqos_probe(struct udevice *dev)
 #ifdef CONFIG_DM_ETH_PHY
 	eth_phy_set_mdio_bus(dev, eqos->mii);
 #endif
+
+	ret = eqos_phy_init(eqos, dev);
+	if (ret < 0)
+		goto err_free_mdio;
 
 	debug("%s: OK\n", __func__);
 	return 0;
