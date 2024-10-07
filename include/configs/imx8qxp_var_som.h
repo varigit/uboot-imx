@@ -174,7 +174,7 @@
 			"fi;" \
 		"else " \
 			"booti ${loadaddr} - ${fdt_addr}; " \
-		"fi;" \
+		"fi;\0" \
 	"splashsourceauto=yes\0" \
 	"splashfile=/boot/splash.bmp\0" \
 	"splashimage=0x9e000000\0" \
