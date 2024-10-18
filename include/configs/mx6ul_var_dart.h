@@ -232,10 +232,14 @@
 				"setenv mmc0_dev sd-card; " \
 			"else " \
 				"if test $wifi = yes; then " \
-					"if test $som_rev = '5G IW611' || test $som_rev = '5G IW612'; then " \
-						"setenv mmc0_dev wifi-iw61x; " \
+					"if test $board_name = VAR-SOM-6UL; then " \
+						"setenv mmc0_dev wifi; " \
 					"else " \
-						"setenv mmc0_dev wifi-brcm; " \
+						"if test $som_rev = '5G IW611' || test $som_rev = '5G IW612'; then " \
+							"setenv mmc0_dev wifi-iw61x; " \
+						"else " \
+							"setenv mmc0_dev wifi-brcm; " \
+						"fi; " \
 					"fi; " \
 				"else " \
 					"setenv mmc0_dev sd-card; " \
