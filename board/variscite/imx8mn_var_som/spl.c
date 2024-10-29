@@ -63,10 +63,30 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 #endif
 }
 
+/* Fixups for ddrc_cfg table written to EEPROM */
+struct dram_fixup_param fixup_regs_ddrc_cfg[] = {
+	/* RAM size, Register, Old value, New value */
+
+	/* 512M */
+	{512, 0x3d402064, 0x400046, 0x510057},
+	{512, 0x3d402120, 0x2020d04, 0x3030d04},
+	{512, 0x3d40212c, 0x1106010e, 0x1006010e},
+
+	/* 2048M */
+	{2048, 0x3d402064, 0x400093, 0x5100b8},
+	{2048, 0x3d402120, 0x4040d06, 0x4040d07},
+	{2048, 0x3d40212c, 0x1205010e, 0x1306010e},
+
+	/* Null terminator */
+	{ 0, 0, 0, 0 }
+};
+
 static void spl_dram_init(void)
 {
 	var_eeprom_read_header(&eeprom);
 	var_eeprom_adjust_dram(&eeprom, &dram_timing);
+	var_eeprom_apply_dram_fixup(&eeprom, fixup_regs_ddrc_cfg, dram_timing.ddrc_cfg,
+			      dram_timing.ddrc_cfg_num);
 	ddr_init(&dram_timing);
 }
 
