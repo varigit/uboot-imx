@@ -366,6 +366,54 @@ void var_eeprom_adjust_dram(struct var_eeprom *ep, struct dram_timing_info *d)
 			d->fsp_msg[i].fsp_cfg, d->fsp_msg[i].fsp_cfg_num);
 	}
 }
+
+/*
+ * var_eeprom_apply_dram_fixup - Apply DRAM configuration fixups for EEPROM data.
+ *
+ * @fixup_regs: Pointer to an array of fixup parameters, each containing a register
+ *              address, an expected old value, and a new value to update.
+ *              The array must be terminated with an entry where reg is 0.
+ * @table:      Pointer to an array of DRAM configuration parameters, where each
+ *              entry consists of a register address and its value.
+ * @table_size: The number of entries in the DRAM configuration table.
+ *
+ *
+ * The EEPROM contains a diff that should be applied to the default DDR
+ * timing configuration to support different DDR part numbers.
+ *
+ * Sometimes NXP's DDR tool updates a DDR property that was already written to
+ * the EEPROM. This function can be used to "fixup" known register / value
+ * pairs to the correct value.
+ *
+ * This function iterates over the fixup_regs array and applies the specified
+ * fixups to the provided DRAM configuration table. For each register listed in
+ * fixup_regs, if the old value matches the current value in the table, the
+ * value is updated to the new value provided.
+ */
+void var_eeprom_apply_dram_fixup(struct var_eeprom *ep, struct dram_fixup_param *fixup_regs,
+			    struct dram_cfg_param *table, int table_size)
+{
+	struct dram_fixup_param *fixup = fixup_regs;
+	int i = 0;
+
+	debug("%s: Applying fixups\n", __func__);
+
+	for (; fixup->dramsize != 0; fixup++) {
+		/* Skip fixups that are not for the memory size assembled on the som */
+		if (fixup->dramsize != (ep->dramsize * 128))
+			continue;
+
+		/* Apply fixups */
+		for (; i < table_size; i++) {
+			if (table[i].reg == fixup->reg && table[i].val == fixup->old_val) {
+				debug("%s: Updating 0x%08x: 0x%08x -> 0x%08x\n",
+					__func__, fixup->reg, fixup->old_val, fixup->new_val);
+				table[i].val = fixup->new_val;
+				break;
+			}
+		}
+	}
+}
 #endif
 
 #if CONFIG_IS_ENABLED(DM_I2C)
