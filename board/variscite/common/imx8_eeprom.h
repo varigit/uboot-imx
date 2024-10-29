@@ -67,6 +67,16 @@ struct __packed var_carrier_eeprom
 	u32 crc;                            /* 10-0x0a - checksum			*/
 };
 
+struct dram_fixup_param {
+	unsigned int dramsize;
+	unsigned int reg;
+	unsigned int old_val;
+	unsigned int new_val;
+};
+
+void var_eeprom_apply_dram_fixup(struct var_eeprom *ep, struct dram_fixup_param *fixup_regs,
+			    struct dram_cfg_param *table, int table_size);
+
 static inline int var_eeprom_is_valid(struct var_eeprom *ep)
 {
 	if (htons(ep->magic) != VAR_EEPROM_MAGIC) {
