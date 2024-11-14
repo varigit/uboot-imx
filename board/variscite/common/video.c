@@ -28,9 +28,9 @@ static void splash_set_source(void)
 	if (!check_env("splashsourceauto", "yes"))
 		return;
 
-	if (mmc_get_env_dev() == 0)
+	if (mmc_get_env_dev() == env_get_ulong("emmc_dev", 10, 0))
 		env_set("splashsource", "emmc");
-	else if (mmc_get_env_dev() == 1)
+	else if (mmc_get_env_dev() == env_get_ulong("sd_dev", 10, 0))
 		env_set("splashsource", "sd");
 }
 
@@ -42,8 +42,8 @@ int splash_screen_prepare(void)
 
 	sd_part = emmc_part = env_get_ulong("mmcpart", 10, 0);
 
-	sprintf(sd_devpart, "1:%d", sd_part);
-	sprintf(emmc_devpart, "0:%d", emmc_part);
+	sprintf(sd_devpart, "%ld:%d", env_get_ulong("sd_dev", 10, 0), sd_part);
+	sprintf(emmc_devpart, "%ld:%d", env_get_ulong("emmc_dev", 10, 0), emmc_part);
 
 	struct splash_location splash_locations[] = {
 		{
