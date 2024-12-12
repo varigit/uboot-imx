@@ -1832,6 +1832,21 @@ usb_modify_speed:
 
 #ifdef CONFIG_OF_BOARD_FIXUP
 #ifndef CONFIG_SPL_BUILD
+__weak int vendor_board_fix_fdt(void *fdt_blob)
+{
+	/*
+	 * NXP added the board_fix_fdt() function to the soc.c file, which is not ideal.
+	 * If a specific board needs its own board_fix_fdt implementation, it would
+	 * override NXP's function, potentially causing unexpected issues.
+	 *
+	 * To address this, the __weak vendor_board_fix_fdt() function is introduced.
+	 * It is always called at the end of board_fix_fdt and can be redefined in
+	 * vendor-specific board files as needed.
+	 */
+
+	return 0;
+}
+
 int board_fix_fdt(void *fdt)
 {
 	if (is_imx8mpul()) {
@@ -1859,7 +1874,7 @@ set_status:
 		}
 	}
 
-	return 0;
+	return vendor_board_fix_fdt(fdt);
 }
 #endif
 #endif
