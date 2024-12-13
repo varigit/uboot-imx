@@ -351,16 +351,6 @@ config TARGET_NAVQPLUS
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
-config TARGET_IMX8MN_VAR_SOM
-	bool "Variscite imx8mn_var_som"
-	select IMX8MN
-	select SUPPORT_SPL
-	select IMX8M_DDR4
-	select MISC
-	select I2C_EEPROM
-	select DM_ETH_PHY
-	select NVMEM
-
 config TARGET_KONTRON_PITX_IMX8M
 	bool "Support Kontron pITX-imx8m"
 	select IMX8MQ
@@ -478,7 +468,6 @@ source "board/polyhex/imx8mp_debix_model_a/Kconfig"
 source "board/purism/librem5/Kconfig"
 source "board/ronetix/imx8mq-cm/Kconfig"
 source "board/technexion/pico-imx8mq/Kconfig"
-source "board/variscite/imx8mn_var_som/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
 source "board/voxelbotics/navqp/Kconfig"
