@@ -217,17 +217,6 @@ config TARGET_COLIBRI_IMX6ULL
 	select DM_THERMAL
 	select IOMUX_LPSR
 
-config TARGET_DART_6UL
-	bool "Variscite imx6ULL dart(DART-SOM-6ULL)"
-	depends on MX6ULL
-	select DM
-	select DM_GPIO
-	select DM_I2C
-	select DM_MMC
-	select DM_SERIAL
-	select DM_THERMAL
-	select SUPPORT_SPL
-
 config TARGET_DHCOMIMX6
 	bool "dh_imx6"
 	depends on MX6QDL
