@@ -239,7 +239,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 	if (ep->version == 1)
 		debug("DRAM size: %d GiB\n\n", ep->dramsize);
 	else
-		debug("DRAM size: %d GiB\n\n", (ep->dramsize * 128) / 1024);
+		debug("DRAM size: %d MiB\n\n", ep->dramsize * 128);
 }
 #endif
 
