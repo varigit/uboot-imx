@@ -35,6 +35,8 @@
 #include <clk.h>
 #include <usb/usb_mx6_common.h>
 
+extern const ulong phy_bases[2];
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define USB_OTGREGS_OFFSET	0x000
