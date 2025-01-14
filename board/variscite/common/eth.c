@@ -8,7 +8,7 @@
 #include <miiphy.h>
 #include <env.h>
 
-#if defined(CONFIG_IMX93)
+#if defined(CONFIG_IMX93) || defined(CONFIG_IMX95)
 #include "../common/imx9_eeprom.h"
 #else
 #include "../common/imx8_eeprom.h"
@@ -16,7 +16,7 @@
 
 #define CHAR_BIT 8
 
-#if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX93)
+#if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX93) || defined(CONFIG_IMX95)
 static uint64_t mac2int(const uint8_t hwaddr[])
 {
 	int8_t i;
@@ -91,7 +91,7 @@ int var_setup_mac(struct var_eeprom *eeprom)
 	int ret;
 	uint8_t enetaddr[ARP_HLEN];
 
-#if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX93)
+#if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX93)  || defined(CONFIG_IMX95)
 	uint64_t addr;
 	uint8_t enet1addr[ARP_HLEN];
 #endif
@@ -108,8 +108,9 @@ int var_setup_mac(struct var_eeprom *eeprom)
 	/* Set eth0 MAC address */
 	var_eth_env_set_enetaddr(0, enetaddr);
 
-#if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX93)
+#if defined(CONFIG_ARCH_IMX8) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX93)  || defined(CONFIG_IMX95)
 	/* Set eth1 MAC address to eth0 + 1 */
+
 	addr = mac2int(enetaddr);
 	int2mac(addr + 1, enet1addr);
 	var_eth_env_set_enetaddr(1, enet1addr);
