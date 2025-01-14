@@ -173,6 +173,9 @@
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; " \
+		"if test ${fdt_file} =~ *'m7.dtb'*; then " \
+			"run prepare_mcore; " \
+		"fi; " \
 		"if mmc rescan; then " \
 			"if test ${use_m7} = yes && run loadm7bin; then " \
 				"run runm7bin; " \
