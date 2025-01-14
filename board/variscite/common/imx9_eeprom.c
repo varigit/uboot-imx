@@ -12,6 +12,12 @@
 #include <u-boot/crc.h>
 #include <asm/arch-imx9/ddr.h>
 
+#ifdef CONFIG_SCMI_FIRMWARE
+#include <scmi_agent.h>
+#include <scmi_protocols.h>
+#include <scmi_nxp_protocols.h>
+#endif
+
 #include "imx9_eeprom.h"
 
 struct mx9_ddr_adjust {
@@ -20,6 +26,7 @@ struct mx9_ddr_adjust {
 	unsigned int cfg_num;
 };
 
+#ifdef CONFIG_TARGET_IMX93_VAR_SOM
 static int var_eeprom_get_dev(struct udevice **devp)
 {
 	int ret;
@@ -42,10 +49,74 @@ static int var_eeprom_get_dev(struct udevice **devp)
 
 	return 0;
 }
+#endif
+
+#if defined(CONFIG_TARGET_IMX95_VAR_DART) && defined(CONFIG_SCMI_FIRMWARE)
+#define SCMI_EEPROM_XFER_CMD 		0x1a /* COMMAND_MISC_EEPROM_XFER defined by Variscite in the imx-sm sources */
+#define SCMI_EEPROM_XFER_DIR_RD		0
+#define SCMI_EEPROM_XFER_MAX_SIZE 	64
+
+typedef struct {
+	u32 dir;
+	u32 offset;
+	u32 len;
+	u8 buffer[SCMI_EEPROM_XFER_MAX_SIZE];
+} scmi_eeprom_xfer_in_t;
+
+typedef struct {
+	s32 status;
+	u32 len;
+	u8 buffer[SCMI_EEPROM_XFER_MAX_SIZE];
+} scmi_eeprom_xfer_out_t;
+
+static int var_scmi_eeprom_read(u8 *buf, u32 size)
+{
+	int ret;
+	int offset = 0;
+
+	while (size) {
+		scmi_eeprom_xfer_in_t xfer_in = {
+			.dir = SCMI_EEPROM_XFER_DIR_RD,
+			.offset = offset,
+			.len = size > SCMI_EEPROM_XFER_MAX_SIZE ?
+				SCMI_EEPROM_XFER_MAX_SIZE : size,
+			.buffer = {0},
+		};
+
+		scmi_eeprom_xfer_out_t xfer_out = {
+			.status = 0,
+			.len = 0,
+			.buffer = {0},
+		};
+
+		struct scmi_msg msg = SCMI_MSG_IN(SCMI_PROTOCOL_ID_MISC,
+						  SCMI_EEPROM_XFER_CMD,
+						  xfer_in, xfer_out);
+
+		ret = devm_scmi_process_msg(gd->arch.scmi_dev, &msg);
+
+		if (ret)
+			return ret;
+
+		if (xfer_out.status) {
+			debug("%s: EEPROM SCMI command failed (status=%d)\n", __func__, xfer_out.status);
+			return scmi_to_linux_errno(xfer_out.status);
+		}
+
+		memcpy(buf, xfer_out.buffer, xfer_out.len);
+		buf += xfer_out.len;
+		size -= xfer_out.len;
+		offset += xfer_out.len;
+	}
+
+	return 0;
+}
+#endif
 
 int var_eeprom_read_header(struct var_eeprom *e)
 {
 	int ret;
+#ifdef CONFIG_TARGET_IMX93_VAR_SOM
 	struct udevice *dev;
 
 	ret = var_eeprom_get_dev(&dev);
@@ -60,6 +131,14 @@ int var_eeprom_read_header(struct var_eeprom *e)
 		debug("%s: EEPROM read failed, ret=%d\n", __func__, ret);
 		return ret;
 	}
+#elif defined(CONFIG_TARGET_IMX95_VAR_DART) && defined(CONFIG_SCMI_FIRMWARE)
+	debug("%s: Calling SCMI to read EEPROM\n", __func__);
+	ret = var_scmi_eeprom_read((u8 *)e, sizeof(*e));
+	if (ret) {
+		printf("%s: SCMI EEPROM read failed, ret=%d\n", __func__, ret);
+		return ret;
+	}
+#endif
 
 	return 0;
 }
@@ -100,6 +179,8 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 		printf("\nPart number: VSM-DT93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 	else
 		printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
+#else /* CONFIG_TARGET_IMX95_VAR_DART */
+	printf("\nPart number: VSM-DT95-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 #endif
 
 	printf("Assembly: AS%.*s\n", (int)sizeof(ep->assembly), (char *)ep->assembly);
@@ -123,7 +204,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 }
 #endif
 
-#if defined(CONFIG_SPL_BUILD)
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_TARGET_IMX93_VAR_SOM)
 static int var_eeprom_crc32(struct var_eeprom *ep, const uint32_t offset,
 			    const uint32_t len, uint32_t *crc32_val)
 {
