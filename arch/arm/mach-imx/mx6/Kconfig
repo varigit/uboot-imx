@@ -217,6 +217,21 @@ config TARGET_COLIBRI_IMX6ULL
 	select DM_THERMAL
 	select IOMUX_LPSR
 
+config TARGET_IMX6UL_VAR_DART
+	bool "Variscite DART-6UL support"
+	depends on MX6UL || MX6ULL
+	select DM
+	select DM_GPIO
+	select DM_I2C
+	select DM_MMC
+	select DM_SERIAL
+	select DM_THERMAL
+	select SUPPORT_SPL
+	help
+	  Adds support for DART modules DART-6UL (including variants with
+	  i.MX6ULL and i.MX6ULZ SoC). Also adds support for VAR-SOM modules
+	  VAR-SOM-MX6UL, (including variants with i.MX6ULL and i.MX6ULZ SoC).
+
 config TARGET_DHCOMIMX6
 	bool "dh_imx6"
 	depends on MX6QDL
