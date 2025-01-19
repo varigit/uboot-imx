@@ -47,6 +47,12 @@ config TARGET_IMX91_9X9_QSB
 	select IMX91
 	select IMX9_LPDDR4X
 
+config TARGET_IMX91_VAR_SOM
+	bool "imx91_var_som"
+	select IMX91
+	select OF_BOARD_FIXUP
+	select IMX9_LPDDR4X
+
 config TARGET_IMX93_14X14_EVK
 	bool "imx93_14x14_evk"
 	select IMX93
@@ -92,6 +98,7 @@ endchoice
 
 source "board/freescale/imx91_evk/Kconfig"
 source "board/freescale/imx91_qsb/Kconfig"
+source "board/variscite/imx91_var_som/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
 source "board/variscite/imx93_var_som/Kconfig"

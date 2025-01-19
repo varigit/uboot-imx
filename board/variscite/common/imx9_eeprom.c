@@ -26,7 +26,7 @@ struct mx9_ddr_adjust {
 	unsigned int cfg_num;
 };
 
-#ifdef CONFIG_TARGET_IMX93_VAR_SOM
+#if defined(CONFIG_TARGET_IMX93_VAR_SOM) || defined(CONFIG_TARGET_IMX91_VAR_SOM)
 static int var_eeprom_get_dev(struct udevice **devp)
 {
 	int ret;
@@ -116,7 +116,7 @@ static int var_scmi_eeprom_read(u8 *buf, u32 size)
 int var_eeprom_read_header(struct var_eeprom *e)
 {
 	int ret;
-#ifdef CONFIG_TARGET_IMX93_VAR_SOM
+#if defined(CONFIG_TARGET_IMX93_VAR_SOM) || defined(CONFIG_TARGET_IMX91_VAR_SOM)
 	struct udevice *dev;
 
 	ret = var_eeprom_get_dev(&dev);
@@ -179,6 +179,11 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 		printf("\nPart number: VSM-DT93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 	else
 		printf("\nPart number: VSM-MX93-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
+#elif defined(CONFIG_TARGET_IMX91_VAR_SOM)
+	if (of_machine_is_compatible("variscite,imx91-var-dart"))
+		printf("\nPart number: VSM-DT91-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
+	else
+		printf("\nPart number: VSM-MX91-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 #else /* CONFIG_TARGET_IMX95_VAR_DART */
 	printf("\nPart number: VSM-DT95-%.*s\n", (int)sizeof(ep->partnum), ep->partnum);
 #endif
@@ -204,7 +209,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 }
 #endif
 
-#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_TARGET_IMX93_VAR_SOM)
+#if defined(CONFIG_SPL_BUILD) && (defined(CONFIG_TARGET_IMX93_VAR_SOM) || defined(CONFIG_TARGET_IMX91_VAR_SOM))
 static int var_eeprom_crc32(struct var_eeprom *ep, const uint32_t offset,
 			    const uint32_t len, uint32_t *crc32_val)
 {
