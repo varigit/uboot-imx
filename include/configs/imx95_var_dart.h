@@ -78,10 +78,18 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if test $som_rev = 1.0; then " \
-				"setenv fdt_file imx95-var-dart-1.0-dt8mcustomboard.dtb; " \
+			"if setexpr substring sub sonata sonata ${carrier_rev}; then " \
+				"if test $som_rev = 1.0; then " \
+					"setenv fdt_file imx95-var-dart-1.0-sonata.dtb; " \
+				"else " \
+					"setenv fdt_file imx95-var-dart-sonata.dtb; " \
+				"fi; " \
 			"else " \
-				"setenv fdt_file imx95-var-dart-dt8mcustomboard.dtb; " \
+				"if test $som_rev = 1.0; then " \
+					"setenv fdt_file imx95-var-dart-1.0-dt8mcustomboard.dtb; " \
+				"else " \
+					"setenv fdt_file imx95-var-dart-dt8mcustomboard.dtb; " \
+				"fi; " \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt;load mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${bootdir}/${fdt_file}\0" \

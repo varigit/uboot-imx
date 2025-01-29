@@ -37,6 +37,10 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+/* Carrier board EEPROM */
+#define CARRIER_EEPROM_I2C_NAME		"i2c@42530000"
+#define CARRIER_EEPROM_ADDR		0x54
+
 static struct var_eeprom eeprom = {0};
 
 int board_early_init_f(void)
@@ -303,7 +307,9 @@ int board_init(void)
 int board_late_init(void)
 {
 	struct var_eeprom *ep = &eeprom;
+	struct var_carrier_eeprom carrier_eeprom;
 	char som_rev[CARRIER_REV_LEN] = {0};
+	char carrier_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
@@ -323,6 +329,11 @@ int board_late_init(void)
 	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	env_set("som_rev", som_rev);
 	env_set("board_name", "DART-MX95");
+
+	/* Carrier Rev ENV */
+	var_carrier_eeprom_read(CARRIER_EEPROM_I2C_NAME, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+	var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+	env_set("carrier_rev", carrier_rev);
 
 	var_setup_mac(ep);
 
