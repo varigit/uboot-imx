@@ -59,7 +59,7 @@
 	"bsp_script=boot.scr\0" \
 	"image=Image.gz\0" \
 	"img_addr=0x42000000\0" \
-	"splashimage=0x50000000\0" \
+	"splashimage=0x4F600000\0" \
 	"console=ttymxc0,115200\0" \
 	"fdt_addr_r=0x43000000\0" \
 	"fdt_addr=0x43000000\0"			\
