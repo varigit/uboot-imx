@@ -1069,7 +1069,11 @@ static void print_emmc_size(void)
 	struct mmc *mmc;
 	int err;
 
-	mmc = find_mmc_device(0);
+	if (is_dart_board())
+		mmc = find_mmc_device(2);
+	else
+		mmc = find_mmc_device(0);
+
 	err = !mmc;
 	if (!err) {
 		/* Silence mmc_init since SOMs can be with or without eMMC */
