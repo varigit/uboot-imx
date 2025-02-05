@@ -95,6 +95,11 @@
 			"fi; " \
 		"fi; " \
 		"echo fdt_file=${fdt_file};\0" \
+	"prepareexpanders=" \
+		"if test ${carrier_name} = sonata; then " \
+				"i2c dev 0; " \
+				"i2c mw 0x22 0x03.1 0x7f 1; " \
+		"fi;\0" \
 	"loadfdt=run findfdt;load mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${bootdir}/${fdt_file}\0" \
 	"loadcntr=load mmc ${mmcdev}:${mmcpart} ${cntr_addr} ${bootdir}/${cntr_file}\0" \
 	"auth_os=auth_cntr ${cntr_addr}\0" \
@@ -159,6 +164,7 @@
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 		"run ramsize_check; " \
+		"run prepareexpanders; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
