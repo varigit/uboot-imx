@@ -290,7 +290,7 @@ int board_fit_config_name_match(const char *name)
 {
 	int id = get_board_id();
 
-	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-customboard"))
+	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-dt8mcustomboard"))
 		return 0;
 	else if ((id == VAR_SOM_MX8M_MINI) && !strcmp(name, "imx8mm-var-som-symphony"))
 		return 0;

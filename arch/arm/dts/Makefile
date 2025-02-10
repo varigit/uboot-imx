@@ -1129,7 +1129,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-phg.dtb \
 	imx8mm-phyboard-polis-rdk.dtb \
 	imx8mm-phygate-tauri-l.dtb \
-	imx8mm-var-dart-customboard.dtb \
+	imx8mm-var-dart-dt8mcustomboard.dtb \
 	imx8mm-var-som-symphony.dtb \
 	imx8mm-venice.dtb \
 	imx8mm-venice-gw71xx-0x.dtb \
