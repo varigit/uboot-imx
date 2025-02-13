@@ -68,6 +68,8 @@
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs ${cpuidle} ${jh_clk} ${mcore_args} console=${console} \
 		root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw\0 " \
+	"script=boot.scr\0" \
+	"bootenv=uEnv.txt\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
@@ -149,22 +151,26 @@
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if test ${sec_boot} = yes; then " \
-				   "if run loadcntr; then " \
-					   "run mmcboot; " \
-				   "else run netboot; " \
-				   "fi; " \
-			    "else " \
-				   "if run loadimage; then " \
-					   "run mmcboot; " \
-				   "else run netboot; " \
-				   "fi; " \
+			"if run loadbootscript; then " \
+				"run bootscript; " \
+			"else " \
+				"if test ${sec_boot} = yes; then " \
+					"if run loadcntr; then " \
+						"run mmcboot; " \
+					"else run netboot; " \
+					"fi; " \
+				"else " \
+					"if run loadbootenv; then " \
+						"echo Loaded environment from ${bootenv}; " \
+						"run importbootenv; " \
+					"fi;" \
+					"if run loadimage; then " \
+						"run mmcboot; " \
+					"else run netboot; " \
+					"fi; " \
 				"fi; " \
-		   "fi; " \
-	   "fi;"
+			"fi; " \
+		"fi;"
 
 /* Link Definitions */
 
