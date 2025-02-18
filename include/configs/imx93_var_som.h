@@ -130,6 +130,7 @@
 				"fi; " \
 			"fi;" \
 		"fi;\0" \
+	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"netargs=setenv bootargs ${jh_clk} console=${console} " \
 		"${cma_size} cma_name=linux,cma " \
 		"root=/dev/nfs " \
