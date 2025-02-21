@@ -16,6 +16,46 @@
 		stdout-path = &lpuart1;
 	};
 
+	lvds_backlight: backlight {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pwm_backlight>;
+		compatible = "gpio-backlight";
+		gpios = <&gpio2 25 GPIO_ACTIVE_HIGH>;
+		default-on;
+	};
+
+	panel_lvds: panel-lvds{
+		compatible = "simple-panel";
+		backlight = <&lvds_backlight>;
+		width-mm = <153>;
+		height-mm = <87>;
+		data-mapping = "jeida-24";
+		status = "okay";
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: timing0 {
+				clock-frequency = <74250000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <40>;
+				hfront-porch = <40>;
+				vback-porch = <29>;
+				vfront-porch = <13>;
+				hsync-len = <48>;
+				vsync-len = <3>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+		};
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
+	};
+
 	reg_3p3v: regulator-3p3v {
 		compatible = "regulator-fixed";
 		regulator-max-microvolt = <3300000>;
@@ -36,11 +76,55 @@
 	};
 };
 
+&display_pixel_link {
+	status = "okay";
+};
+
+&dpu {
+	clocks = <&scmi_clk IMX95_CLK_DISP1PIX>,
+				 <&scmi_clk IMX95_CLK_DISPAPB>,
+				 <&scmi_clk IMX95_CLK_DISPAXI>,
+				 <&scmi_clk IMX95_CLK_DISPOCRAM>,
+				 <&scmi_clk IMX95_CLK_LDBPLL>,
+				 <&scmi_clk IMX95_CLK_LDBPLL_VCO>;
+	status = "okay";
+};
+
 &enetc_port1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enetc1>;
 	phy-handle = <&ethphy1>;
 	phy-mode = "rgmii";
+	status = "okay";
+};
+
+&ldb {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	assigned-clocks = <&scmi_clk IMX95_CLK_LDBPLL_VCO>,
+			  <&scmi_clk IMX95_CLK_LDBPLL>;
+	assigned-clock-rates = <4158000000>, <519750000>;
+	status = "okay";
+
+	channel@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0>;
+		fsl,data-mapping = "jeida";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		port@1 {
+			reg = <1>;
+
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
+};
+
+&ldb0_phy {
 	status = "okay";
 };
 
@@ -99,6 +183,17 @@
 		reset-gpios = <&pca6408_2 0 GPIO_ACTIVE_LOW>;
 		reset-assert-us = <10000>;
 		reset-deassert-us = <100000>;
+	};
+};
+
+&pixel_interleaver {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	channel@0 {
+		reg = <0>;
+		status = "okay";
 	};
 };
 
@@ -167,6 +262,12 @@
 		fsl,pins = <
 			IMX95_PAD_GPIO_IO10__GPIO2_IO_BIT10		0x31e
 			IMX95_PAD_GPIO_IO11__GPIO2_IO_BIT11		0x31e
+		>;
+	};
+
+	pinctrl_pwm_backlight: backlightgrp {
+		fsl,pins = <
+			IMX95_PAD_GPIO_IO25__GPIO2_IO_BIT25		0x51e
 		>;
 	};
 

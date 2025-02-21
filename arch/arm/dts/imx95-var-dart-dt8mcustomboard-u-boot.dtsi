@@ -35,6 +35,12 @@
 	bootph-pre-ram;
 };
 
+&dispmix_csr {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-rates;
+	/delete-property/ assigned-clock-parents;
+};
+
 &dummy {
 	bootph-all;
 	bootph-pre-ram;

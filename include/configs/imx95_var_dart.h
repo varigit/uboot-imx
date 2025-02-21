@@ -51,6 +51,10 @@
 	"image=Image.gz\0" \
 	"img_addr=0xB0000000\0" \
 	"splashimage=0xA0000000\0" \
+	"splashfile=/boot/splash.bmp\0" \
+	"splashsourceauto=yes\0" \
+	"backlight_disable=gpio clear GPIO2_25\0" \
+	"backlight_enable=gpio set GPIO2_25\0" \
 	"console=ttyLP0,115200 earlycon\0" \
 	"fdt_addr_r=0x93000000\0" \
 	"fdt_addr=0x93000000\0" \
@@ -103,6 +107,7 @@
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"run optargs; " \
+		"run backlight_disable; " \
 		"if test ${sec_boot} = yes; then " \
 			"if run auth_os; then " \
 				"run boot_os; " \
