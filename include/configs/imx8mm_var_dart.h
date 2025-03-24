@@ -143,6 +143,7 @@
 		"else " \
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
+	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"netargs=setenv bootargs console=${console} " \
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp ${cma_size}\0" \
