@@ -60,6 +60,24 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 	return BOOT_DEVICE_NONE;
 }
 
+/* Fixups for ddrc_cfg table written to EEPROM */
+struct dram_fixup_param fixup_regs_ddrc_cfg[] = {
+	/* RAM size, Register, Old value, New value */
+
+	/* 1G */
+	{ 1024, 0x3d402064, 0x00400046, 0x00510057 },
+	{ 1024, 0x3d402120, 0x02020d04, 0x03030d04 },
+	{ 1024, 0x3d40212c, 0x1106010e, 0x1006010e },
+
+	/* 4G */
+	{ 4096, 0x3d402064, 0x00400093, 0x005100b8 },
+	{ 4096, 0x3d402120, 0x04040d06, 0x04040d07 },
+	{ 4096, 0x3d40212c, 0x1205010e, 0x1306010e },
+
+	/* Null terminator */
+	{ 0, 0, 0, 0 }
+};
+
 static void spl_dram_init(void)
 {
 	int id;
@@ -73,6 +91,8 @@ static void spl_dram_init(void)
 	} else if (id == VAR_SOM_MX8M_MINI) {
 		var_eeprom_read_header(&eeprom);
 		var_eeprom_adjust_dram(&eeprom, &dram_timing_ddr4);
+		var_eeprom_apply_dram_fixup(&eeprom, fixup_regs_ddrc_cfg, dram_timing_ddr4.ddrc_cfg,
+					    dram_timing_ddr4.ddrc_cfg_num);
 		ddr_init(&dram_timing_ddr4);
 	} else {
 		printf("Undefined board ID\n");
