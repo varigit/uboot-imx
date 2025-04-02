@@ -59,7 +59,7 @@
 	"fdt_addr_r=0x93000000\0" \
 	"fdt_addr=0x93000000\0" \
 	"fdt_high=0xffffffffffffffff\0"	 \
-	"nfsroot=/srv/nfs/${board}/rootfs\0" \
+	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"cntr_addr=0xA8000000\0" \
 	"cntr_file=os_cntr_signed.bin\0" \
 	"bootdir=/boot\0" \
