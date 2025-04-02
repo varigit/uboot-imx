@@ -123,7 +123,7 @@
 	"fdt_addr=0x83000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"nfsroot=/srv/nfs/${board}/rootfs\0" \
+	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"panel=VAR-WVGA-LCD\0" \
 	"splashsourceauto=yes\0" \
 	"splashfile=/boot/splash.bmp\0" \
