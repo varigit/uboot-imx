@@ -31,7 +31,6 @@
 #include <linux/delay.h>
 
 #include "../common/imx8_eeprom.h"
-#include "imx8mn_var_som.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 

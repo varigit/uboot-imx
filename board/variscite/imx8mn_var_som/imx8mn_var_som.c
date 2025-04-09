@@ -28,7 +28,6 @@
 
 #include "../common/extcon-ptn5150.h"
 #include "../common/imx8_eeprom.h"
-#include "imx8mn_var_som.h"
 
 int var_setup_mac(struct var_eeprom *eeprom);
 
@@ -143,31 +142,15 @@ int board_init(void)
 	return 0;
 }
 
-int var_get_som_rev(struct var_eeprom *ep)
-{
-	switch (ep->somrev) {
-	case 0:
-		return SOM_REV_10;
-	case 1:
-		return SOM_REV_11;
-	case 2:
-		return SOM_REV_12;
-	case 3:
-		return SOM_REV_13;
-	default:
-		return UNKNOWN_REV;
-	}
-}
-
 #define SDRAM_SIZE_STR_LEN 5
 
 int board_late_init(void)
 {
-	int som_rev;
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
+	char som_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_EXTCON_PTN5150
 	extcon_ptn5150_setup(&usb_ptn5150);
@@ -178,32 +161,22 @@ int board_late_init(void)
 #endif
 	var_eeprom_print_prod_info(ep);
 
-	som_rev = var_get_som_rev(ep);
-
-	printf("%s: som_rev=%d\n", __func__, som_rev);
+	/* SoM Rev ENV*/
+	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
+	env_set("som_rev", som_rev);
 
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d",
 		 (int)(gd->ram_size / 1024 / 1024));
 	env_set("sdram_size", sdram_size_str);
 
 	env_set("board_name", "VAR-SOM-MX8M-NANO");
-	switch (som_rev) {
-	case SOM_REV_10:
-		env_set("som_rev", "som_rev10");
-		break;
-	case SOM_REV_11:
-		env_set("som_rev", "som_rev11");
-		break;
-	case SOM_REV_12:
-		env_set("som_rev", "som_rev12");
-		break;
-	case SOM_REV_13:
-		env_set("som_rev", "som_rev13");
-		break;
-	}
+
 	var_carrier_eeprom_read(CARRIER_EEPROM_BUS, CARRIER_EEPROM_ADDR, &carrier_eeprom);
 	var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
 	env_set("carrier_rev", carrier_rev);
+
+	/* SoM Features ENV */
+	env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
