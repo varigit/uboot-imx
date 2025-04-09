@@ -114,7 +114,13 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
+			"if test ${som_rev} -lt 2; then " \
+				"setenv fdt_file imx8mn-var-som-1.x-symphony.dtb; " \
+			"elif test ${som_has_wbe} = 1; then " \
+				"setenv fdt_file imx8mn-var-som-wbe-symphony.dtb; " \
+			"else " \
+				"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
+			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
 		"echo fdt_file=${fdt_file}; " \
