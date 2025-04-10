@@ -79,18 +79,13 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
-			"if test $som_has_wbe = 1; then " \
-				"setenv WBE_SUFFIX -wbe; " \
-			"else " \
-				"setenv WBE_SUFFIX ; " \
-			"fi; " \
 			"if test $board_name = VAR-SOM-MX91; then " \
-				"setenv fdt_file imx91-var-som${WBE_SUFFIX}-symphony.dtb; " \
+				"setenv fdt_file imx91-var-som-symphony.dtb; " \
 			"else " \
 				"if test ${carrier_name} = sonata; then " \
-					"setenv fdt_file imx91-var-dart${WBE_SUFFIX}-sonata.dtb; " \
+					"setenv fdt_file imx91-var-dart-sonata.dtb; " \
 				"else " \
-					"setenv fdt_file imx91-var-dart${WBE_SUFFIX}-dt8mcustomboard.dtb; " \
+					"setenv fdt_file imx91-var-dart-dt8mcustomboard.dtb; " \
 				"fi; " \
 			"fi; " \
 		"fi; " \
