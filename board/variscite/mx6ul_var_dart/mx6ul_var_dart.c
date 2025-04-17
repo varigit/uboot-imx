@@ -72,6 +72,60 @@ DECLARE_GLOBAL_DATA_PTR;
 			PAD_CTL_SRE_FAST)
 #define GPMI_PAD_CTRL2 (GPMI_PAD_CTRL0 | GPMI_PAD_CTRL1)
 
+#ifdef CONFIG_FEC_MXC
+
+/*
+ * PHY reset GPIO mapping based on SoM and carrier board:
+ *
+ * - DART-6UL + CustomBoard:
+ *     - ethphy0: GPIO5_IO00
+ *     - ethphy1: GPIO1_IO10
+ *
+ * - VAR-SOM-6UL + Concerto Board:
+ *     - ethphy0: GPIO5_IO00
+ *     - ethphy1: GPIO5_IO05
+ *
+ * Notes:
+ * - GPIO5_IO00 is used across both SoMs for ethphy0.
+ * - Secondary PHY (ethphy1) reset line varies depending on the SoM.
+ */
+
+#define PHY_GPIO_0 IMX_GPIO_NR(5, 0)   // ethphy0 (common)
+#define PHY_GPIO_DART IMX_GPIO_NR(1, 10)   // ethphy1 (DART-6UL)
+#define PHY_GPIO_VARSOM IMX_GPIO_NR(5, 5)  // ethphy1 (VAR-SOM-6UL)
+
+#define PHY_DELAY_ASSERT_US   10000
+#define PHY_DELAY_DEASSERT_US 100000
+
+static void reset_phy_gpio(int gpio, iomux_v3_cfg_t pad)
+{
+	imx_iomux_v3_setup_pad(pad);
+	if (gpio_request(gpio, "phy-reset"))
+		return;
+	gpio_direction_output(gpio, 0);
+	udelay(PHY_DELAY_ASSERT_US);
+	gpio_set_value(gpio, 1);
+	udelay(PHY_DELAY_DEASSERT_US);
+}
+
+static void reset_known_phys(void)
+{
+	/* ethphy0: always reset GPIO5_IO00 */
+	reset_phy_gpio(PHY_GPIO_0,
+	  MX6_PAD_SNVS_TAMPER0__GPIO5_IO00 |
+	  MUX_PAD_CTRL(NO_PAD_CTRL));
+
+	/* ethphy1: conditional reset depending on SoM */
+	if (is_dart_6ul())
+		reset_phy_gpio(PHY_GPIO_DART,
+			MX6_PAD_JTAG_MOD__GPIO1_IO10 |
+			MUX_PAD_CTRL(NO_PAD_CTRL));
+	else if (is_var_som_6ul())
+		reset_phy_gpio(PHY_GPIO_VARSOM,
+			MX6_PAD_SNVS_TAMPER5__GPIO5_IO05 |
+			MUX_PAD_CTRL(NO_PAD_CTRL));
+}
+#endif
 
 #ifdef CONFIG_SYS_I2C_MXC
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
@@ -863,6 +917,7 @@ int board_init(void)
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
 #ifdef CONFIG_FEC_MXC
+	reset_known_phys();
 	setup_fec(CONFIG_FEC_ENET_DEV);
 #endif
 
