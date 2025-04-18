@@ -72,6 +72,55 @@ DECLARE_GLOBAL_DATA_PTR;
 			PAD_CTL_SRE_FAST)
 #define GPMI_PAD_CTRL2 (GPMI_PAD_CTRL0 | GPMI_PAD_CTRL1)
 
+/*
+ * Returns true if the SOM is DART-6UL
+ */
+static inline bool is_dart_6ul(void)
+{
+	static int is_dart = -1;
+
+	if (is_dart == -1) {
+		imx_iomux_v3_setup_pad(MX6_PAD_NAND_CE0_B__GPIO4_IO13 |
+			MUX_PAD_CTRL(PAD_CTL_PUS_100K_UP));
+
+		gpio_request(IMX_GPIO_NR(4, 13), "SOM ID");
+		gpio_direction_input(IMX_GPIO_NR(4, 13));
+		is_dart = (gpio_get_value(IMX_GPIO_NR(4, 13)) != 0);
+
+#ifdef CONFIG_NAND_MXS
+		imx_iomux_v3_setup_pad(MX6_PAD_NAND_CE0_B__RAWNAND_CE0_B |
+			MUX_PAD_CTRL(GPMI_PAD_CTRL2));
+#endif
+	}
+
+	return is_dart;
+}
+
+/*
+ * Returns true if the SOM is VAR-SOM-6UL
+ */
+static inline bool is_var_som_6ul(void)
+{
+	return !is_dart_6ul();
+}
+
+enum current_board {
+	DART_6UL,
+	VAR_SOM_6UL,
+};
+
+static enum current_board get_board_indx(void)
+{
+	if (is_dart_6ul())
+		return DART_6UL;
+	if (is_var_som_6ul())
+		return VAR_SOM_6UL;
+
+	printf("Error identifying board!\n");
+	hang();
+}
+
+
 #ifdef CONFIG_FEC_MXC
 
 /*
@@ -188,52 +237,6 @@ static struct i2c_pads_info i2c_pad_info2[] = {
 	},
 };
 #endif
-
-/*
- * Returns true iff the SOM is DART-6UL
- */
-static inline bool is_dart_6ul(void)
-{
-	static int is_dart = -1;
-
-	if (is_dart == -1) {
-		imx_iomux_v3_setup_pad(MX6_PAD_NAND_CE0_B__GPIO4_IO13 | MUX_PAD_CTRL(PAD_CTL_PUS_100K_UP));
-
-		gpio_request(IMX_GPIO_NR(4, 13), "SOM ID");
-		gpio_direction_input(IMX_GPIO_NR(4, 13));
-		is_dart = (gpio_get_value(IMX_GPIO_NR(4, 13)) != 0);
-
-#ifdef CONFIG_NAND_MXS
-		imx_iomux_v3_setup_pad(MX6_PAD_NAND_CE0_B__RAWNAND_CE0_B | MUX_PAD_CTRL(GPMI_PAD_CTRL2));
-#endif
-	}
-
-	return is_dart;
-}
-
-/*
- * Returns true iff the SOM is VAR-SOM-6UL
- */
-static inline bool is_var_som_6ul(void)
-{
-	return !is_dart_6ul();
-}
-
-enum current_board {
-	DART_6UL,
-	VAR_SOM_6UL,
-};
-
-static enum current_board get_board_indx(void)
-{
-	if (is_dart_6ul())
-		return DART_6UL;
-	if (is_var_som_6ul())
-		return VAR_SOM_6UL;
-
-	printf("Error identifying board!\n");
-	hang();
-}
 
 #ifdef CONFIG_SYS_I2C
 #if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)
