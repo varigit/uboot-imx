@@ -51,6 +51,7 @@
 	CFG_MFG_ENV_SETTINGS \
 	"bootdir=/boot\0"	\
 	BOOTENV \
+	"prepare_mcore=setenv mcore_clk clk-imx8mq.mcore_booted;\0" \
 	"scriptaddr=0x43500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"bsp_script=boot.scr\0" \
@@ -85,7 +86,7 @@
 		"fi; " \
 		"bootaux ${m4_addr};\0" \
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console} " \
+	"mmcargs=setenv bootargs ${mcore_clk} console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size} cma_name=linux,cma\0" \
 	"bootenv=uEnv.txt\0" \
 	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bsp_script};\0" \
@@ -133,7 +134,7 @@
 		"else " \
 			"echo wait for boot; " \
 		"fi;\0" \
-	"netargs=setenv bootargs console=${console} " \
+	"netargs=setenv bootargs ${mcore_clk} console=${console} " \
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
@@ -166,7 +167,7 @@
 	"run ramsize_check; " \
 	"mmc dev ${mmcdev}; "\
 	"if mmc rescan; then " \
-		"if test ${use_m4} = yes && run loadm4bin; then " \
+		"if test ${use_m4} = yes && run loadm4bin && run prepare_mcore; then " \
 			"run runm4bin; " \
 		"fi; " \
 		"if run loadbootscript; then " \
