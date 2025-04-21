@@ -60,6 +60,7 @@
 	"fdt_addr_r=0x43000000\0" \
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
+	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
 	"fdt_file=undefined\0" \
