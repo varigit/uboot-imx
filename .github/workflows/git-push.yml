@@ -15,4 +15,6 @@ jobs:
         arm64:imx93_var_som_defconfig
         arm64:imx95_var_dart_defconfig
         arm:imx6ul_var_dart_mmc_defconfig
+        arm:imx6ul_var_dart_mmc_SECURE_BOOT_defconfig
         arm:imx6ul_var_dart_nand_defconfig
+        arm:imx6ul_var_dart_nand_SECURE_BOOT_defconfig

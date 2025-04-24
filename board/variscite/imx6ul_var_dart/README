@@ -26,8 +26,10 @@ $ make mrproper
 Choose one of the following:
 
 ``` bash
-$ make imx6ul_var_dart_mmc_defconfig		    # For booting from SD card/eMMC
-$ make imx6ul_var_dart_nand_defconfig		    # For booting from NAND flash
+$ make imx6ul_var_dart_mmc_defconfig		        # For booting from SD card/eMMC
+$ make imx6ul_var_dart_nand_defconfig		        # For booting from NAND flash
+$ make imx6ul_var_dart_mmc_SECURE_BOOT_defconfig	# For booting from SD card/eMMC with secure boot support
+$ make imx6ul_var_dart_nand_SECURE_BOOT_defconfig	# For booting from NAND flash with secure boot support
 ```
 
 Then run make
