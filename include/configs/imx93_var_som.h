@@ -170,6 +170,10 @@
 			"setenv cma_size cma=128M; " \
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
+		"if env exists mender_setup; then " \
+			"run mender_setup; " \
+			"setenv mmcpart ${mender_boot_part}; " \
+		"fi; " \
 		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if test ${use_m33} = yes && run loadm33bin; then " \
