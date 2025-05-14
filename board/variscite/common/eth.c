@@ -96,6 +96,10 @@ int var_setup_mac(struct var_eeprom *eeprom)
 	uint8_t enet1addr[ARP_HLEN];
 #endif
 
+#if defined(CONFIG_IMX95)
+	uint8_t enet2addr[ARP_HLEN];
+#endif
+
 	/* Read MAC address from EEPROM */
 	ret = var_eeprom_get_mac(eeprom, enetaddr);
 	if (ret)
@@ -116,5 +120,10 @@ int var_setup_mac(struct var_eeprom *eeprom)
 	var_eth_env_set_enetaddr(1, enet1addr);
 #endif
 
+#if defined(CONFIG_IMX95)
+	/* Set eth2 MAC address to eth0 + 2 */
+	int2mac(addr + 2, enet2addr);
+	var_eth_env_set_enetaddr(2, enet2addr);
+#endif
 	return 0;
 }
