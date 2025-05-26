@@ -15,6 +15,7 @@
 #include <asm/global_data.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/sections.h>
+#include <linux/delay.h>
 
 #include "imx6ul_var_dart-common.h"
 #include "mx6var_eeprom_v2.h"
@@ -356,6 +357,25 @@ int board_fit_config_name_match(const char *name)
 }
 #endif /* CONFIG_SPL_LOAD_FIT */
 
+/* add an extra delay to make sure that voltages are stable for serial debug output.
+ * This is only needed for DART modules when booting from eMMC
+ * VAR-SOM is not affected at all.
+ *
+ * This function is just needed for the complete debug UART to also contain the output
+ * from the SPL (which contains the version of the SPL. If you don't care about this,
+ * you can omit calling this function and gain some extra boot time.
+ */
+static void extra_delay_for_stable_uart(void)
+{
+	int devno;
+	if (is_dart_6ul()) {
+		devno = mmc_get_env_dev();
+		if (devno == 1) {	/* booting from eMMC */
+			mdelay(160);	/* 150ms was measured, 10ms extra to be safe */
+		}
+	}
+}
+
 void board_init_f(ulong dummy)
 {
 	/* setup AIPS and disable watchdog */
@@ -367,6 +387,9 @@ void board_init_f(ulong dummy)
 	timer_init();
 
 	setup_iomux_uart();
+
+	/* make sure that UART voltages are stable on all boards */
+	extra_delay_for_stable_uart();
 
 	/* UART clocks enabled and gd valid - init serial console */
 	preloader_console_init();
