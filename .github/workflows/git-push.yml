@@ -11,6 +11,7 @@ jobs:
         arm64:imx8mm_var_dart_defconfig
         arm64:imx8mn_var_som_defconfig
         arm64:imx8mp_var_dart_defconfig
+        arm64:imx8qxp_var_som_defconfig
         arm64:imx91_var_som_defconfig
         arm64:imx93_var_som_defconfig
         arm64:imx95_var_dart_defconfig
