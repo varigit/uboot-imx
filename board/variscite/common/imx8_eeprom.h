@@ -74,9 +74,6 @@ struct dram_fixup_param {
 	unsigned int new_val;
 };
 
-void var_eeprom_apply_dram_fixup(struct var_eeprom *ep, struct dram_fixup_param *fixup_regs,
-			    struct dram_cfg_param *table, int table_size);
-
 static inline int var_eeprom_is_valid(struct var_eeprom *ep)
 {
 	if (htons(ep->magic) != VAR_EEPROM_MAGIC) {
@@ -97,6 +94,8 @@ void var_eeprom_print_prod_info(struct var_eeprom *e);
 
 #if defined(CONFIG_ARCH_IMX8M) && defined(CONFIG_SPL_BUILD)
 void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d);
+void var_eeprom_apply_dram_fixup(struct var_eeprom *ep, struct dram_fixup_param *fixup_regs,
+			    struct dram_cfg_param *table, int table_size);
 #endif
 
 int var_carrier_eeprom_read(int bus, int addr, struct var_carrier_eeprom *ep);
