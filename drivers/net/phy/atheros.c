@@ -313,6 +313,8 @@ static int ar803x_config(struct phy_device *phydev)
 {
 	int ret;
 
+	printf("AR803x PHY detected at addr %d\n", phydev->addr);
+
 	ret = ar803x_of_init(phydev);
 	if (ret < 0)
 		return ret;
