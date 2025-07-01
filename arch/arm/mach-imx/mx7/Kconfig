@@ -50,6 +50,15 @@ config TARGET_IMX7_CM
 	select SUPPORT_SPL
 	imply CMD_DM
 
+config TARGET_MX7DVAR_SOM
+	bool "mx7dvar_som"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_THERMAL
+	select MX7D
+	select SUPPORT_SPL
+	imply CMD_DM
+
 config TARGET_MEERKAT96
 	bool "NovTech Meerkat96 board"
 	select BOARD_LATE_INIT
@@ -158,6 +167,7 @@ source "board/novtech/meerkat96/Kconfig"
 source "board/storopack/smegw01/Kconfig"
 source "board/technexion/pico-imx7d/Kconfig"
 source "board/toradex/colibri_imx7/Kconfig"
+source "board/variscite/mx7dvar_som/Kconfig"
 source "board/warp7/Kconfig"
 
 endif
