@@ -1,0 +1,13 @@
+/*
+ * Copyright (C) 2025 Variscite Ltd. - https://www.variscite.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+#include "imx7d-var-som-common-u-boot.dtsi"
+
+/ {
+	model = "Variscite VAR-SOM-MX7 with eMMC on VAR-MX7CustomBoard";
+};
