@@ -4,4 +4,5 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
-obj-y  := mx7dvar_som.o
+obj-y  := mx7dvar_som.o mx7dvar_eeprom.o
+obj-$(CONFIG_SPL_BUILD) += spl.o
