@@ -27,7 +27,7 @@
 		reg = <0x00400000 0x00200000>;
 	};
 
-	/* an 8 MiB partition */
+	/* a 12 MiB partition */
 	partition@3 {
 		label = "kernel";
 		reg = <0x00600000 0x00c00000>;
