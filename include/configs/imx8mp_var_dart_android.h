@@ -15,8 +15,7 @@
 #define HW_ENV_SETTINGS \
 	"cmaargs=" \
 		"if test $sdram_size -le 2048; then " \
-			"setenv cmavar 320M@0x400M-0xb80M; " \
-			"setenv galcore_var 'galcore.contiguousSize=33554432'; " \
+			"setenv cmavar 550M@0x400M-0xb80M; " \
 		"else " \
 			"setenv cmavar 1184M@0x400M-0x1000M; " \
 		"fi; " \
