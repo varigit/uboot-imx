@@ -174,11 +174,6 @@ config TARGET_IMX93_11X11_FRDM
 	select REGMAP
 	select SYSCON
 
-config TARGET_IMX93_VAR_SOM
-	bool "imx93_var_som"
-	select IMX93
-	select IMX9_LPDDR4X
-
 config TARGET_KONTRON_MX93
 	bool "Kontron OSM-S/BL i.MX93"
 	select BINMAN
@@ -278,7 +273,6 @@ source "board/nxp/imx93_frdm/Kconfig"
 source "board/nxp/imx93_qsb/Kconfig"
 source "board/kontron/osm-s-mx93/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
-source "board/variscite/imx93_var_som/Kconfig"
 source "board/nxp/imx94_evk/Kconfig"
 source "board/nxp/imx94_orangebox/Kconfig"
 source "board/nxp/imx95_evk/Kconfig"
