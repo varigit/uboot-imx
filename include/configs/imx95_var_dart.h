@@ -53,6 +53,7 @@
 	"splashimage=0xA0000000\0" \
 	"splashfile=/boot/splash.bmp\0" \
 	"splashsourceauto=yes\0" \
+	"splashpos=m,m\0" \
 	"backlight_disable=gpio clear GPIO2_25\0" \
 	"backlight_enable=gpio set GPIO2_25\0" \
 	"console=ttyLP0,115200 earlycon\0" \

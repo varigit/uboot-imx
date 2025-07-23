@@ -181,7 +181,8 @@
 	"splashimage=0x9e000000\0" \
 	"splashenable=setenv splashfile ${bootdir}/splash.bmp; " \
 		"setenv splashimage 0x83100000\0" \
-	"splashdisable=setenv splashfile; setenv splashimage\0"
+	"splashdisable=setenv splashfile; setenv splashimage\0" \
+	"splashpos=m,m\0"
 
 /* Size of malloc() pool */
 

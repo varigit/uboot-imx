@@ -109,6 +109,7 @@
 	"splashenable=setenv splashfile /boot/splash.bmp; " \
 		"setenv splashimage 0x83100000\0" \
 	"splashdisable=setenv splashfile; setenv splashimage\0" \
+	"splashpos=m,m\0" \
 	"ip_dyn=yes\0" \
 	"use_m4=no\0" \
 	"m4bootdata="__stringify(CFG_SYS_AUXCORE_BOOTDATA)"\0" \
