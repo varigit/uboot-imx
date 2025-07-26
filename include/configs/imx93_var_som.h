@@ -101,7 +101,11 @@
 					"echo \"Warning: Only SoM revisions >= 2.0 are supported\"; " \
 				"fi; " \
 			"else " \
-				"setenv fdt_file imx93-var-dart${WBE_SUFFIX}-dt8mcustomboard.dtb; " \
+				"if test ${carrier_name} = sonata; then " \
+					"setenv fdt_file imx93-var-dart${WBE_SUFFIX}-sonata.dtb; " \
+				"else " \
+					"setenv fdt_file imx93-var-dart${WBE_SUFFIX}-dt8mcustomboard.dtb; " \
+				"fi; " \
 			"fi; " \
 		"fi;\0" \
 	"loadfdt=run findfdt; " \
