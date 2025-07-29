@@ -167,6 +167,11 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
+
+	st33ktpm2xi2c: st33ktpm2xi2c@2e {
+		compatible = "tcg,tpm-tis-i2c";
+		reg = <0x2e>;
+	};
 };
 
 &lpuart1 {
