@@ -128,6 +128,11 @@
 	fsl,signal-voltage-switch-extra-delay-ms = <8>;
 };
 
+&lpi2c1 {
+	bootph-pre-ram;
+	bootph-all;
+};
+
 &lpi2c3 {
 	bootph-pre-ram;
 };
@@ -138,6 +143,11 @@
 
 &{/soc@0/bus@42000000/i2c@42530000/pmic@25/regulators} {
 	bootph-pre-ram;
+};
+
+&pinctrl_lpi2c1 {
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &pinctrl_lpi2c3 {

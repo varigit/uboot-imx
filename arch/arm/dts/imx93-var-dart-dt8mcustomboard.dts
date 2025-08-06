@@ -80,6 +80,20 @@
 		>;
 	};
 
+	pinctrl_lpi2c1_gpio: lpi2c1grp-gpio {
+		fsl,pins = <
+			MX93_PAD_I2C1_SCL__GPIO1_IO00			0x31e
+			MX93_PAD_I2C1_SDA__GPIO1_IO01			0x31e
+		>;
+	};
+
+	pinctrl_lpi2c1: lpi2c1grp {
+		fsl,pins = <
+			MX93_PAD_I2C1_SCL__LPI2C1_SCL			0x40000b9e
+			MX93_PAD_I2C1_SDA__LPI2C1_SDA			0x40000b9e
+		>;
+	};
+
 	pinctrl_lpi2c7_gpio: lpi2c7grp-gpio {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO07__GPIO2_IO07			0x31e
@@ -150,6 +164,19 @@
 &lcdif {
 	status = "okay";
 	assigned-clock-rates = <484000000>, <121000000>, <400000000>, <133333333>;
+};
+
+&lpi2c1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <400000>;
+	pinctrl-names = "default", "sleep", "gpio";
+	pinctrl-0 = <&pinctrl_lpi2c1>;
+	pinctrl-1 = <&pinctrl_lpi2c1_gpio>;
+	pinctrl-2 = <&pinctrl_lpi2c1_gpio>;
+	scl-gpios = <&gpio1 0 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio1 1 GPIO_ACTIVE_HIGH>;
+	status = "okay";
 };
 
 &lpi2c7 {
