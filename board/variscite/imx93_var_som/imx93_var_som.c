@@ -54,6 +54,28 @@ int get_board_id(void)
 	return VAR_SOM_MX93;
 }
 
+int extract_carrier_name(char *carrier_rev, char *carrier_name) {
+
+	int len = 0;
+
+	if ((carrier_rev == NULL) || (*carrier_rev == '\0')) {
+		return -1;
+	}
+
+	len = strlen(carrier_rev);
+
+	while (len > 0 && !isalpha(carrier_rev[len])) {
+		len--;
+	}
+
+	len++;
+
+	strncpy(carrier_name, carrier_rev, len);
+	carrier_name[len] = '\0';
+
+	return len;
+}
+
 #if defined(CONFIG_MULTI_DTB_FIT) && !defined(CONFIG_SPL_BUILD)
 int board_fit_config_name_match(const char *name)
 {
@@ -150,6 +172,7 @@ int board_late_init(void)
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_REV_LEN] = {0};
 	char som_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_EXTCON_PTN5150
@@ -171,6 +194,9 @@ int board_late_init(void)
 	var_carrier_eeprom_read(VAR_CARRIER_EEPROM_I2C_NAME, CARRIER_EEPROM_ADDR, &carrier_eeprom);
 	var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
 	env_set("carrier_rev", carrier_rev);
+
+	if (extract_carrier_name(carrier_rev, carrier_name) > 0)
+		env_set("carrier_name", carrier_name);
 
 	/* SoM Features */
 	if (ep->features & VAR_EEPROM_F_WBE)
@@ -205,5 +231,22 @@ int board_late_init(void)
 		break;
 	}
 #endif
+	return 0;
+}
+
+int checkboard(void)
+{
+	if (get_board_id() == DART_MX93) {
+		struct var_carrier_eeprom carrier_eeprom;
+		char carrier_rev[CARRIER_REV_LEN] = {0};
+		char carrier_name[CARRIER_REV_LEN] = {0};
+
+		var_carrier_eeprom_read(VAR_CARRIER_EEPROM_I2C_NAME, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+
+		if (extract_carrier_name(carrier_rev, carrier_name) > 0)
+			printf("Board: %c%s\n", toupper(carrier_name[0]), carrier_name + 1);
+	}
+
 	return 0;
 }
