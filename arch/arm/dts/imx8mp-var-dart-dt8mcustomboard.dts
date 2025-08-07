@@ -53,6 +53,50 @@
 	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
+	/* GPIO Expander 3 - Sonata */
+	pca9534: gpio@22 {
+		compatible = "nxp,pca9534";
+		reg = <0x22>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		/*
+		 * ETH10G_SEL - Sonata
+		 * output-lo: Configure mux for DART-MX8MP DSI
+		 * output-hi: Configure mux for 10G Ethernet (not supported by 8MP)
+		 */
+		eth10g_sel {
+			gpio-hog;
+			gpios = <5 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "eth10g_sel";
+		};
+
+		/*
+		 * PCIE2_SEL - Sonata
+		 * output-lo: Configure mux for DART-MX95 PCIE2
+		 * output-hi: Configure mux for DART-MX8MP DSI
+		 */
+		pcie2_sel {
+			gpio-hog;
+			gpios = <6 GPIO_ACTIVE_HIGH>;
+			output-high;
+			line-name = "pcie2_sel";
+		};
+
+		/*
+		 * RGB_SEL - Sonata
+		 * output-lo: Configure mux for DARTs LVDS
+		 * output-hi: Configure mux for DART-MX91 RGB2LVDS
+		 */
+		rgb_sel {
+			gpio-hog;
+			gpios = <7 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "rgb_sel";
+		};
+	};
+
 	ptn5150: ptn5150@3d {
 		compatible = "nxp,ptn5150";
 		pinctrl-names = "default";
@@ -93,6 +137,11 @@
 		reg = <0x21>;
 		gpio-controller;
 		#gpio-cells = <2>;
+	};
+
+	st33ktpm2xi2c: st33ktpm2xi2c@2e {
+		compatible = "tcg,tpm-tis-i2c";
+		reg = <0x2e>;
 	};
 };
 
@@ -145,7 +194,17 @@
 			eee-broken-1000t;
 			reset-gpios = <&pca6408_2 0 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
-			reset-deassert-us = <20000>;
+			reset-deassert-us = <100000>;
+			mxl-8611x,led0_cfg = <(
+				MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON |
+				MXL8611X_LEDX_CFG_TRAFFIC_ACT_BLINK_IND
+			)>;
+			mxl-8611x,led1_cfg = <(
+				MXL8611X_LEDX_CFG_LINK_UP_10MB_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_100MB_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_1GB_ON
+			)>;
 			vddio-supply = <&vddio1>;
 
 			vddio1: vddio-regulator {
