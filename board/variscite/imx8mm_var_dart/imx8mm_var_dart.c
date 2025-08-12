@@ -182,6 +182,7 @@ int board_late_init(void)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_REV_LEN] = {0};
 	char som_rev[CARRIER_REV_LEN] = {0};
 
 #ifdef CONFIG_EXTCON_PTN5150
@@ -214,6 +215,9 @@ int board_late_init(void)
 		}
 		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
 		env_set("carrier_rev", carrier_rev);
+
+		if (var_carrier_eeprom_get_name(&carrier_eeprom, carrier_name) > 0)
+			env_set("carrier_name", carrier_name);
 	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
