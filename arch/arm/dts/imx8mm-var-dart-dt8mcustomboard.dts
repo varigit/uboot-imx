@@ -123,6 +123,25 @@
 	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
+	pca9534: gpio@22 {
+		compatible = "nxp,pca9534";
+		reg = <0x22>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		/*
+		 * RGB_SEL - Sonata
+		 * output-lo: Configure mux for DARTs LVDS
+		 * output-hi: Configure mux for DART-MX91 RGB2LVDS
+		 */
+		rgb_sel {
+			gpio-hog;
+			gpios = <7 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "rgb_sel";
+		};
+	};
+
 	extcon_ptn5150: typec@3d {
 		compatible = "nxp,ptn5150";
 		pinctrl-names = "default";
@@ -163,6 +182,11 @@
 			output-high;
 			line-name = "touch_rst";
 		};
+	};
+
+	st33ktpm2xi2c: st33ktpm2xi2c@2e {
+		compatible = "tcg,tpm-tis-i2c";
+		reg = <0x2e>;
 	};
 };
 
