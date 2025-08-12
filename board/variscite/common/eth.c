@@ -127,3 +127,53 @@ int var_setup_mac(struct var_eeprom *eeprom)
 #endif
 	return 0;
 }
+
+#if defined(CONFIG_PHY_MXL8611X)
+#define MII_PHYSID1 0x02
+#define MII_PHYSID2 0x03
+#define PHY_ID_MXL86110 0xC1335580
+#define PHY_ID_MXL86111 0xC1335588
+
+extern int mxl8611x_set_broadcast_raw(struct mii_dev *bus, int addr, bool enable);
+
+/*
+ * Disable EPA0 on MXL so it stops answering on MDIO address 0 before phy_connect
+ * is called. This avoids bus contention between:
+ * - ethphy0@0 (som phy)
+ * - ethphy1@1 (carrier phy, with broadcast enabled by default responding to mdio addr 0)
+ */
+int board_eth_qos_pre_phy_connect(struct mii_dev *bus, struct udevice *dev)
+{
+	int addr;
+
+	if (!bus)
+		return -ENODEV;
+
+	/* Loop through all possible mdio addresses skipping address 0 */
+	for (addr = 1; addr < 32; addr++) {
+		int id1 = bus->read(bus, addr, MDIO_DEVAD_NONE, MII_PHYSID1);
+		int id2 = bus->read(bus, addr, MDIO_DEVAD_NONE, MII_PHYSID2);
+		u32 phy_id;
+
+		if (id1 < 0 || id2 < 0 || id1 == 0xffff || id2 == 0xffff ||
+		    id1 == 0x0000 || id2 == 0x0000)
+			continue;
+
+		phy_id = ((u32)id1 << 16) | (u16)id2;
+
+		if (phy_id == PHY_ID_MXL86110 || phy_id == PHY_ID_MXL86111) {
+			int ret = mxl8611x_set_broadcast_raw(bus, addr, false);
+
+			if (ret)
+				printf("%s: failed to clear MXL EPA0 @%d on %s (ret=%d)\n",
+				       dev ? dev->name : "eqos", addr, bus->name, ret);
+			else
+				printf("%s: cleared MXL EPA0 @%d on %s\n",
+				       dev ? dev->name : "eqos", addr, bus->name);
+			break;
+		}
+	}
+
+	return 0;
+}
+#endif
