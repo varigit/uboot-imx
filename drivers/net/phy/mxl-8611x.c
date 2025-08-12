@@ -250,6 +250,40 @@ static int mxl8611x_rgmii_cfg(struct phy_device *phydev)
 	return 0;
 }
 
+/*
+ * Public helper: toggle MXL8611x broadcast (EPA0) via raw MDIO.
+ * Can be called externally (e.g. from MAC/board code) before PHY probing
+ * when no struct phy_device exists, to preconfigure broadcast behavior or
+ * avoid addr-0 collisions during early scans. Returns 0 or <0 on error.
+ */
+int mxl8611x_set_broadcast_raw(struct mii_dev *bus, int addr, bool enable)
+{
+	int ret;
+	u16 val;
+
+	ret = bus->write(bus, addr, MDIO_DEVAD_NONE,
+			 MXL8611X_EXTD_REG_ADDR_OFFSET, MXL8611X_EXT_RGMII_MDIO_CFG);
+	if (ret < 0)
+		return ret;
+
+	val = bus->read(bus, addr, MDIO_DEVAD_NONE, MXL8611X_EXTD_REG_ADDR_DATA);
+	if ((int)val < 0)
+		return (int)val;
+
+	if (enable)
+		val |= MXL8611X_EXT_RGMII_MDIO_CFG_EPA0_MASK;
+	else
+		val &= ~MXL8611X_EXT_RGMII_MDIO_CFG_EPA0_MASK;
+
+	ret = bus->write(bus, addr, MDIO_DEVAD_NONE,
+			 MXL8611X_EXTD_REG_ADDR_OFFSET, MXL8611X_EXT_RGMII_MDIO_CFG);
+	if (ret < 0)
+		return ret;
+
+	return bus->write(bus, addr, MDIO_DEVAD_NONE,
+			  MXL8611X_EXTD_REG_ADDR_DATA, val);
+}
+
 static int mxl8611x_broadcast_cfg(struct phy_device *phydev)
 {
 	int ret;
