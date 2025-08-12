@@ -112,11 +112,11 @@
 				"fi; " \
 			"else " \
 				"if test ${som_rev} -lt 2; then " \
-					"setenv fdt_file imx8mm-var-dart-1.x-dt8mcustomboard.dtb; " \
+					"setenv fdt_file imx8mm-var-dart-1.x-${carrier_name}.dtb; " \
 				"elif test ${som_has_wbe} = 1; then " \
-					"setenv fdt_file imx8mm-var-dart-wbe-dt8mcustomboard.dtb; " \
+					"setenv fdt_file imx8mm-var-dart-wbe-${carrier_name}.dtb; " \
 				"else " \
-					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
+					"setenv fdt_file imx8mm-var-dart-${carrier_name}.dtb; " \
 				"fi; " \
 			"fi; " \
 		"fi; \0" \
