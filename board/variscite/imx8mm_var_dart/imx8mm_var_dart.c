@@ -201,8 +201,6 @@ int board_late_init(void)
 	env_set("sdram_size", sdram_size_str);
 
 	if (id != UNKNOWN_BOARD) {
-		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
-		env_set("carrier_rev", carrier_rev);
 		/* SoM Features ENV */
 		env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
 
@@ -214,6 +212,8 @@ int board_late_init(void)
 			env_set("board_name", "DART-MX8M-MINI");
 			var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
 		}
+		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+		env_set("carrier_rev", carrier_rev);
 	}
 
 #ifdef CONFIG_ENV_IS_IN_MMC
