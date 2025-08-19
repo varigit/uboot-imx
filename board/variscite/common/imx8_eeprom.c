@@ -10,6 +10,7 @@
 #include <asm/io.h>
 #include <cpu_func.h>
 #include <u-boot/crc.h>
+#include <ctype.h>     /* isalpha */
 
 #ifdef CONFIG_ARCH_IMX8M
 #include <asm/arch-imx8m/ddr.h>
@@ -506,4 +507,38 @@ void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, s
 		strncpy(rev, (const char *)ep->carrier_rev, size);
 	else
 		strncpy(rev, "legacy", size);
+}
+
+/* Returns carrier board name string via 'carrier_rev' argument.
+ * It removes rev number from carrier_rev string, copies it to
+ * carrier_name and selects its full name
+ */
+int var_carrier_eeprom_get_name(struct var_carrier_eeprom *ep, char *name)
+{
+	char carrier_rev[CARRIER_REV_LEN] = {0};
+	int len = 0;
+
+	var_carrier_eeprom_get_revision(ep, carrier_rev, sizeof(carrier_rev));
+
+	if ((carrier_rev == NULL) || (*carrier_rev == '\0')) {
+		return -1;
+	}
+
+	len = strlen(carrier_rev);
+
+	while (len > 0 && !isalpha(carrier_rev[len])) {
+		len--;
+	}
+
+	len++;
+
+	strncpy(name, carrier_rev, len);
+	name[len] = '\0';
+
+	if (!strcmp(name, "dt8m"))
+		strcpy(name, "dt8mcustomboard");
+	else if (!strcmp(name, "sym"))
+		strcpy(name, "symphony");
+
+	return len;
 }
