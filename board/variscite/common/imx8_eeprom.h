@@ -101,5 +101,6 @@ void var_eeprom_apply_dram_fixup(struct var_eeprom *ep, struct dram_fixup_param 
 int var_carrier_eeprom_read(int bus, int addr, struct var_carrier_eeprom *ep);
 int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep);
 void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size);
+int var_carrier_eeprom_get_name(struct var_carrier_eeprom *ep, char *name);
 
 #endif /* _MX8M_VAR_EEPROM_H_ */
