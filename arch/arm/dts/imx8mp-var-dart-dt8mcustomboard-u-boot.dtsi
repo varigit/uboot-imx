@@ -10,6 +10,22 @@
 	bootph-pre-ram;
 };
 
+&gpio5 {
+	bootph-all;
+};
+
+&i2c2 {
+	bootph-all;
+};
+
+&pinctrl_i2c2 {
+	bootph-all;
+};
+
+&pinctrl_i2c2_gpio {
+	bootph-all;
+};
+
 &pinctrl_uart1 {
 	bootph-pre-ram;
 };

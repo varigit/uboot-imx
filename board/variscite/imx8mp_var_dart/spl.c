@@ -267,19 +267,6 @@ void board_init_f(ulong dummy)
 
 	enable_tzc380();
 
-#ifdef CONFIG_POWER
-	/* I2C Bus 0 initialization */
-	if (var_detect_board_id() == BOARD_ID_DART)
-		setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pads_dart);
-	else
-		setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pads_som);
-#endif
-
-	if (var_detect_board_id() == BOARD_ID_DART) {
-		/* I2C Bus 1 initialization */
-		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c1_pads_dart);
-	}
-
 	/* PMIC initialization */
 	power_init_board();
 
