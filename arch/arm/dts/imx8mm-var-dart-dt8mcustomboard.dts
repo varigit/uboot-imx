@@ -150,9 +150,9 @@
 	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
-	pca9534: gpio@21 {
+	pca6408_2: gpio@21 {
 		status = "okay";
-		compatible = "nxp,pca9534";
+		compatible = "ti,tca6408";
 		reg = <0x21>;
 		gpio-controller;
 		#gpio-cells = <2>;
