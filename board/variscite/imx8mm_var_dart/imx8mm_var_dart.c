@@ -151,7 +151,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return 0;
 }
 
-#ifdef CONFIG_EXTCON_PTN5150
+#if (!defined(CONFIG_SPL_BUILD) && defined(CONFIG_EXTCON_PTN5150))
 int board_ehci_usb_phy_mode(struct udevice *dev)
 {
 	int usb_phy_mode = extcon_ptn5150_phy_mode(&usb_ptn5150);
