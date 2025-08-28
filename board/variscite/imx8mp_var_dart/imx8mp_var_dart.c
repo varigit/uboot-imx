@@ -356,9 +356,7 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
 #ifdef CONFIG_OF_BOARD_FIXUP
 int vendor_board_fix_fdt(void *fdt_blob)
 {
-	struct var_carrier_eeprom carrier_eeprom;
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
-	char carrier_rev[CARRIER_REV_LEN] = {0};
 	int som_rev = SOMREV_MAJOR(ep->somrev);
 
 	if (!fdt_blob) {
@@ -366,72 +364,30 @@ int vendor_board_fix_fdt(void *fdt_blob)
 		return -EINVAL;
 	}
 
-	if (var_detect_board_id() == BOARD_ID_DART) {
-		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR,
-					&carrier_eeprom);
-		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev,
-						sizeof(carrier_rev));
+	if ((var_detect_board_id() == BOARD_ID_DART) && (som_rev >= 2)) {
+		int node_offset, subnode_offset, ret;
+		const char *node_path = "/soc@0/bus@30000000/gpio@30210000";
+		const char *node_name = "eth0_phy_pwr_hog";
 
-		if (som_rev >= 2) {
-			/*
-			 * Remove eth0_phy_pwr_hog device tree node if DART-MX8M-PLUS
-			 * revision is 2.0 or higher.
-			 */
-			int node_offset, subnode_offset, ret;
-			const char *node_path = "/soc@0/bus@30000000/gpio@30210000";
-			const char *node_name = "eth0_phy_pwr_hog";
-
-			node_offset = fdt_path_offset(fdt_blob, node_path);
-			if (node_offset < 0) {
-				printf("WARNING: couldn't find %s: %s\n", node_path,
-				       fdt_strerror(node_offset));
-				return -ENOENT;
-			}
-
-			subnode_offset = fdt_subnode_offset(fdt_blob, node_offset, node_name);
-			if (subnode_offset < 0) {
-				printf("WARNING: couldn't find %s node: %s\n",
-				       node_name, fdt_strerror(subnode_offset));
-				return -ENOENT;
-			}
-
-			ret = fdt_del_node(fdt_blob, subnode_offset);
-			if (ret < 0) {
-				printf("WARNING: Couldn't delete subnode %s: %s\n",
-				       node_name, fdt_strerror(ret));
-				return ret;
-			}
+		node_offset = fdt_path_offset(fdt_blob, node_path);
+		if (node_offset < 0) {
+			printf("WARNING: couldn't find %s: %s\n", node_path,
+			       fdt_strerror(node_offset));
+			return -ENOENT;
 		}
 
-		if (strstr(carrier_rev, "dt8m")) {
-			/*
-			 * Remove GPIO Expander 3 device tree node for DT8MCustomBoard,
-			 * as it is present only on the Sonata carrier board.
-			 */
-			int node_offset, subnode_offset, ret;
-			const char *node_path = "/soc@0/bus@30800000/i2c@30a30000";
-			const char *node_name = "gpio@22";
+		subnode_offset = fdt_subnode_offset(fdt_blob, node_offset, node_name);
+		if (subnode_offset < 0) {
+			printf("WARNING: couldn't find %s node: %s\n",
+			       node_name, fdt_strerror(subnode_offset));
+			return -ENOENT;
+		}
 
-			node_offset = fdt_path_offset(fdt_blob, node_path);
-			if (node_offset < 0) {
-				printf("WARNING: couldn't find %s: %s\n", node_path,
-				       fdt_strerror(node_offset));
-				return -ENOENT;
-			}
-
-			subnode_offset = fdt_subnode_offset(fdt_blob, node_offset, node_name);
-			if (subnode_offset < 0) {
-				printf("WARNING: couldn't find %s node: %s\n",
-				       node_name, fdt_strerror(subnode_offset));
-				return -ENOENT;
-			}
-
-			ret = fdt_del_node(fdt_blob, subnode_offset);
-			if (ret < 0) {
-				printf("WARNING: Couldn't delete subnode %s: %s\n",
-				       node_name, fdt_strerror(ret));
-				return ret;
-			}
+		ret = fdt_del_node(fdt_blob, subnode_offset);
+		if (ret < 0) {
+			printf("WARNING: Couldn't delete subnode %s: %s\n",
+			       node_name, fdt_strerror(ret));
+			return ret;
 		}
 	}
 
