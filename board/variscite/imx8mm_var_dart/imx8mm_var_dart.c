@@ -165,6 +165,51 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
 #endif
 #endif
 
+#ifdef CONFIG_OF_BOARD_FIXUP
+int vendor_board_fix_fdt(void *fdt_blob)
+{
+	struct var_carrier_eeprom *carrier_ep = VAR_CARRIER_EEPROM_DATA;
+	char carrier_name[CARRIER_REV_LEN] = {0};
+
+	if (!fdt_blob) {
+		printf("ERROR: Device tree blob not found.\n");
+		return -EINVAL;
+	}
+
+	if (get_board_id() == DART_MX8M_MINI &&
+	    var_carrier_eeprom_get_name(carrier_ep, carrier_name) > 0) {
+		if (strstr(carrier_name, "dt8m") || strstr(carrier_name, "legacy")) {
+			int node_offset, subnode_offset, ret;
+			const char *node_path = "/soc@0/bus@30800000/i2c@30a30000";
+			const char *node_name = "gpio@22";
+
+			node_offset = fdt_path_offset(fdt_blob, node_path);
+			if (node_offset < 0) {
+				printf("WARNING: couldn't find %s: %s\n", node_path,
+				       fdt_strerror(node_offset));
+				return -ENOENT;
+			}
+
+			subnode_offset = fdt_subnode_offset(fdt_blob, node_offset, node_name);
+			if (subnode_offset < 0) {
+				printf("WARNING: couldn't find %s node: %s\n",
+				       node_name, fdt_strerror(subnode_offset));
+				return -ENOENT;
+			}
+
+			ret = fdt_del_node(fdt_blob, subnode_offset);
+			if (ret < 0) {
+				printf("WARNING: Couldn't delete subnode %s: %s\n",
+				       node_name, fdt_strerror(ret));
+				return ret;
+			}
+		}
+	}
+
+	return 0;
+}
+#endif
+
 int board_init(void)
 {
 #ifdef CONFIG_FEC_MXC
