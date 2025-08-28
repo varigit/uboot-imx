@@ -35,6 +35,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 static struct var_eeprom eeprom = {0};
+static struct var_carrier_eeprom carrier_eeprom = {0};
 
 extern struct dram_timing_info dram_timing_ddr4, dram_timing_lpddr4;
 
@@ -86,10 +87,16 @@ static void spl_dram_init(void)
 
 	if (id == DART_MX8M_MINI) {
 		var_eeprom_read_header(&eeprom);
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART,
+					CARRIER_EEPROM_ADDR,
+					&carrier_eeprom);
 		var_eeprom_adjust_dram(&eeprom, &dram_timing_lpddr4);
 		ddr_init(&dram_timing_lpddr4);
 	} else if (id == VAR_SOM_MX8M_MINI) {
 		var_eeprom_read_header(&eeprom);
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM,
+					CARRIER_EEPROM_ADDR,
+					&carrier_eeprom);
 		var_eeprom_adjust_dram(&eeprom, &dram_timing_ddr4);
 		var_eeprom_apply_dram_fixup(&eeprom, fixup_regs_ddrc_cfg, dram_timing_ddr4.ddrc_cfg,
 					    dram_timing_ddr4.ddrc_cfg_num);
@@ -287,6 +294,7 @@ int uart_init(void)
 void spl_board_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	struct var_carrier_eeprom *carrier_ep = VAR_CARRIER_EEPROM_DATA;
 
 if (IS_ENABLED(CONFIG_FSL_CAAM)) {
 	if (sec_init())
@@ -303,6 +311,7 @@ if (IS_ENABLED(CONFIG_FSL_CAAM)) {
 
 	/* Copy EEPROM contents to DRAM */
 	memcpy(ep, &eeprom, sizeof(*ep));
+	memcpy(carrier_ep, &carrier_eeprom, sizeof(*carrier_ep));
 }
 
 #ifdef CONFIG_SPL_LOAD_FIT
@@ -333,6 +342,32 @@ static struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
+static struct i2c_pads_info i2c_pad_i2c2 = {
+	.scl = {
+		.i2c_mode = IMX8MM_PAD_I2C2_SCL_I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL) | MUX_MODE_SION,
+		.gpio_mode = IMX8MM_PAD_I2C2_SCL_GPIO5_IO16 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(5, 16),
+	},
+	.sda = {
+		.i2c_mode = IMX8MM_PAD_I2C2_SDA_I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL) | MUX_MODE_SION,
+		.gpio_mode = IMX8MM_PAD_I2C2_SDA_GPIO5_IO17 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(5, 17),
+	},
+};
+
+static struct i2c_pads_info i2c_pad_i2c3 = {
+	.scl = {
+		.i2c_mode = IMX8MM_PAD_I2C3_SCL_I2C3_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL) | MUX_MODE_SION,
+		.gpio_mode = IMX8MM_PAD_I2C3_SCL_GPIO5_IO18 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(5, 18),
+	},
+	.sda = {
+		.i2c_mode = IMX8MM_PAD_I2C3_SDA_I2C3_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL) | MUX_MODE_SION,
+		.gpio_mode = IMX8MM_PAD_I2C3_SDA_GPIO5_IO19 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(5, 19),
+	},
+};
+
 void board_init_f(ulong dummy)
 {
 	int ret;
@@ -358,8 +393,15 @@ void board_init_f(ulong dummy)
 
 	enable_tzc380();
 
-	/* I2C Bus 0 initialization */
+	/* I2C Bus 0 initialization - PMIC/SOM EEPROM */
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+
+	if (get_board_id() == DART_MX8M_MINI)
+		/* I2C Bus 1 initialization - Carrier EEPROM reading */
+		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_i2c2);
+	else
+		/* I2C Bus 2 initialization - Carrier EEPROM reading */
+		setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_i2c3);
 
 	/* PMIC initialization */
 	power_init_board();
