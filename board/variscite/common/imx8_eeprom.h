@@ -55,6 +55,8 @@ struct __packed var_eeprom
 };
 
 #define VAR_EEPROM_DATA ((struct var_eeprom *)VAR_EEPROM_DRAM_START)
+#define VAR_CARRIER_EEPROM_DATA ((struct var_carrier_eeprom *)(VAR_EEPROM_DRAM_START + \
+							       sizeof(struct var_eeprom)))
 
 #define VAR_CARRIER_EEPROM_MAGIC	0x5643 /* == HEX("VC") */
 
