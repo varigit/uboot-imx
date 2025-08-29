@@ -40,7 +40,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define I2C_PAD_CTRL (PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
 
-struct i2c_pads_info i2c1_pads_dart = {
+static struct i2c_pads_info i2c1_pads_dart = {
 	.scl = {
 		.i2c_mode = MX8MP_PAD_I2C2_SCL__I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gpio_mode = MX8MP_PAD_I2C2_SCL__GPIO5_IO16 | MUX_PAD_CTRL(I2C_PAD_CTRL),
@@ -53,7 +53,7 @@ struct i2c_pads_info i2c1_pads_dart = {
 	},
 };
 
-struct i2c_pads_info i2c4_pads_som = {
+static struct i2c_pads_info i2c4_pads_som = {
 	.scl = {
 		.i2c_mode = MX8MP_PAD_I2C4_SCL__I2C4_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gpio_mode = MX8MP_PAD_I2C4_SCL__GPIO5_IO20 | MUX_PAD_CTRL(I2C_PAD_CTRL),
@@ -229,7 +229,7 @@ int board_fit_config_name_match(const char *name)
 #endif
 
 #ifdef CONFIG_POWER
-struct i2c_pads_info i2c_pads_dart = {
+static struct i2c_pads_info i2c_pads_dart = {
 	.scl = {
 		.i2c_mode = MX8MP_PAD_I2C1_SCL__I2C1_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gpio_mode = MX8MP_PAD_I2C1_SCL__GPIO5_IO14 | MUX_PAD_CTRL(I2C_PAD_CTRL),
@@ -242,7 +242,7 @@ struct i2c_pads_info i2c_pads_dart = {
 	},
 };
 
-struct i2c_pads_info i2c_pads_som = {
+static struct i2c_pads_info i2c_pads_som = {
 	.scl = {
 		.i2c_mode = MX8MP_PAD_SD1_DATA4__I2C1_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gpio_mode = MX8MP_PAD_SD1_DATA4__GPIO2_IO06 | MUX_PAD_CTRL(I2C_PAD_CTRL),
