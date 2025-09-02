@@ -262,14 +262,22 @@ static void adjust_dram_table(u8 adj_table_offset, u8 adj_table_size,
 	int i, j = 0;
 	u8 off = adj_table_offset;
 	struct dram_cfg_param adj_table_row;
-#if CONFIG_IS_ENABLED(DM_I2C)
 	int ret;
+#if CONFIG_IS_ENABLED(DM_I2C)
 	struct udevice *dev;
 
 	/* Get EEPROM device */
 	ret = var_eeprom_get_dev(&dev);
 	if (ret) {
 		debug("%s: Failed to detect I2C EEPROM\n", __func__);
+		return;
+	}
+# else
+	/* Probe EEPROM */
+	i2c_set_bus_num(VAR_EEPROM_I2C_BUS);
+	ret = i2c_probe(VAR_EEPROM_I2C_ADDR);
+	if (ret) {
+		debug("%s: I2C EEPROM probe failed\n", __func__);
 		return;
 	}
 #endif
