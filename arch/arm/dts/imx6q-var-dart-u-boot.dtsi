@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2024 Variscite Ltd.
+ */
+
+#include "imx6qdl-var-u-boot.dtsi"
+
+&usdhc3 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc3_3 {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};

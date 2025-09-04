@@ -1,0 +1,15 @@
+if TARGET_MX6VAR_SOM
+
+config SYS_BOARD
+	default "mx6var_som"
+
+config SYS_VENDOR
+	default "variscite"
+
+config SYS_CONFIG_NAME
+	default "mx6var_som"
+
+config TEXT_BASE
+    default 0x17800000
+
+endif

@@ -21,3 +21,7 @@ jobs:
         arm:imx6ul_var_dart_mmc_SECURE_BOOT_defconfig
         arm:imx6ul_var_dart_nand_defconfig
         arm:imx6ul_var_dart_nand_SECURE_BOOT_defconfig
+        arm:mx6var_som_nand_defconfig
+        arm:mx6var_som_nand_SECURE_BOOT_defconfig
+        arm:mx6var_som_sd_defconfig
+        arm:mx6var_som_sd_SECURE_BOOT_defconfig

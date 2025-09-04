@@ -938,6 +938,12 @@ dtb-y += \
 	imx6dl-sabresd.dtb \
 	imx6dl-sielaff.dtb \
 	imx6dl-wandboard-revd1.dtb \
+	imx6dl-var-som-mx6cb.dtb \
+	imx6dl-var-som-solo-mx6cb.dtb \
+	imx6dl-var-som-solo-symphony.dtb \
+	imx6dl-var-som-solo-vsc.dtb \
+	imx6dl-var-som-symphony.dtb \
+	imx6dl-var-som-vsc.dtb \
 	imx6s-dhcom-drc02.dtb
 
 endif
@@ -993,12 +999,18 @@ dtb-y += \
 	imx6q-sabresd.dtb \
 	imx6q-tbs2910.dtb \
 	imx6q-wandboard-revd1.dtb \
+	imx6q-var-dart.dtb \
+	imx6q-var-som-mx6cb.dtb \
+	imx6q-var-som-symphony.dtb \
+	imx6q-var-som-vsc.dtb \
 	imx6qp-sabreauto.dtb \
 	imx6qp-sabreauto-ecspi.dtb \
 	imx6qp-sabreauto-gpmi-weim.dtb \
 	imx6qp-sabresd.dtb \
 	imx6qp-wandboard-revd1.dtb \
-
+	imx6qp-var-som-mx6cb.dtb \
+	imx6qp-var-som-symphony.dtb \
+	imx6qp-var-som-vsc.dtb
 endif
 
 dtb-$(CONFIG_MX6SL) += imx6sl-evk.dtb
@@ -1204,6 +1216,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-venice-gw7905-2x.dtb \
 	imx8mp-verdin-wifi-dev.dtb \
 	imx8mp-var-dart-dt8mcustomboard.dtb \
+	imx8mp-var-dart-1.x-dt8mcustomboard.dtb \
 	imx8mp-var-som-symphony.dtb \
 	imx8mp-var-smarc-echo.dtb \
 	imx8mp-navqp.dtb \

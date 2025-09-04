@@ -1,0 +1,73 @@
+/*
+ * Copyright (C) 2015-2024 Variscite Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * Buttons for VAR-DT6CustomBoard
+ */
+
+&iomuxc {
+	imx6qdl-var-som-mx6 {
+		pinctrl_gpio_leds: gpioledsgrp {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT6__GPIO4_IO27	0x80000000
+				MX6QDL_PAD_DISP0_DAT7__GPIO4_IO28	0x80000000
+			>;
+		};
+
+		pinctrl_usb_h1_vbus: usbh1vbusgrp {
+			fsl,pins = <
+				MX6QDL_PAD_ENET_TX_EN__GPIO1_IO28	0x80000000
+			>;
+		};
+
+		pinctrl_usb_otg_vbus: usbotgvbusgrp {
+			fsl,pins = <
+				MX6QDL_PAD_KEY_ROW4__GPIO4_IO15		0x80000000
+			>;
+		};
+
+		pinctrl_usbotg: usbotggrp {
+			fsl,pins = <
+				MX6QDL_PAD_ENET_RX_ER__USB_OTG_ID 0x17059
+			>;
+		};
+
+		pinctrl_usdhc2_gpio: usdhc2gpiogrp {
+			fsl,pins = <
+				/* SDMMC2 CD */
+				MX6QDL_PAD_GPIO_6__GPIO1_IO06		0x80000000
+			>;
+		};
+	};
+};
+
+&reg_usb_h1_vbus {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb_h1_vbus>;
+	gpio = <&gpio1 28 GPIO_ACTIVE_HIGH>;
+	enable-active-high;
+};
+
+&reg_usb_otg_vbus {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb_otg_vbus>;
+	gpio = <&gpio4 15 GPIO_ACTIVE_LOW>;
+	enable-active-high;
+};
+
+&usbotg {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg>;
+	dr_mode = "otg"; /* Use "host" if you would like to use the USB0 type A connector */
+};
+
+&usdhc2 {	/* uSDHC2, MMC/SD card */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc2_2>, <&pinctrl_usdhc2_gpio>;
+	bus-width = <4>;
+	cd-gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
