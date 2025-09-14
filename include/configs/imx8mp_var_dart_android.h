@@ -42,6 +42,7 @@
 		"loop.max_part=7 bootconfig " \
 		"androidboot.hardware=nxp " \
 		"androidboot.vendor.sysrq=1 " \
+		"clk-imx8mp.mcore_booted=1 " \
 		"transparent_hugepage=never\0"
 
 /* Enable mcu firmware flash */
