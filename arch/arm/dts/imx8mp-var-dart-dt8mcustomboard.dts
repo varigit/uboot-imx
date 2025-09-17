@@ -349,4 +349,10 @@
 			MX8MP_IOMUXC_SAI1_TXD5__ENET1_RGMII_TXC				0x00
 		>;
 	};
+
+	pinctrl_fec_sonata: fecsonatagrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI1_RXD7__ENET1_RGMII_RD3				0x1d0 /* Enable pull-up to strap MXL86110 MDIO address */
+		>;
+	};
 };
