@@ -27,6 +27,7 @@
 #include <mmc.h>
 
 #include "../common/extcon-ptn5150.h"
+#include "../common/fixdt.h"
 #include "../common/imx8_eeprom.h"
 #include "imx8mp_var_dart.h"
 
@@ -367,33 +368,19 @@ int vendor_board_fix_fdt(void *fdt_blob)
 	}
 
 	if (var_detect_board_id() == BOARD_ID_DART) {
+		int ret;
+
 		if (som_rev >= 2) {
 			/*
 			 * Remove eth0_phy_pwr_hog device tree node if DART-MX8M-PLUS
 			 * revision is 2.0 or higher.
 			 */
-			int node_offset, subnode_offset, ret;
-			const char *node_path = "/soc@0/bus@30000000/gpio@30210000";
-			const char *node_name = "eth0_phy_pwr_hog";
-
-			node_offset = fdt_path_offset(fdt_blob, node_path);
-			if (node_offset < 0) {
-				printf("WARNING: couldn't find %s: %s\n", node_path,
-				       fdt_strerror(node_offset));
-				return -ENOENT;
-			}
-
-			subnode_offset = fdt_subnode_offset(fdt_blob, node_offset, node_name);
-			if (subnode_offset < 0) {
-				printf("WARNING: couldn't find %s node: %s\n",
-				       node_name, fdt_strerror(subnode_offset));
-				return -ENOENT;
-			}
-
-			ret = fdt_del_node(fdt_blob, subnode_offset);
+			const char *eth0_hog_name = "eth0_phy_pwr_hog";
+			const char *eth0_hog_parent_node = "/soc@0/bus@30000000/gpio@30210000";
+			ret = var_delete_dt_node(eth0_hog_name, eth0_hog_parent_node, fdt_blob);
 			if (ret < 0) {
 				printf("WARNING: Couldn't delete subnode %s: %s\n",
-				       node_name, fdt_strerror(ret));
+				       eth0_hog_name, fdt_strerror(ret));
 				return ret;
 			}
 		}
@@ -404,28 +391,12 @@ int vendor_board_fix_fdt(void *fdt_blob)
 				 * Remove GPIO Expander 3 device tree node for DT8MCustomBoard,
 				 * as it is present only on the Sonata carrier board.
 				 */
-				int node_offset, subnode_offset, ret;
-				const char *node_path = "/soc@0/bus@30800000/i2c@30a30000";
-				const char *node_name = "gpio@22";
-
-				node_offset = fdt_path_offset(fdt_blob, node_path);
-				if (node_offset < 0) {
-					printf("WARNING: couldn't find %s: %s\n", node_path,
-					       fdt_strerror(node_offset));
-					return -ENOENT;
-				}
-
-				subnode_offset = fdt_subnode_offset(fdt_blob, node_offset, node_name);
-				if (subnode_offset < 0) {
-					printf("WARNING: couldn't find %s node: %s\n",
-					       node_name, fdt_strerror(subnode_offset));
-					return -ENOENT;
-				}
-
-				ret = fdt_del_node(fdt_blob, subnode_offset);
+				const char *gpio_exp_name = "gpio@22";
+				const char *gpio_exp_parent_node = "/soc@0/bus@30800000/i2c@30a30000";
+				ret = var_delete_dt_node(gpio_exp_name, gpio_exp_parent_node, fdt_blob);
 				if (ret < 0) {
 					printf("WARNING: Couldn't delete subnode %s: %s\n",
-					       node_name, fdt_strerror(ret));
+					       gpio_exp_name, fdt_strerror(ret));
 					return ret;
 				}
 			} else if (strstr(carrier_name, "sonata")) {
@@ -433,7 +404,6 @@ int vendor_board_fix_fdt(void *fdt_blob)
 				 * Append pinctrl for Sonata to enable internal
 				 * pull-up that sets the MDIO address.
 				 */
-				int ret;
 				int node_offset, pinctrl_offset, sonata_phandle;
 				const char *node_path = "/soc@0/bus@30800000/ethernet@30be0000";
 				const char *pinctrl_path = "/soc@0/bus@30000000/pinctrl@30330000/fecsonatagrp";
