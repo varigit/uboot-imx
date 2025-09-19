@@ -355,6 +355,23 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
 #endif
 
 #ifdef CONFIG_OF_BOARD_FIXUP
+static int append_pinctrl_configuration(char *pinctrl_path, const char *node_path, void *fdt_blob)
+{
+	int node_offset, pinctrl_offset, pinctrl_phandle;
+
+	node_offset = fdt_path_offset(fdt_blob, node_path);
+	if (node_offset < 0)
+		return node_offset;
+
+	pinctrl_offset = fdt_path_offset(fdt_blob, pinctrl_path);
+	if (pinctrl_offset < 0)
+		return pinctrl_offset;
+
+	pinctrl_phandle = fdt_get_phandle(fdt_blob, pinctrl_offset);
+
+	return fdt_appendprop_u32(fdt_blob, node_offset, "pinctrl-0", pinctrl_phandle);
+}
+
 int vendor_board_fix_fdt(void *fdt_blob)
 {
 	struct var_carrier_eeprom *carrier_ep = VAR_CARRIER_EEPROM_DATA;
@@ -404,30 +421,11 @@ int vendor_board_fix_fdt(void *fdt_blob)
 				 * Append pinctrl for Sonata to enable internal
 				 * pull-up that sets the MDIO address.
 				 */
-				int node_offset, pinctrl_offset, sonata_phandle;
-				const char *node_path = "/soc@0/bus@30800000/ethernet@30be0000";
-				const char *pinctrl_path = "/soc@0/bus@30000000/pinctrl@30330000/fecsonatagrp";
-
-				node_offset = fdt_path_offset(fdt_blob, node_path);
-				if (node_offset < 0) {
-					printf("WARNING: couldn't find %s: %s\n", node_path,
-					       fdt_strerror(node_offset));
-					return -ENOENT;
-				}
-
-				pinctrl_offset = fdt_path_offset(fdt_blob, pinctrl_path);
-				if (pinctrl_offset < 0) {
-					printf("WARNING: couldn't find %s: %s\n", pinctrl_path,
-					       fdt_strerror(pinctrl_offset));
-					return -ENOENT;
-				}
-
-				sonata_phandle = fdt_get_phandle(fdt_blob, pinctrl_offset);
-				ret = fdt_appendprop_u32(fdt_blob, node_offset, "pinctrl-0", sonata_phandle);
+				const char *fec_node_path = "/soc@0/bus@30800000/ethernet@30be0000";
+				char *sonata_pinctrl = "/soc@0/bus@30000000/pinctrl@30330000/fecsonatagrp";
+				ret = append_pinctrl_configuration(sonata_pinctrl, fec_node_path, fdt_blob);
 				if (ret < 0) {
-					printf("WARNING: failed to set %s pinctrl-0: %d\n",
-					       node_path, ret);
-
+					printf("WARNING: failed to set fec pinctrl-0: %d\n", ret);
 					return ret;
 				}
 			}
