@@ -57,15 +57,6 @@
 
 #include "dwc_eth_qos.h"
 
-/* Weak board hook: board can override this to do early MDIO tweaks
- * before phys are probed
- */
-__weak int board_eth_qos_pre_phy_connect(struct mii_dev *bus, struct udevice *dev)
-{
-	/* Default: do nothing */
-	return 0;
-}
-
 /*
  * TX and RX descriptors are 16 bytes. This causes problems with the cache
  * maintenance on CPUs where the cache-line size exceeds the size of these
