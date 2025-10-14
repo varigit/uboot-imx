@@ -284,9 +284,4 @@
 #define CONFIG_IMX_VIDEO_SKIP
 #endif
 
-/* Splash screen */
-#ifdef CONFIG_SPLASH_SCREEN
-#define CONFIG_HIDE_LOGO_VERSION
-#endif
-
 #endif /* __IMX8QM_VAR_SOM_H */
