@@ -25,7 +25,8 @@
 #else
 #define M4_ENV_SETTINGS \
 	"m4image=m4_qspi.bin\0" \
-	"loadm4image=load mmc ${mmcdev}:${mmcbootpart} ${m4bootdata} ${bootdir}/${m4image}\0"
+	"loadm4image=load mmc ${mmcdev}:${mmcbootpart} ${loadaddr} ${bootdir}/${m4image}; " \
+		"cp.b ${loadaddr} ${m4bootdata} ${filesize}\0"
 #endif
 #else
 #define M4_ENV_SETTINGS ""
