@@ -23,7 +23,7 @@
 		"else " \
 			"setenv wifi_args ''; " \
 		"fi; " \
-		"if test $sdram_size = 1024; then " \
+		"if test $sdram_size -le 1024; then " \
 			"setenv cmavar 320M@0x400M-0xb80M; " \
 			"setenv galcore_var 'galcore.contiguousSize=33554432'; " \
 		"else " \
