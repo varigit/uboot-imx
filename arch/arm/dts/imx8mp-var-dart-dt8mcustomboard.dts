@@ -7,7 +7,7 @@
 #include "imx8mp-var-dart.dtsi"
 
 / {
-	model = "Variscite DART-MX8M-PLUS v1.1 and higher on DT8MCustomBoard 2.0 and higher";
+	model = "Variscite DART-MX8M-PLUS v1.1 and higher";
 
 	aliases {
 		gpio5 = &pca6408_1;
