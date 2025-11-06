@@ -514,7 +514,7 @@ void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, s
 	if (var_carrier_eeprom_is_valid(ep))
 		strncpy(rev, (const char *)ep->carrier_rev, size);
 	else
-		strncpy(rev, "legacy", size);
+		strncpy(rev, "undefined", size);
 }
 
 /* Returns carrier board name string via 'carrier_rev' argument.
