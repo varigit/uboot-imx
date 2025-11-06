@@ -103,21 +103,22 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
-				"if test ${som_rev} -lt 2; then " \
-					"setenv fdt_file imx8mm-var-som-1.x-symphony.dtb; " \
-				"elif test ${som_has_wbe} = 1; then " \
-					"setenv fdt_file imx8mm-var-som-wbe-symphony.dtb; " \
-				"else " \
-					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+				"setenv module_name imx8mm-var-som; " \
+				"if test $carrier_name = undefined; then " \
+					"setenv carrier_name symphony; " \
 				"fi; " \
 			"else " \
-				"if test ${som_rev} -lt 2; then " \
-					"setenv fdt_file imx8mm-var-dart-1.x-${carrier_name}.dtb; " \
-				"elif test ${som_has_wbe} = 1; then " \
-					"setenv fdt_file imx8mm-var-dart-wbe-${carrier_name}.dtb; " \
-				"else " \
-					"setenv fdt_file imx8mm-var-dart-${carrier_name}.dtb; " \
+				"setenv module_name imx8mm-var-dart; " \
+				"if test $carrier_name = undefined; then " \
+					"setenv carrier_name sonata; " \
 				"fi; " \
+			"fi; " \
+			"if test ${som_rev} -lt 2; then " \
+				"setenv fdt_file ${module_name}-1.x-${carrier_name}.dtb; " \
+			"elif test ${som_has_wbe} = 1; then " \
+				"setenv fdt_file ${module_name}-wbe-${carrier_name}.dtb; " \
+			"else " \
+				"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
