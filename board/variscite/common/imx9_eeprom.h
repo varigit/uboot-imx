@@ -62,10 +62,10 @@ struct __packed var_eeprom
 #define CARRIER_REV_LEN 16
 struct __packed var_carrier_eeprom
 {
-	u16 magic;                          /* 00-0x00 - magic number		*/
-	u8 struct_ver;                      /* 01-0x01 - EEPROM structure version	*/
-	u8 carrier_rev[CARRIER_REV_LEN];    /* 02-0x02 - carrier board revision	*/
-	u32 crc;                            /* 10-0x0a - checksum			*/
+	u16 magic;                          /* 00-0x00 - magic number */
+	u8 struct_ver;                      /* 02-0x02 - EEPROM structure version */
+	u8 carrier_rev[CARRIER_REV_LEN];    /* 03-0x03 - carrier board revision */
+	u32 crc;                            /* 19-0x13 - checksum */
 };
 
 static inline int var_eeprom_is_valid(struct var_eeprom *ep)
