@@ -517,36 +517,40 @@ void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, s
 		strncpy(rev, "undefined", size);
 }
 
-/* Returns carrier board name string via 'carrier_rev' argument.
- * It removes rev number from carrier_rev string, copies it to
- * carrier_name and selects its full name
+/*
+ * var_carrier_eeprom_get_name - get carrier board name for device tree
+ * @ep: pointer to carrier EEPROM data structure
+ * @name: buffer to store the carrier name (output)
+ *
+ * Reads the carrier revision from EEPROM and maps it to the corresponding
+ * carrier name used as suffix in device tree filenames.
+ *
+ * Return: Length of the carrier name string on success, -1 on failure
  */
 int var_carrier_eeprom_get_name(struct var_carrier_eeprom *ep, char *name)
 {
 	char carrier_rev[CARRIER_REV_LEN] = {0};
-	int len = 0;
 
 	var_carrier_eeprom_get_revision(ep, carrier_rev, sizeof(carrier_rev));
 
-	if ((carrier_rev == NULL) || (*carrier_rev == '\0')) {
+	if (carrier_rev[0] == '\0') {
 		return -1;
 	}
 
-	len = strlen(carrier_rev);
+	const char *result = NULL;
 
-	while (len > 0 && !isalpha(carrier_rev[len])) {
-		len--;
-	}
+	if (strstr(carrier_rev, "sonata"))
+		result = "sonata";
+	else if (strstr(carrier_rev, "dt8m"))
+		result = "dt8mcustomboard";
+	else if (strstr(carrier_rev, "sym-2"))
+		result = "symphony";
+	else if (strstr(carrier_rev, "sym-1"))
+		result = "symphony-1.x";
+	else
+		result = "undefined";
 
-	len++;
+	strcpy(name, result);
 
-	strncpy(name, carrier_rev, len);
-	name[len] = '\0';
-
-	if (!strcmp(name, "dt8m"))
-		strcpy(name, "dt8mcustomboard");
-	else if (!strcmp(name, "sym"))
-		strcpy(name, "symphony");
-
-	return len;
+	return strlen(result);
 }
