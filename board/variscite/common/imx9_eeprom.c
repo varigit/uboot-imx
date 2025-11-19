@@ -472,16 +472,14 @@ int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
 	return 1;
 }
 
-/* Returns carrier board revision string via 'rev' argument.
- * For legacy carrier board revisions the "legacy" string is returned.
- * For new carrier board revisions the actual carrier revision is returned.
- * Symphony-Board 1.4 and below are legacy, 1.4a and above are new.
- * DT8MCustomBoard 1.4 and below are legacy, 2.0 and above are new.
+/*
+ * Retrieve the carrier board revision string from the EEPROM.
+ * If the EEPROM contents are invalid, the revision is set to "undefined".
  */
 void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size)
 {
 	if (var_carrier_eeprom_is_valid(ep))
 		strncpy(rev, (const char *)ep->carrier_rev, size);
 	else
-		strncpy(rev, "legacy", size);
+		strncpy(rev, "undefined", size);
 }
