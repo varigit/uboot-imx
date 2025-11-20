@@ -96,8 +96,11 @@
 		"echo fdt_file=${fdt_file};\0" \
 	"prepareexpanders=" \
 		"if test ${carrier_name} = sonata; then " \
-				"i2c dev 0; " \
-				"i2c mw 0x22 0x03.1 0x7f 1; " \
+			"i2c dev 0; " \
+			"i2c mw 0x22 0x03.1 0x7f 1; " \
+		"elif test ${carrier_name} = symphony; then " \
+			"i2c dev 0; " \
+			"i2c mw 0x21 0x03.1 0x6f 1; " \
 		"fi;\0" \
 	"loadfdt=run findfdt;load mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${bootdir}/${fdt_file}\0" \
 	"loadcntr=load mmc ${mmcdev}:${mmcpart} ${cntr_addr} ${bootdir}/${cntr_file}\0" \
