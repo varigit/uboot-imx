@@ -80,13 +80,17 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX91; then " \
-				"setenv fdt_file imx91-var-som-symphony.dtb; " \
-			"else " \
-				"if test ${carrier_name} = sonata; then " \
-					"setenv fdt_file imx91-var-dart-sonata.dtb; " \
-				"else " \
-					"setenv fdt_file imx91-var-dart-dt8mcustomboard.dtb; " \
+				"setenv module_name imx91-var-som; " \
+				"if test ${carrier_name} = undefined; then " \
+					"setenv carrier_name symphony-1.x; " \
 				"fi; " \
+				"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
+			"else " \
+				"setenv module_name imx91-var-dart; " \
+				"if test ${carrier_name} = undefined; then " \
+					"setenv carrier_name dt8mcustomboard; " \
+				"fi; " \
+				"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
 			"fi; " \
 		"fi; " \
 		"echo fdt_file=${fdt_file};\0" \
