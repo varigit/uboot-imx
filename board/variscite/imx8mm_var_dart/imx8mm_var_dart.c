@@ -22,6 +22,7 @@
 #include <linux/arm-smccc.h>
 
 #include "../common/extcon-ptn5150.h"
+#include "../common/fixdt.h"
 #include "../common/imx8_eeprom.h"
 #include "imx8mm_var_dart.h"
 
@@ -178,29 +179,19 @@ int vendor_board_fix_fdt(void *fdt_blob)
 
 	if (get_board_id() == DART_MX8M_MINI &&
 	    var_carrier_eeprom_get_name(carrier_ep, carrier_name) > 0) {
+		int ret;
+
 		if (strstr(carrier_name, "dt8m") || strstr(carrier_name, "legacy")) {
-			int node_offset, subnode_offset, ret;
-			const char *node_path = "/soc@0/bus@30800000/i2c@30a30000";
-			const char *node_name = "gpio@22";
-
-			node_offset = fdt_path_offset(fdt_blob, node_path);
-			if (node_offset < 0) {
-				printf("WARNING: couldn't find %s: %s\n", node_path,
-				       fdt_strerror(node_offset));
-				return -ENOENT;
-			}
-
-			subnode_offset = fdt_subnode_offset(fdt_blob, node_offset, node_name);
-			if (subnode_offset < 0) {
-				printf("WARNING: couldn't find %s node: %s\n",
-				       node_name, fdt_strerror(subnode_offset));
-				return -ENOENT;
-			}
-
-			ret = fdt_del_node(fdt_blob, subnode_offset);
+			/*
+			 * Remove GPIO Expander 3 device tree node for DT8MCustomBoard,
+			 * as it is present only on the Sonata carrier board.
+			 */
+			const char *gpio_exp_name = "gpio@22";
+			const char *gpio_exp_parent_node = "/soc@0/bus@30800000/i2c@30a30000";
+			ret = var_delete_dt_node(gpio_exp_name, gpio_exp_parent_node, fdt_blob);
 			if (ret < 0) {
 				printf("WARNING: Couldn't delete subnode %s: %s\n",
-				       node_name, fdt_strerror(ret));
+				       gpio_exp_name, fdt_strerror(ret));
 				return ret;
 			}
 		}
