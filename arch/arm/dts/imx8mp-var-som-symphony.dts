@@ -114,6 +114,44 @@
 	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
 	status = "okay";
+
+	/* GPIO Expander */
+	pcal6408: gpio@21 {
+		compatible = "ti,tca6408";
+		reg = <0x21>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		/*
+		* RGB_SEL
+		* output-lo: Configure mux for VAR-SOMs LVDS
+		* output-hi: Configure mux for VAR-SOM-MX91 RGB2LVDS
+		*/
+		rgb_sel {
+			gpio-hog;
+			gpios = <7 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "rgb_sel";
+		};
+
+		/*
+		 * The SEC_RSTN line for the TPM2 module has an external
+		 * pull-down, keeping the module in reset by default.
+		 * Drive this signal high to release the TPM2 from reset.
+		 */
+		sec_resetn {
+			gpio-hog;
+			gpios = <4 GPIO_ACTIVE_HIGH>;
+			output-high;
+			line-name = "sec_rstn";
+		};
+	};
+
+	/* TPM */
+	st33ktpm2xi2c: st33ktpm2xi2c@2e {
+		compatible = "tcg,tpm-tis-i2c";
+		reg = <0x2e>;
+	};
 };
 
 &usb3_phy0 {
@@ -178,8 +216,19 @@
 			eee-broken-1000t;
 			reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
-			reset-deassert-us = <20000>;
+			reset-deassert-us = <100000>;
 			vddio-supply = <&vddio1>;
+
+			mxl-8611x,led0_cfg = <(
+				MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON |
+				MXL8611X_LEDX_CFG_TRAFFIC_ACT_BLINK_IND
+			)>;
+			mxl-8611x,led1_cfg = <(
+				MXL8611X_LEDX_CFG_LINK_UP_10MB_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_100MB_ON |
+				MXL8611X_LEDX_CFG_LINK_UP_1GB_ON
+			)>;
 
 			vddio1: vddio-regulator {
 				regulator-min-microvolt = <1800000>;
