@@ -479,7 +479,7 @@ int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
 void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size)
 {
 	if (var_carrier_eeprom_is_valid(ep))
-		strncpy(rev, (const char *)ep->carrier_rev, size);
+		strlcpy(rev, (const char *)ep->carrier_rev, size);
 	else
-		strncpy(rev, "undefined", size);
+		strlcpy(rev, "undefined", size);
 }
