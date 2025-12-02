@@ -136,6 +136,7 @@
 			"setenv cma_size cma=576M; " \
 		"fi;\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run ramsize_check; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
@@ -152,6 +153,7 @@
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
+		"run ramsize_check; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
@@ -172,7 +174,6 @@
 			"booti; " \
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
-	"run ramsize_check; " \
 	"mmc dev ${mmcdev}; " \
 	"if test ${fdt_file} =~ *'m7.dtb'*; then " \
 		"run prepare_mcore; " \
