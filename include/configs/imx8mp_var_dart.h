@@ -137,6 +137,7 @@
 			"setenv cma_size cma=960M; " \
 		"fi\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run ramsize_check; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
@@ -153,6 +154,7 @@
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
+		"run ramsize_check; " \
 		"run netargs;  " \
 		"run optargs;  " \
 		"if test ${ip_dyn} = yes; then " \
@@ -177,7 +179,6 @@
 			"run mender_setup; " \
 			"setenv mmcpart ${mender_boot_part}; " \
 		"fi; " \
-		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; " \
 		"if test ${fdt_file} =~ *'m7.dtb'*; then " \
 			"run prepare_mcore; " \
