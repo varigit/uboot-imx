@@ -25,7 +25,7 @@ CONFIG_FIT=y
 CONFIG_SPL_FIT=y
 CONFIG_DISTRO_DEFAULTS=y
 CONFIG_BOOTDELAY=1
-CONFIG_BOOTCOMMAND="run ramsize_check; mmc dev ${mmcdev}; mmc dev ${mmcdev}; if mmc rescan; then if run loadbootenv; then run importbootenv; fi; if run loadbootscript; then run bootscript; else if run loadimage; then run mmcboot; else run netboot; fi; fi; else run netboot; fi"
+CONFIG_BOOTCOMMAND="mmc dev ${mmcdev}; mmc dev ${mmcdev}; if mmc rescan; then if run loadbootenv; then run importbootenv; fi; if run loadbootscript; then run bootscript; else if run loadimage; then run mmcboot; else run netboot; fi; fi; else run netboot; fi"
 CONFIG_SYS_PBSIZE=532
 CONFIG_SILENT_CONSOLE=y
 # CONFIG_SPL_SILENT_CONSOLE is not set

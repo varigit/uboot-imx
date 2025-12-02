@@ -56,6 +56,7 @@
 	"nandargs=setenv bootargs console=${console},${baudrate} " \
 		"ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs rw ${cma_size}\0" \
 	"nandboot=echo Booting from nand ...; " \
+		"run ramsize_check; " \
 		"run nandargs; " \
 		"run optargs; " \
 		"nand read ${loadaddr} 0x500000 0xbe0000; " \
@@ -86,6 +87,7 @@
 		"echo fdt_file=${fdt_file}; " \
 		"load mmc ${mmcdev}:${mmcbootpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run ramsize_check; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test \"${boot_fdt}\" = yes || test \"${boot_fdt}\" = try; then " \
@@ -138,6 +140,7 @@
 		"root=/dev/nfs rw ${cma_size} " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
+		"run ramsize_check; " \
 		"run netargs; " \
 		"run optargs; " \
 		"if test \"${ip_dyn}\" = yes; then " \
