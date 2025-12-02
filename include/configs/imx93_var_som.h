@@ -115,6 +115,7 @@
 	"auth_os=auth_cntr ${cntr_addr}\0" \
 	"boot_os=booti ${loadaddr} - ${fdt_addr_r};\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run ramsize_check; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${sec_boot} = yes; then " \
@@ -140,6 +141,7 @@
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
+		"run ramsize_check; " \
 		"run netargs;  " \
 		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \
@@ -178,7 +180,6 @@
 			"run mender_setup; " \
 			"setenv mmcpart ${mender_boot_part}; " \
 		"fi; " \
-		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if test ${use_m33} = yes && run loadm33bin; then " \
 			   "run runm33bin; " \
