@@ -96,6 +96,7 @@
 	"auth_os=auth_cntr ${cntr_addr}\0" \
 	"boot_os=booti ${loadaddr} - ${fdt_addr};\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run ramsize_check; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${sec_boot} = yes; then " \
@@ -119,6 +120,7 @@
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
+		"run ramsize_check; " \
 		"run netargs;  " \
 		"run optargs;  " \
 		"if test ${ip_dyn} = yes; then " \
@@ -146,7 +148,6 @@
 			"fi;" \
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
-		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; " \
 		"if mmc rescan; then " \
 			"if test ${use_m4} = yes && run loadm4bin; then " \
