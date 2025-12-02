@@ -63,6 +63,7 @@
 		"echo fdt_file=${fdt_file}; " \
 		"load mmc ${mmcdev}:${mmcbootpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run ramsize_check; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
@@ -120,6 +121,7 @@
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"netboot=echo Booting from net ...; " \
+		"run ramsize_check; " \
 		"run netargs; " \
 		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \

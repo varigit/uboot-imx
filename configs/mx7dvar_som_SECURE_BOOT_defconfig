@@ -27,7 +27,7 @@ CONFIG_SYS_MEMTEST_START=0x80000000
 CONFIG_SYS_MEMTEST_END=0xa0000000
 CONFIG_BOOTDELAY=1
 CONFIG_USE_BOOTCOMMAND=y
-CONFIG_BOOTCOMMAND="run ramsize_check; mmc dev ${mmcdev};if test ${use_m4} = yes; then run m4boot; fi; mmc dev ${mmcdev}; if mmc rescan; then if run loadbootenv; then run importbootenv; fi; if run loadbootscript; then run bootscript; else if run loadimage; then run mmcboot; else run netboot; fi; fi; else run netboot; fi;"
+CONFIG_BOOTCOMMAND="mmc dev ${mmcdev};if test ${use_m4} = yes; then run m4boot; fi; mmc dev ${mmcdev}; if mmc rescan; then if run loadbootenv; then run importbootenv; fi; if run loadbootscript; then run bootscript; else if run loadimage; then run mmcboot; else run netboot; fi; fi; else run netboot; fi;"
 CONFIG_SYS_CBSIZE=2048
 CONFIG_SYS_PBSIZE=532
 CONFIG_SILENT_CONSOLE=y
