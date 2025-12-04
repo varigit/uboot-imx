@@ -184,6 +184,7 @@ int var_eeprom_get_storage(struct var_eeprom *ep, int *storage)
 void var_eeprom_print_prod_info(struct var_eeprom *ep)
 {
 	u8 partnum[8] = {0};
+	u8 somrev = ep->somrev;
 
 	flush_dcache_all();
 
@@ -235,7 +236,13 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 
 	debug("EEPROM version: 0x%x\n", ep->version);
 	debug("SOM features: 0x%x\n", ep->features);
-	printf("SOM revision: %ld.%ld\n", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
+#ifdef CONFIG_TARGET_IMX8QM_VAR_SOM
+	/* On i.MX8 QM SOMs, bit 6 of somrev is used as SPEAR flag and
+	 * must be ignored/clear when printing the SOM revision.
+	 */
+	somrev &= ~BIT(6);
+#endif
+	printf("SOM revision: %ld.%ld\n", SOMREV_MAJOR(somrev), SOMREV_MINOR(somrev));
 
 	if (ep->version == 1)
 		debug("DRAM size: %d GiB\n\n", ep->dramsize);
