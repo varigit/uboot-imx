@@ -114,12 +114,16 @@
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
+			"setenv module_name imx8mn-var-som; " \
+			"if test $carrier_name = undefined; then " \
+				"setenv carrier_name symphony; " \
+			"fi; " \
 			"if test ${som_rev} -lt 2; then " \
-				"setenv fdt_file imx8mn-var-som-1.x-symphony.dtb; " \
+				"setenv fdt_file ${module_name}-1.x-${carrier_name}.dtb; " \
 			"elif test ${som_has_wbe} = 1; then " \
-				"setenv fdt_file imx8mn-var-som-wbe-symphony.dtb; " \
+				"setenv fdt_file ${module_name}-wbe-${carrier_name}.dtb; " \
 			"else " \
-				"setenv fdt_file imx8mn-var-som-symphony.dtb; " \
+				"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
 			"fi; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
