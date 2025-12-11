@@ -96,16 +96,20 @@
 				"setenv WBE_SUFFIX ; " \
 			"fi; " \
 			"if test $board_name = VAR-SOM-MX93; then " \
-				"setenv fdt_file imx93-var-som${WBE_SUFFIX}-symphony.dtb; " \
+				"setenv module_name imx93-var-som; " \
+				"if test ${carrier_name} = undefined; then " \
+					"setenv carrier_name symphony; " \
+				"fi; " \
+				"setenv fdt_file ${module_name}${WBE_SUFFIX}-${carrier_name}.dtb; " \
 				"if test ${som_rev} -lt 2; then " \
 					"echo \"Warning: Only SoM revisions >= 2.0 are supported\"; " \
 				"fi; " \
 			"else " \
-				"if test ${carrier_name} = sonata; then " \
-					"setenv fdt_file imx93-var-dart${WBE_SUFFIX}-sonata.dtb; " \
-				"else " \
-					"setenv fdt_file imx93-var-dart-dt8mcustomboard.dtb; " \
+				"setenv module_name imx93-var-dart; " \
+				"if test ${carrier_name} = undefined; then " \
+					"setenv carrier_name sonata; " \
 				"fi; " \
+				"setenv fdt_file ${module_name}${WBE_SUFFIX}-${carrier_name}.dtb; " \
 			"fi; " \
 		"fi;\0" \
 	"loadfdt=run findfdt; " \
