@@ -7,6 +7,7 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/global_data.h>
 #include <asm/armv8/mmu.h>
+#include <errno.h>
 #include "imx8_eeprom.h"
 
 DECLARE_GLOBAL_DATA_PTR;

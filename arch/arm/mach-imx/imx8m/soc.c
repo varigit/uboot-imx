@@ -345,36 +345,6 @@ int dram_init_banksize(void)
 }
 #endif
 
-phys_size_t get_effective_memsize(void)
-{
-	int ret;
-	phys_size_t sdram_size;
-	phys_size_t sdram_b1_size;
-	ret = board_phys_sdram_size(&sdram_size);
-	if (!ret) {
-		/* Bank 1 can't cross over 4GB space */
-		if (sdram_size > 0xc0000000) {
-			sdram_b1_size = 0xc0000000;
-		} else {
-			sdram_b1_size = sdram_size;
-		}
-
-		if (!IS_ENABLED(CONFIG_ARMV8_PSCI) && !IS_ENABLED(CONFIG_XPL_BUILD) &&
-		    rom_pointer[1]) {
-			/* We will relocate u-boot to Top of dram1. Tee position has two cases:
-			 * 1. At the top of dram1,  Then return the size removed optee size.
-			 * 2. In the middle of dram1, return the size of dram1.
-			 */
-			if ((rom_pointer[0] + rom_pointer[1]) == (PHYS_SDRAM + sdram_b1_size))
-				return ((phys_addr_t)rom_pointer[0] - PHYS_SDRAM);
-		}
-
-		return sdram_b1_size;
-	} else {
-		return PHYS_SDRAM_SIZE;
-	}
-}
-
 static u32 get_cpu_variant_type(u32 type)
 {
 	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
@@ -635,6 +605,23 @@ static void imx8m_setup_csu_tzasc(void)
  */
 #define EARLY_TLB_SIZE SZ_64K
 u8 early_tlb[EARLY_TLB_SIZE] __section(".data") __aligned(0x4000);
+
+#ifndef board_phys_sdram_size
+
+int board_phys_sdram_size(phys_size_t *size)
+{
+	if (!size)
+		return -EINVAL;
+
+	*size = PHYS_SDRAM_SIZE;
+
+#ifdef PHYS_SDRAM_2_SIZE
+	*size += PHYS_SDRAM_2_SIZE;
+#endif
+	return 0;
+}
+
+#endif
 
 /*
  * Initialize the MMU and activate cache in U-Boot pre-reloc stage

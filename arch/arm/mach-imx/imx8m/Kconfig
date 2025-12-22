@@ -397,11 +397,19 @@ config TARGET_IMX8MP_EVK
 	imply BOOTSTD_FULL
 	imply BOOTSTD_BOOTCOMMAND
 
+
 config TARGET_IMX8MP_FRDM
 	bool "imx8mp LPDDR4 frdm board"
 	select IMX8MP
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
+
+config TARGET_IMX8MP_VAR_DART
+	bool "Support Variscite DART-MX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select IMX8M_BOARD_INIT_DRAM
 	select FSL_CAAM
 	select FSL_BLOB
 	select ARCH_MISC_INIT
@@ -410,6 +418,8 @@ config TARGET_IMX8MP_FRDM
 	select REMOTEPROC_IMX
 	select REGMAP
 	select SYSCON
+	select IMX_REDUCE_DMEM_PADDING
+	imply OF_UPSTREAM
 	imply BOOTSTD_FULL
 	imply BOOTSTD_BOOTCOMMAND
 
@@ -580,5 +590,6 @@ source "board/ronetix/imx8mq-cm/Kconfig"
 source "board/technexion/pico-imx8mq/Kconfig"
 source "board/toradex/verdin-imx8mm/Kconfig"
 source "board/toradex/verdin-imx8mp/Kconfig"
+source "board/variscite/imx8mp_var_dart/Kconfig"
 
 endif
