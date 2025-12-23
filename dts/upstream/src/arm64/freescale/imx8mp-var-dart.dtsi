@@ -12,21 +12,19 @@
 #include "imx8mp.dtsi"
 
 / {
-	compatible = "variscite,imx8mp-var-som", "fsl,imx8mp";
+	compatible = "variscite,imx8mp-var-dart", "fsl,imx8mp";
 
 	aliases {
 		ethernet0 = &eqos;
 		ethernet1 = &fec;
-		spi1 = &ecspi1;
-		spi2 = &ecspi2;
 	};
 
 	iw612_pwrseq: iw612_pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		post-power-on-delay-ms = <100>;
 		power-off-delay-us = <10000>;
-		reset-gpios = <&gpio2 8 GPIO_ACTIVE_LOW>,	/* WIFI_RESET */
-			      <&gpio2 19 GPIO_ACTIVE_LOW>;	/* WIFI_PWR_EN */
+		reset-gpios = <&gpio2 7 GPIO_ACTIVE_LOW>,	/* WIFI_RESET */
+			      <&gpio2 8 GPIO_ACTIVE_LOW>;	/* WIFI_PWR_EN */
 		status = "okay";
 	};
 
@@ -41,7 +39,6 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		regulator-enable-ramp-delay = <20000>;
-		gpio = <&gpio2 20 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		regulator-always-on;
 	};
@@ -55,8 +52,58 @@
 	};
 
 	reserved-memory {
-		/* cma region is provided by kernel command line as cma=<size>M */
-		/delete-node/ linux,cma;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		ocram: ocram@900000 {
+			no-map;
+			reg = <0 0x900000 0 0x70000>;
+		};
+
+/*
+ *		Memory reserved for optee usage. Please do not use.
+ *		This will be automaticky added to dtb if OP-TEE is installed.
+ *		optee@56000000 {
+ *   			reg = <0 0x56000000 0 0x2000000>;
+ *			no-map;
+ *		};
+ */
+		/* global autoconfigured region for contiguous allocations */
+		linux,cma {
+			compatible = "shared-dma-pool";
+			reusable;
+			size = <0 0x3c000000>;
+			alloc-ranges = <0 0x40000000 0 0xC0000000>;
+			linux,cma-default;
+		};
+
+		gpu_reserved: gpu_reserved@100000000 {
+			no-map;
+			reg = <0x1 0x00000000 0 0x10000000>;
+		};
+
+		dsp_reserved: dsp@92400000 {
+			reg = <0 0x92400000 0 0x1000000>;
+			no-map;
+		};
+		dsp_reserved_heap: dsp_reserved_heap@93400000 {
+			reg = <0 0x93400000 0 0xef0000>;
+			no-map;
+		};
+		dsp_vdev0vring0: vdev0vring0@942f0000 {
+			reg = <0 0x942f0000 0 0x8000>;
+			no-map;
+		};
+		dsp_vdev0vring1: vdev0vring1@942f8000 {
+			reg = <0 0x942f8000 0 0x8000>;
+			no-map;
+		};
+		dsp_vdev0buffer: vdev0buffer@94300000 {
+			compatible = "shared-dma-pool";
+			reg = <0 0x94300000 0 0x100000>;
+			no-map;
+		};
 	};
 
 	sound-wm8904 {
@@ -104,39 +151,6 @@
 	cpu-supply = <&buck2>;
 };
 
-
-&ecspi1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1>;
-	cs-gpios = <&gpio5 17 GPIO_ACTIVE_LOW>;
-	status = "okay";
-
-	/* Resistive touch controller */
-	ads7846@0 {
-		compatible = "ti,ads7846";
-		reg = <0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_restouch>;
-		interrupt-parent = <&gpio1>;
-		interrupts = <12 IRQ_TYPE_EDGE_FALLING>;
-		spi-max-frequency = <1500000>;
-		pendown-gpio = <&gpio1 12 GPIO_ACTIVE_LOW>;
-		ti,x-min = /bits/ 16 <125>;
-		ti,x-max = /bits/ 16 <4008>;
-		ti,y-min = /bits/ 16 <282>;
-		ti,y-max = /bits/ 16 <3864>;
-		ti,x-plate-ohms = /bits/ 16 <180>;
-		ti,pressure-max = /bits/ 16 <255>;
-		ti,debounce-max = /bits/ 16 <10>;
-		ti,debounce-tol = /bits/ 16 <3>;
-		ti,debounce-rep = /bits/ 16 <1>;
-		ti,settle-delay-usec = /bits/ 16 <150>;
-		ti,keep-vref-on;
-		wakeup-source;
-		status = "okay";
-	};
-};
-
 &eqos {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
@@ -149,11 +163,11 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy0: ethernet-phy@4 {
+		ethphy0: ethernet-phy@0 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <4>;
+			reg = <0>;
 			qca,disable-smarteee;
-			reset-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
+			reset-gpios = <&gpio2 11 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <100000>;
 			vddio-supply = <&vddio0>;
@@ -187,8 +201,8 @@
 	pinctrl-names = "default", "gpio";
 	pinctrl-0 = <&pinctrl_i2c1>;
 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-	scl-gpios = <&gpio2 6 GPIO_ACTIVE_HIGH>;
-	sda-gpios = <&gpio2 7 GPIO_ACTIVE_HIGH>;
+	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
 	pca9450@25 {
@@ -196,8 +210,8 @@
 		compatible = "nxp,pca9450c";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pmic>;
-		interrupt-parent = <&gpio5>;
-		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
 		status = "okay";
 
 		regulators {
@@ -341,10 +355,10 @@
 };
 
 /* BT */
-&uart3 {
+&uart4 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart3>, <&pinctrl_bt>;
-	assigned-clocks = <&clk IMX8MP_CLK_UART3>;
+	pinctrl-0 = <&pinctrl_uart4>, <&pinctrl_bt>;
+	assigned-clocks = <&clk IMX8MP_CLK_UART4>;
 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_80M>;
 	uart-has-rtscts;
 	status = "okay";
@@ -429,15 +443,6 @@
 };
 
 &iomuxc {
-	pinctrl_ecspi1: ecspi1grp {
-		fsl,pins = <
-			MX8MP_IOMUXC_I2C1_SCL__ECSPI1_SCLK				0x12
-			MX8MP_IOMUXC_I2C1_SDA__ECSPI1_MOSI				0x12
-			MX8MP_IOMUXC_I2C2_SCL__ECSPI1_MISO				0x12
-			MX8MP_IOMUXC_I2C2_SDA__GPIO5_IO17				0x12
-		>;
-	};
-
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC				0x2
@@ -455,33 +460,27 @@
 			MX8MP_IOMUXC_ENET_TX_CTL__ENET_QOS_RGMII_TX_CTL			0x16
 			MX8MP_IOMUXC_ENET_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK	0x16
 			MX8MP_IOMUXC_SD2_WP__GPIO2_IO20					0x10
-			MX8MP_IOMUXC_GPIO1_IO10__GPIO1_IO10				0x150
+			MX8MP_IOMUXC_SD1_STROBE__GPIO2_IO11				0x150
 		>;
 	};
 
 	pinctrl_i2c1: i2c1grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_DATA4__I2C1_SCL				0x400001c2
-			MX8MP_IOMUXC_SD1_DATA5__I2C1_SDA				0x400001c2
+			MX8MP_IOMUXC_I2C1_SCL__I2C1_SCL					0x400001c2
+			MX8MP_IOMUXC_I2C1_SDA__I2C1_SDA					0x400001c2
 		>;
 	};
 
 	pinctrl_i2c1_gpio: i2c1gpiogrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_DATA4__GPIO2_IO06				0x1c2
-			MX8MP_IOMUXC_SD1_DATA5__GPIO2_IO07				0x1c2
+			MX8MP_IOMUXC_I2C1_SCL__GPIO5_IO14				0x1c2
+			MX8MP_IOMUXC_I2C1_SDA__GPIO5_IO15				0x1c2
 		>;
 	};
 
 	pinctrl_pmic: pmicgrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04				0x1c0
-		>;
-	};
-
-	pinctrl_restouch: restouchgrp {
-		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12				0xc0
+			MX8MP_IOMUXC_GPIO1_IO03__GPIO1_IO03				0x1c0
 		>;
 	};
 
@@ -497,12 +496,12 @@
 		>;
 	};
 
-	pinctrl_uart3: uart3grp {
+	pinctrl_uart4: uart4grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_ECSPI1_SCLK__UART3_DCE_RX				0x140
-			MX8MP_IOMUXC_ECSPI1_MOSI__UART3_DCE_TX				0x140
-			MX8MP_IOMUXC_ECSPI1_MISO__UART3_DCE_CTS				0x140
-			MX8MP_IOMUXC_ECSPI1_SS0__UART3_DCE_RTS				0x140
+			MX8MP_IOMUXC_ECSPI2_SCLK__UART4_DCE_RX				0x140
+			MX8MP_IOMUXC_ECSPI2_MOSI__UART4_DCE_TX				0x140
+			MX8MP_IOMUXC_ECSPI2_MISO__UART4_DCE_CTS				0x140
+			MX8MP_IOMUXC_ECSPI2_SS0__UART4_DCE_RTS				0x140
 		>;
 	};
 
@@ -536,6 +535,12 @@
 			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1				0x1d6
 			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2				0x1d6
 			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3				0x1d6
+		>;
+	};
+
+	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmcgrp {
+		fsl,pins = <
+/* Empty, populate */
 		>;
 	};
 
@@ -595,16 +600,15 @@
 
 	pinctrl_wifi: wifigrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_DATA6__GPIO2_IO08				0xc0 /* WIFI_EN  */
-			MX8MP_IOMUXC_SD2_RESET_B__GPIO2_IO19				0xc0 /* WIFI_PWR */
+			MX8MP_IOMUXC_SD1_DATA5__GPIO2_IO07				0xc0 /* WIFI_EN  */
+			MX8MP_IOMUXC_SD1_DATA6__GPIO2_IO08				0xc0 /* WIFI_PWR */
 		>;
 	};
 
 	pinctrl_bt: btgrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_DATA7__GPIO2_IO09				0xc0 /* BT_EN */
-			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04				0xc0 /* BT_BUF */
-			MX8MP_IOMUXC_SD1_RESET_B__GPIO2_IO10				0xc0
+			MX8MP_IOMUXC_SD1_DATA4__GPIO2_IO06				0xc0 /* BT_EN  */
+			MX8MP_IOMUXC_SD1_DATA7__GPIO2_IO09				0xc0 /* BT_BUF */
 		>;
 	};
 };

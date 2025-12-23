@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2023 NXP
+ * Copyright 2024-2025 Variscite Ltd.
+ */
+
+#include "imx95-var-dart-dt8mcustomboard.dts"
+
+/ {
+	model = "Variscite DART-MX95 on Sonata-Board";
+
+	aliases {
+		ethernet2 = &enetc_port2;
+	};
+
+	sfp_eth2:sfp-eth2 {
+		compatible = "sff,sfp";
+		i2c-bus = <&lpi2c3>;
+		tx-disable-gpios = <&pca9534 4 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&pca9534 0 GPIO_ACTIVE_HIGH>;
+		los-gpios = <&pca9534 1 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+		status = "disabled";
+	};
+};
+
+&enetc_port2 {
+	phy-mode = "10gbase-r";
+	status = "okay";
+	//sfp = <&sfp_eth2>;
+
+	fixed-link {
+		speed = <10000>;
+		full-duplex;
+		link-gpios = <&pca9534 1 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&lpi2c3 {
+	pca9534: gpio@22 {
+		compatible = "nxp,pca9534";
+		reg = <0x22>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		pcie2-sel {
+			gpio-hog;
+			gpios = <6 GPIO_ACTIVE_HIGH>;
+			output-low;
+			line-name = "pcie-clk-sw";
+		};
+
+		sfp-sel {
+			gpio-hog;
+			gpios = <5 GPIO_ACTIVE_HIGH>;
+			output-high;
+			line-name = "sfp-sw";
+		};
+	};
+};
+
+&pcie0 {
+	/delete-node/ pinctrl-0;
+	/delete-node/ pinctrl-names;
+};
+
+&pcie1 {
+	fsl,refclk-pad-mode = <IMX8_PCIE_REFCLK_PAD_INPUT>;
+	reset-gpio = <&pca6408_2 2 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&pinctrl_enetc1 {
+	fsl,pins = <
+		IMX95_PAD_ENET2_TXC__NETCMIX_TOP_ETH1_RGMII_TX_CLK		0x57e
+		IMX95_PAD_ENET2_TX_CTL__NETCMIX_TOP_ETH1_RGMII_TX_CTL		0x57e
+		IMX95_PAD_ENET2_TD3__NETCMIX_TOP_ETH1_RGMII_TD3			0x57e
+		IMX95_PAD_ENET2_TD2__NETCMIX_TOP_ETH1_RGMII_TD2			0x57e
+		IMX95_PAD_ENET2_TD1__NETCMIX_TOP_ETH1_RGMII_TD1			0x57e
+		IMX95_PAD_ENET2_TD0__NETCMIX_TOP_ETH1_RGMII_TD0			0x57e
+		IMX95_PAD_ENET2_RXC__NETCMIX_TOP_ETH1_RGMII_RX_CLK		0x57e
+		IMX95_PAD_ENET2_RX_CTL__NETCMIX_TOP_ETH1_RGMII_RX_CTL		0x57e
+		IMX95_PAD_ENET2_RD0__NETCMIX_TOP_ETH1_RGMII_RD0			0x57e
+		IMX95_PAD_ENET2_RD1__NETCMIX_TOP_ETH1_RGMII_RD1			0x57e
+		IMX95_PAD_ENET2_RD2__NETCMIX_TOP_ETH1_RGMII_RD2			0x57e
+		IMX95_PAD_ENET2_RD3__NETCMIX_TOP_ETH1_RGMII_RD3			0x37e /* Enable pull-up to strap MXL86110 MDIO address */
+	>;
+};
+
+&lpi2c8 {
+	st33ktpm2xi2c: st33ktpm2xi2c@2e {
+		compatible = "infineon,slb9673", "tcg,tpm-tis-i2c";
+		reg = <0x2e>;
+		label = "tpm";
+		reset-gpios = <&pca9534 0 GPIO_ACTIVE_HIGH>;
+	};
+};

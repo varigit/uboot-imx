@@ -5,7 +5,7 @@
  *
  */
 
-#include <common.h>
+#include <config.h>
 #include <cpu_func.h>
 #include <hang.h>
 #include <image.h>

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright 2022 NXP
- * Copyright 2023-2025 Variscite Ltd.
+ * Copyright 2025 Variscite Ltd.
  */
 
 /dts-v1/;
@@ -124,21 +124,6 @@
 		fsl,pins = <
 			MX93_PAD_GPIO_IO28__GPIO2_IO28			0x40000b9e
 			MX93_PAD_GPIO_IO29__GPIO2_IO29			0x40000b9e
-		>;
-	};
-
-	pinctrl_lpspi8: lpspi8grp {
-		fsl,pins = <
-			MX93_PAD_GPIO_IO12__GPIO2_IO12			0x31e
-			MX93_PAD_GPIO_IO13__LPSPI8_SIN			0x31e
-			MX93_PAD_GPIO_IO14__LPSPI8_SOUT			0x31e
-			MX93_PAD_GPIO_IO15__LPSPI8_SCK			0x31e
-		>;
-	};
-
-	pinctrl_restouch: restouchgrp {
-		fsl,pins = <
-			MX93_PAD_CCM_CLKO4__GPIO4_IO29			0x31e
 		>;
 	};
 
@@ -403,39 +388,6 @@
 &lpm {
 	soc-supply = <&buck1>;
 	status = "okay";
-};
-
-&lpspi8 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_lpspi8>;
-	cs-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
-	status = "okay";
-
-	/* Resistive touch controller */
-	ads7846_ts: ads7846@0 {
-		reg = <0>;      /* CS0 */
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_restouch>;
-		compatible = "ti,ads7846";
-		interrupt-parent = <&gpio4>;
-		interrupts = <29 IRQ_TYPE_EDGE_FALLING>;
-		spi-max-frequency = <1000000>;
-		pendown-gpio = <&gpio4 29 0>;
-		vcc-supply = <&buck5>;
-
-		ti,x-min = /bits/ 16 <125>;
-		ti,x-max = /bits/ 16 <4008>;
-		ti,y-min = /bits/ 16 <282>;
-		ti,y-max = /bits/ 16 <3864>;
-		ti,x-plate-ohms = /bits/ 16 <180>;
-		ti,pressure-max = /bits/ 16 <255>;
-		ti,debounce-max = /bits/ 16 <10>;
-		ti,debounce-tol = /bits/ 16 <3>;
-		ti,debounce-rep = /bits/ 16 <1>;
-		ti,settle-delay-usec = /bits/ 16 <150>;
-		ti,keep-vref-on;
-		wakeup-source;
-	};
 };
 
 /* BT module */
