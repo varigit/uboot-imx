@@ -109,7 +109,11 @@
 				"if test ${carrier_name} = undefined; then " \
 					"setenv carrier_name sonata; " \
 				"fi; " \
-				"setenv fdt_file ${module_name}${WBE_SUFFIX}-${carrier_name}.dtb; " \
+				"if test ${carrier_name} = dt8mcustomboard; then " \
+					"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
+				"else " \
+					"setenv fdt_file ${module_name}${WBE_SUFFIX}-${carrier_name}.dtb; " \
+				"fi; " \
 			"fi; " \
 		"fi;\0" \
 	"loadfdt=run findfdt; " \
