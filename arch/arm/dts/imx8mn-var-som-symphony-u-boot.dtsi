@@ -13,7 +13,7 @@
 		/* rdc config when MCU starts
 		 * memory:
 		 *   TCM --> Only Domian 1 can access (0x7E0000~0x81FFFF)
-		 *   DDR --> Only Domian 1 can access (0x80000000~0x81000000)
+		 *   DDR --> Only Domian 1 can access (0x7E000000~0x7F000000)
 		 * end.
 		 */
 		start-config = <
@@ -24,7 +24,7 @@
 		/* rdc config when MCU stops
 		 * memory:
 		 *   TCM --> domain 0/1 can access (0x7E0000~0x81FFFF)
-		 *   DDR --> domain 0/1 can access (0x80000000~0x81000000)
+		 *   DDR --> domain 0/1 can access (0x7E000000~0x7F000000)
 		 * end.
 		 */
 		stop-config = <
