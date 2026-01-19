@@ -81,10 +81,16 @@
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX91; then " \
 				"setenv module_name imx91-var-som; " \
+				"setenv WBE_SUFFIX ; " \
 				"if test ${carrier_name} = undefined; then " \
 					"setenv carrier_name symphony-1.x; " \
 				"fi; " \
-				"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
+				"if test ${som_has_wbe} = 1; then " \
+					"if test ${carrier_name} = symphony-1.x; then " \
+						"setenv WBE_SUFFIX -wbe; " \
+					"fi; " \
+				"fi; " \
+				"setenv fdt_file ${module_name}${WBE_SUFFIX}-${carrier_name}.dtb; " \
 			"else " \
 				"setenv module_name imx91-var-dart; " \
 				"if test ${carrier_name} = undefined; then " \
