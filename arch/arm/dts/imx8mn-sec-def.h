@@ -144,8 +144,12 @@
 #define TCM_START 0x7E0000
 #define TCM_END   0x820000
 
+/* MRSA and MREA for setting RDC memory region when DDR region is 0x80000000~0x81000000
 #define M4_EVK_DDR4_START 0x20000000
-#define M4_EVK_DDR4_END 0x20800000
+#define M4_EVK_DDR4_END 0x20800000 */
+/* MRSA and MREA for setting RDC memory region when DDR region is 0x7E000000~0x7F000000 */
+#define M4_EVK_DDR4_START 0x1F000000
+#define M4_EVK_DDR4_END 0x1F800000
 
 #define M4_EVK_DDR3L_START 0x1B800000
 #define M4_EVK_DDR3L_END 0x1C000000
