@@ -17,7 +17,7 @@
 #endif
 
 #ifdef CONFIG_ARCH_IMX8
-#include <asm/arch/sci/sci.h>
+#include <firmware/imx/sci/sci.h>
 #endif
 
 #include "imx8_eeprom.h"
