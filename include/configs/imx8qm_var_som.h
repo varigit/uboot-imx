@@ -239,7 +239,6 @@
 #define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC1 */
 
 #define CFG_SYS_SDRAM_BASE		0x80000000
-#define CONFIG_NR_DRAM_BANKS		4
 #define PHYS_SDRAM_1			0x80000000
 #define PHYS_SDRAM_2			0x880000000
 
@@ -281,6 +280,10 @@
 /* Video */
 #ifdef CONFIG_DM_VIDEO
 #define CONFIG_IMX_VIDEO_SKIP
+#endif
+
+#ifdef CONFIG_ANDROID_SUPPORT
+#include "imx8qm_var_som_android.h"
 #endif
 
 #endif /* __IMX8QM_VAR_SOM_H */
