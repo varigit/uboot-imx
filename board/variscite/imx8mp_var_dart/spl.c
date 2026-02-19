@@ -67,6 +67,19 @@ static struct i2c_pads_info i2c4_pads_som = {
 	},
 };
 
+static struct i2c_pads_info i2c1_pads_smarc = {
+	.scl = {
+		.i2c_mode = MX8MP_PAD_SD1_DATA6__I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX8MP_PAD_SD1_DATA6__GPIO2_IO08 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(2, 8),
+	},
+	.sda = {
+		.i2c_mode = MX8MP_PAD_SD1_DATA7__I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gpio_mode = MX8MP_PAD_SD1_DATA7__GPIO2_IO09 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(2, 9),
+	},
+};
+
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 
 static iomux_v3_cfg_t const uart_pads_dart[] = {
@@ -113,11 +126,15 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 static void spl_dram_init(void)
 {
 	u16 carrier_eeprom_bus;
+	int board_id;
 
-	if (var_detect_board_id() == BOARD_ID_DART)
+	board_id = var_detect_board_id();
+	if (board_id == BOARD_ID_DART)
 		carrier_eeprom_bus = CARRIER_EEPROM_BUS_DART;
-	else
+	else if (board_id == BOARD_ID_SOM)
 		carrier_eeprom_bus = CARRIER_EEPROM_BUS_SOM;
+	else
+		carrier_eeprom_bus = CARRIER_EEPROM_BUS_SMARC;
 
 	/* EEPROM initialization */
 	var_eeprom_read_header(&eeprom);
@@ -137,7 +154,7 @@ static void spl_uart_init(void)
 		imx_iomux_v3_setup_multiple_pads(uart_pads_dart,
 			ARRAY_SIZE(uart_pads_dart));
 		init_uart_clk(0);
-	} else if (board_id == BOARD_ID_SOM) {
+	} else if ((board_id == BOARD_ID_SOM) || (board_id == BOARD_ID_SMARC)) {
 		imx_iomux_v3_setup_multiple_pads(uart_pads_som,
 			ARRAY_SIZE(uart_pads_som));
 		init_uart_clk(1);
@@ -222,6 +239,8 @@ int board_fit_config_name_match(const char *name)
 	if ((board_id == BOARD_ID_DART) && !strcmp(name, "imx8mp-var-dart-dt8mcustomboard")) {
 		return 0;
 	} else if ((board_id == BOARD_ID_SOM) && !strcmp(name, "imx8mp-var-som-symphony")) {
+		return 0;
+	} else if ((board_id == BOARD_ID_SMARC) && !strcmp(name, "imx8mp-var-smarc-echo")) {
 		return 0;
 	}
 
@@ -490,6 +509,7 @@ void board_init_f(ulong dummy)
 {
 	int ret;
 	struct udevice *dev;
+	int board_id;
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
@@ -523,20 +543,27 @@ void board_init_f(ulong dummy)
 
 	enable_tzc380();
 
+	board_id = var_detect_board_id();
+
 #ifdef CONFIG_POWER
 	/* I2C Bus 0 initialization - PMIC/SOM EEPROM */
-	if (var_detect_board_id() == BOARD_ID_DART)
+	if (board_id == BOARD_ID_DART)
+		/* DART-MX8M-PLUS */
 		setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pads_dart);
 	else
+		/* VAR-SOM-MX8M-PLUS and VAR-SMARC-MX8M-PLUS */
 		setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pads_som);
 #endif
 
-	if (var_detect_board_id() == BOARD_ID_DART)
-		/* I2C Bus 1 initialization - Carrier EEPROM reading */
+	if (board_id == BOARD_ID_DART)
+		/* I2C Bus 1 initialization - DT8MCB Carrier EEPROM reading */
 		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c1_pads_dart);
-	else
-		/* I2C Bus 3 initialization - Carrier EEPROM reading */
+	else if (board_id == BOARD_ID_SOM)
+		/* I2C Bus 3 initialization - Symphony Carrier EEPROM reading */
 		setup_i2c(3, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c4_pads_som);
+	else
+		/* I2C Bus 1 initialization - Echo Carrier EEPROM reading */
+		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c1_pads_smarc);
 
 	/* PMIC initialization */
 	power_init_board();
