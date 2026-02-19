@@ -103,25 +103,29 @@
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		"unzip ${img_addr} ${loadaddr}\0" \
 	"findfdt=" \
-		"if test $fdt_file = undefined; then " \
-			"if test $board_name = VAR-SOM-MX8M-PLUS; then " \
+		"if test ${fdt_file} = undefined; then " \
+			"if test ${board_name} = VAR-SOM-MX8M-PLUS; then " \
 				"setenv module_name imx8mp-var-som; " \
-				"if test $carrier_name = undefined; then " \
-					"setenv carrier_name symphony; " \
-				"fi; " \
-			"else " \
+				"setenv carrier_default symphony; " \
+			"elif test ${board_name} = DART-MX8M-PLUS; then " \
 				"setenv module_name imx8mp-var-dart; " \
-				"if test $carrier_name = undefined; then " \
-					"setenv carrier_name sonata; " \
-				"fi; " \
-			"fi; " \
-			"if test ${som_rev} -lt 2; then " \
-				"setenv fdt_file ${module_name}-1.x-${carrier_name}.dtb; " \
-			"elif test ${som_has_wbe} = 1; then " \
-				"setenv fdt_file ${module_name}-wbe-${carrier_name}.dtb; " \
+				"setenv carrier_default sonata; " \
 			"else " \
-				"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
+				"setenv module_name imx8mp-var-smarc; " \
+				"setenv carrier_default echo; " \
 			"fi; " \
+			"if test ${carrier_name} = undefined; then " \
+				"setenv carrier_name ${carrier_default}; " \
+			"fi; " \
+			"setenv fdt_suffix \"\"; " \
+			"if test ${som_rev} -lt 2; then " \
+				"if test ${board_name} != VAR-SMARC-MX8M-PLUS; then " \
+					"setenv fdt_suffix -1.x; " \
+				"fi; " \
+			"elif test ${som_has_wbe} = 1; then " \
+				"setenv fdt_suffix -wbe; " \
+			"fi; " \
+			"setenv fdt_file ${module_name}${fdt_suffix}-${carrier_name}.dtb; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
 		"echo fdt_file=${fdt_file}; " \
