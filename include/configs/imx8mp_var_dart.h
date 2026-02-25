@@ -132,13 +132,13 @@
 		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"ramsize_check="\
 		"if test $sdram_size -le 512; then " \
-			"setenv cma_size cma=320M; " \
+			"setenv cma_size cma=64M; " \
 		"elif test $sdram_size -le 1024; then " \
-			"setenv cma_size cma=576M; " \
+			"setenv cma_size cma=320M; " \
 		"elif test $sdram_size -le 2048; then " \
-			"setenv cma_size cma=640M; " \
+			"setenv cma_size cma=384M; " \
 		"else " \
-			"setenv cma_size cma=960M; " \
+			"setenv cma_size cma=704M; " \
 		"fi\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run ramsize_check; " \
