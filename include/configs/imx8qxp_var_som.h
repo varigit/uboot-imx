@@ -209,4 +209,8 @@
 /* Networking */
 #define PHY_ANEG_TIMEOUT		20000
 
+#ifdef CONFIG_ANDROID_SUPPORT
+#include "imx8qxp_var_som_android.h"
+#endif
+
 #endif /* __IMX8QXP_VAR_SOM_H */
