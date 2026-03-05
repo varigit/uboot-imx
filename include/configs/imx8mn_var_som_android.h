@@ -35,7 +35,10 @@
 #define BOOT_ENV_SETTINGS \
 	"bootcmd=" \
 		"run kernelbootargs; " \
-		"boota ${fastboot_dev}\0"
+		"boota ${fastboot_dev}\0" \
+	"bootcmd_android_recovery=" \
+		"run kernelbootargs; " \
+		"boota recovery\0"
 
 #define CFG_EXTRA_ENV_SETTINGS					\
 	HW_ENV_SETTINGS \
