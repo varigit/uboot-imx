@@ -60,6 +60,7 @@
 		"androidboot.console=ttymxc3 " \
 		"androidboot.hardware=nxp " \
 		"androidboot.wificountrycode=US " \
+		"androidboot.hypervisor.vm.supported=true " \
 		"androidboot.vendor.sysrq=1\0"
 
 /* Enable mcu firmware flash */
