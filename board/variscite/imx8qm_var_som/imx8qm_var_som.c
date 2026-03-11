@@ -136,6 +136,9 @@ int board_late_init(void)
 	int board_id;
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	struct var_eeprom eeprom = {0};
+	struct var_carrier_eeprom carrier_eeprom;
+	char carrier_rev[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_REV_LEN] = {0};
 	int ret;
 
 	if (!var_eeprom_is_valid(ep)) {
@@ -161,10 +164,21 @@ int board_late_init(void)
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	board_id = var_get_board_id(ep);
-	if (board_id == VAR_SOM_MX8)
+
+	if (board_id == VAR_SOM_MX8) {
 		env_set("board_name", "VAR-SOM-MX8");
-	else if (board_id == SPEAR_MX8)
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+	} else if (board_id == SPEAR_MX8) {
+		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SPEAR, CARRIER_EEPROM_ADDR, &carrier_eeprom);
 		env_set("board_name", "SPEAR-MX8");
+	}
+
+	var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+	env_set("carrier_rev", carrier_rev);
+
+	if (var_carrier_eeprom_get_name(&carrier_eeprom, carrier_name) > 0)
+		env_set("carrier_name", carrier_name);
+
 	env_set("board_rev", "iMX8QM");
 
 	if (ep->features & VAR_EEPROM_F_MX8Q_SOC_ID) {
