@@ -118,7 +118,11 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8; then " \
-				"setenv fdt_file ${soc_id}-var-som-symphony.dtb; " \
+				"setenv module_name ${soc_id}-var-som; " \
+				"if test $carrier_name = undefined; then " \
+					"setenv carrier_name symphony; " \
+				"fi; " \
+				"setenv fdt_file ${module_name}-${carrier_name}.dtb; " \
 			"else " \
 				"setenv fdt_file ${soc_id}-var-spear-sp8customboard.dtb; " \
 			"fi; " \
