@@ -158,6 +158,7 @@
 				"echo wait for boot; " \
 			"fi;" \
 		"fi;\0" \
+	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} earlycon " \
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
