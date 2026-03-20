@@ -41,6 +41,10 @@
 
 &gpio1 {
 	bootph-pre-ram;
+	lvds_backlight_hog {
+		/delete-property/ output-high;
+		output-low;
+	};
 };
 
 &gpio2 {
