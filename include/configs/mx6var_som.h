@@ -194,6 +194,7 @@
 		"else " \
 			"bootm; " \
 		"fi;\0" \
+	"nfsroot=/srv/nfs/" CONFIG_SYS_BOARD "/rootfs\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = DT6CUSTOM && test $board_rev = MX6Q; then " \
