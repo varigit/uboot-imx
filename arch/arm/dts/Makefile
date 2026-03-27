@@ -1216,7 +1216,6 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-venice-gw7905-2x.dtb \
 	imx8mp-verdin-wifi-dev.dtb \
 	imx8mp-var-dart-dt8mcustomboard.dtb \
-	imx8mp-var-dart-1.x-dt8mcustomboard.dtb \
 	imx8mp-var-som-symphony.dtb \
 	imx8mp-var-smarc-echo.dtb \
 	imx8mp-navqp.dtb \
