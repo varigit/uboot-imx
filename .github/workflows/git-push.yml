@@ -18,3 +18,13 @@ jobs:
         imx8qm_var_som_android_trusty_defconfig
         imx8qm_var_som_android_trusty_dual_defconfig
         imx8qm_var_som_android_uuu_defconfig
+        arm64:imx8mp_var_dart_android_defconfig
+        arm64:imx8mp_var_dart_android_dual_defconfig
+        arm64:imx8mp_var_dart_android_powersave_defconfig
+        arm64:imx8mp_var_dart_android_trusty_defconfig
+        arm64:imx8mp_var_dart_android_trusty_dual_defconfig
+        arm64:imx8mp_var_dart_android_trusty_powersave_dual_defconfig
+        arm64:imx8mp_var_dart_android_trusty_rbidx_blob_dual_defconfig
+        arm64:imx8mp_var_dart_android_trusty_secure_unlock_dual_defconfig
+        arm64:imx8mp_var_dart_android_uuu_defconfig
+        arm64:imx8mp_var_dart_defconfig
