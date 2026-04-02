@@ -13,3 +13,8 @@ jobs:
         imx8qxp_var_som_android_trusty_defconfig
         imx8qxp_var_som_android_trusty_dual_defconfig
         imx8qxp_var_som_android_uuu_defconfig
+        imx8qm_var_som_android_defconfig
+        imx8qm_var_som_android_dual_defconfig
+        imx8qm_var_som_android_trusty_defconfig
+        imx8qm_var_som_android_trusty_dual_defconfig
+        imx8qm_var_som_android_uuu_defconfig
