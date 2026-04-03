@@ -67,6 +67,7 @@ config TARGET_IMX93_VAR_SOM
 	select IMX93
 	select OF_BOARD_FIXUP
 	select IMX9_LPDDR4X
+	select IMX_REDUCE_DMEM_PADDING
 
 config TARGET_PHYCORE_IMX93
 	bool "phycore_imx93"
