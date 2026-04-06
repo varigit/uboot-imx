@@ -115,6 +115,9 @@ int board_late_init(void)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
+	struct var_carrier_eeprom carrier_eeprom;
+	char carrier_rev[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_REV_LEN] = {0};
 
 	build_info();
 
@@ -134,6 +137,12 @@ int board_late_init(void)
 	env_set("board_name", "VAR-SOM-MX8X");
 	env_set("board_rev", "iMX8QXP");
 #endif
+
+	var_carrier_eeprom_read(CARRIER_EEPROM_BUS, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+	var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+	env_set("carrier_rev", carrier_rev);
+	if (var_carrier_eeprom_get_name(&carrier_eeprom, carrier_name) > 0)
+		env_set("carrier_name", carrier_name);
 
 	env_set("sec_boot", "no");
 #ifdef CONFIG_AHAB_BOOT

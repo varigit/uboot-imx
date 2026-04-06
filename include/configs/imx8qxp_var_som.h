@@ -206,6 +206,10 @@
 /* EEPROM */
 #define VAR_EEPROM_DRAM_START		0x83000000
 
+/* Carrier board EEPROM */
+#define CARRIER_EEPROM_BUS		0x02
+#define CARRIER_EEPROM_ADDR		0x54
+
 /* Networking */
 #define PHY_ANEG_TIMEOUT		20000
 
