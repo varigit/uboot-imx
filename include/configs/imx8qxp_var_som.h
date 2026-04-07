@@ -61,7 +61,7 @@
 	"cntr_addr=0x98000000\0"			\
 	"cntr_file=os_cntr_signed.bin\0" \
 	"boot_fdt=try\0" \
-	"fdt_file=imx8qxp-var-som-symphony.dtb\0" \
+	"fdt_file=undefined\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcblk=1\0" \
 	"mmcpart=1\0" \
@@ -85,7 +85,16 @@
 		"env import -t -r $loadaddr $filesize\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
 		  "unzip ${img_addr} ${loadaddr}\0" \
-	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
+	"findfdt=" \
+		"if test $fdt_file = undefined; then " \
+			"if test $carrier_name = undefined; then " \
+				"setenv carrier_name symphony; " \
+			"fi; " \
+			"setenv fdt_file imx8qxp-var-som-${carrier_name}.dtb; " \
+		"fi; \0" \
+	"loadfdt=run findfdt; " \
+		"echo fdt_file=${fdt_file}; " \
+		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
 	"ramsize_check="\
 		"if test $sdram_size -le 1024; then " \
 			"setenv cma_size cma=480M@2400M; " \
