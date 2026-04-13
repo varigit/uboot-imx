@@ -147,6 +147,8 @@
 		"else " \
 			"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
 			"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+				"run findfdt; " \
+				"echo fdt_file=${fdt_file}; " \
 				"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
 					"run boot_os; " \
 				"else " \
