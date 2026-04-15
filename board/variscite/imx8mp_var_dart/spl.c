@@ -38,7 +38,16 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define GPIO_PAD_CTRL	(PAD_CTL_DSE1 | PAD_CTL_PUE | PAD_CTL_PE  | PAD_CTL_HYS)
 #define I2C_PAD_CTRL (PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
+
+#define LVDS0_BKLT_PWM IMX_GPIO_NR(1, 11)
+#define LVDS1_BKLT_PWM IMX_GPIO_NR(5, 5)
+
+static iomux_v3_cfg_t const lvds_bklt_pwm_pads[] = {
+	MX8MP_PAD_GPIO1_IO11__GPIO1_IO11 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
+	MX8MP_PAD_SPDIF_EXT_CLK__GPIO5_IO05 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
+};
 
 static struct i2c_pads_info i2c1_pads_dart = {
 	.scl = {
@@ -314,6 +323,19 @@ void board_init_f(ulong dummy)
 	enable_tzc380();
 
 	board_id = var_detect_board_id();
+
+	if (board_id == BOARD_ID_SMARC) {
+		/* Force PWM lines low to keep panel backlight off */
+		imx_iomux_v3_setup_multiple_pads(lvds_bklt_pwm_pads,
+						 ARRAY_SIZE(lvds_bklt_pwm_pads));
+
+		gpio_request(LVDS0_BKLT_PWM, "lvds0_bklt_pwm");
+		gpio_request(LVDS1_BKLT_PWM, "lvds1_bklt_pwm");
+		gpio_direction_output(LVDS0_BKLT_PWM, 0);
+		gpio_direction_output(LVDS1_BKLT_PWM, 0);
+		gpio_free(LVDS0_BKLT_PWM);
+		gpio_free(LVDS1_BKLT_PWM);
+	}
 
 #ifdef CONFIG_POWER
 	/* I2C Bus 0 initialization - PMIC/SOM EEPROM */
