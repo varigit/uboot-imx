@@ -239,6 +239,8 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 
 	debug("EEPROM version: 0x%x\n", ep->version);
 	debug("SOM features: 0x%x\n", ep->features);
+	if (ep->version >= VAR_EEPROM_VER_FEATURES2)
+		debug("SOM features 2: 0x%x\n", ep->features2);
 #ifdef CONFIG_TARGET_IMX8QM_VAR_SOM
 	/* On i.MX8 QM SOMs, bit 6 of somrev is used as SPEAR flag and
 	 * must be ignored/clear when printing the SOM revision.
