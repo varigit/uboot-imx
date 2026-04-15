@@ -16,13 +16,30 @@
 #define VAR_EEPROM_I2C_ADDR	0x52
 
 /* Optional SOM features */
-#define VAR_EEPROM_F_WIFI		BIT(0)
-#define VAR_EEPROM_F_ETH		BIT(1)
+#define VAR_EEPROM_F_WIFI		BIT(0)	/* Wi-Fi assembled; WBD if WBE/WBK are clear */
+#define VAR_EEPROM_F_ETH		BIT(1)	/* EC1 GbE PHY on first Ethernet port */
 #define VAR_EEPROM_F_AUDIO		BIT(2)
 #define VAR_EEPROM_F_MX8M_LVDS		BIT(3)	/* i.MX8MM, i.MX8MN, i.MX8MQ only */
 #define VAR_EEPROM_F_MX8Q_SOC_ID	BIT(3)	/* 0 = i.MX8QM, 1 = i.MX8QP */
 #define VAR_EEPROM_F_NAND		BIT(4)
-#define VAR_EEPROM_F_WBE		BIT(5)
+#define VAR_EEPROM_F_WBE		BIT(5)	/* Wi-Fi WBE ordering option */
+#define VAR_EEPROM_F_WBK		BIT(6)	/* Wi-Fi WBK ordering option */
+
+/* Additional optional SOM features for VAR-SMARC-MX8M-PLUS */
+#define VAR_EEPROM_F2_ETH2		BIT(0)	/* EC2: GbE PHY on second Ethernet port */
+#define VAR_EEPROM_F2_HUB		BIT(1)	/* HUB: USB hub included */
+#define VAR_EEPROM_F2_RTC		BIT(2)	/* RTC: Internal RTC */
+#define VAR_EEPROM_F2_DSI		BIT(3)	/* DSI: DSI output instead of LVDS #0 */
+#define VAR_EEPROM_F2_TPMST		BIT(4)	/* TPMST: internal ST TPM secure component */
+#define VAR_EEPROM_F2_TPMIF		BIT(5)	/* TPMIF: internal Infineon TPM secure component */
+
+/*
+ * EEPROM format version thresholds.
+ *
+ * Add entries here when a specific EEPROM version introduces
+ * behavior or fields that need to be checked in code.
+ */
+#define VAR_EEPROM_VER_FEATURES2	4	/* features2 introduced and factory-programmed */
 
 /* Helpers to extract the major and minor versions from somrev */
 #define SOMREV_MINOR(val) ((val) & GENMASK(4, 0))
@@ -51,7 +68,8 @@ struct __packed var_eeprom
 	u8 dramsize;			/* 33-0x21 - DRAM size          */
 	u8 off[DRAM_TABLE_NUM + 1];	/* 34-0x22 - DRAM table offsets */
 	u8 partnum2[5];			/* 42-0x2a - part number        */
-	u8 reserved[3];			/* 47 0x2f - reserved           */
+	u8 features2;			/* 47-0x2f - SOM features 2     */
+	u8 reserved[2];			/* 48-0x30 - reserved           */
 };
 
 #define VAR_EEPROM_DATA ((struct var_eeprom *)VAR_EEPROM_DRAM_START)
