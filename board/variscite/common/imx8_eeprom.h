@@ -39,7 +39,7 @@
  * Add entries here when a specific EEPROM version introduces
  * behavior or fields that need to be checked in code.
  */
-#define VAR_EEPROM_VER_FEATURES2	4	/* features2 introduced and factory-programmed */
+#define VAR_EEPROM_VER_FEATURES2	5	/* features2 introduced and factory-programmed */
 
 /* Helpers to extract the major and minor versions from somrev */
 #define SOMREV_MINOR(val) ((val) & GENMASK(4, 0))
