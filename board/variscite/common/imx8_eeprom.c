@@ -213,7 +213,7 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 	else if (of_machine_is_compatible("variscite,imx8mp-var-som"))
 		printf("\nPart number: VSM-MX8MP-%.*s\n", (int)sizeof(partnum), partnum);
 	else
-		printf("\nPart number: VSMSMX8MP-%.*s\n", (int)sizeof(partnum), partnum);
+		printf("\nPart number: VSM-SC8MP-%.*s\n", (int)sizeof(partnum), partnum);
 
 #elif CONFIG_TARGET_IMX8QXP_VAR_SOM
 	printf("\nPart number: VSM-MX8X-%.*s\n", (int)sizeof(partnum), partnum);
