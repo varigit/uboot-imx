@@ -518,13 +518,19 @@ int board_late_init(void)
 		if (var_carrier_eeprom_get_name(&carrier_eeprom, carrier_name) > 0)
 			env_set("carrier_name", carrier_name);
 
-		/* SoM Features ENV */
-		env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
+		if (var_eeprom_is_valid(ep)) {
+			/* SoM Features ENV */
+			env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
 
-		/* SoM Rev ENV*/
-		snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev),
-			 SOMREV_MINOR(ep->somrev));
-		env_set("som_rev", som_rev);
+			/* SoM Rev ENV*/
+			snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev),
+				 SOMREV_MINOR(ep->somrev));
+			env_set("som_rev", som_rev);
+		} else {
+			printf("The EEPROM is not valid. Loading the default device tree.");
+			env_set("som_has_wbe", "undefined");
+			env_set("som_rev", "undefined");
+		}
 	}
 
 	var_setup_mac(ep);
