@@ -176,7 +176,6 @@
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 		"if env exists mender_setup; then " \
 			"run mender_setup; " \
-			"setenv mmcpart ${mender_boot_part}; " \
 		"fi; " \
 		"run prepareexpanders; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
