@@ -667,8 +667,13 @@ int mmc_get_env_dev(void)
 	int devno = mmc_get_boot_dev();
 
 	/* If not boot from sd/mmc, use default value */
-	if (devno < 0)
-	    return env_get_ulong("mmcdev", 10, CONFIG_SYS_MMC_ENV_DEV);
+	if (devno < 0) {
+#if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_ENV_SUPPORT)
+		return CONFIG_SYS_MMC_ENV_DEV;
+#else
+		return env_get_ulong("mmcdev", 10, CONFIG_SYS_MMC_ENV_DEV);
+#endif
+	}
 
 	return board_mmc_get_env_dev(devno);
 }
