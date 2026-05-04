@@ -1040,7 +1040,7 @@ static iomux_v3_cfg_t const usdhc1_gpio_pads[] = {
 	IOMUX_PADS(PAD_SD1_DAT3__GPIO1_IO21	| MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
-#ifdef CONFIG_ENV_IS_IN_MMC
+#ifdef CONFIG_MMC
 int mmc_map_to_kernel_blk(int dev_no)
 {
 	return dev_no;
@@ -1120,7 +1120,7 @@ int board_mmc_get_env_dev(int devno)
 
 int board_late_init(void)
 {
-#ifdef CONFIG_ENV_IS_IN_MMC
+#ifdef CONFIG_MMC
 	mmc_late_init();
 #endif
 
