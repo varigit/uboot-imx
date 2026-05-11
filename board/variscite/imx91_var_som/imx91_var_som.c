@@ -189,7 +189,7 @@ int board_late_init(void)
 	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	env_set("som_rev", som_rev);
 
-#ifdef CONFIG_ENV_IS_IN_MMC
+#ifdef CONFIG_MMC
 	board_late_mmc_env_init();
 #endif
 
