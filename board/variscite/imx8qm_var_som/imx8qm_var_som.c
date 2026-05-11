@@ -40,6 +40,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define CARRIER_NAME_STR_LEN 16
+
 #define UART_PAD_CTRL	((SC_PAD_CONFIG_OUT_IN << PADRING_CONFIG_SHIFT) | (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) \
 						| (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT) | (SC_PAD_28FDSOI_PS_PU << PADRING_PULL_SHIFT))
 
@@ -138,7 +140,7 @@ int board_late_init(void)
 	struct var_eeprom eeprom = {0};
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
-	char carrier_name[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_NAME_STR_LEN] = {0};
 	int ret;
 
 	if (!var_eeprom_is_valid(ep)) {
