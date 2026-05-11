@@ -214,7 +214,7 @@ int board_late_init(void)
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int)(gd->ram_size / 1024 / 1024));
 	env_set("sdram_size", sdram_size_str);
 
-#ifdef CONFIG_ENV_IS_IN_MMC
+#ifdef CONFIG_MMC
 	board_late_mmc_env_init();
 #endif
 
