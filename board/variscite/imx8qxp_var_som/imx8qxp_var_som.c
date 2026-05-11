@@ -28,6 +28,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define CARRIER_NAME_STR_LEN 16
+
 extern int var_setup_mac(struct var_eeprom *eeprom);
 
 #define UART_PAD_CTRL	((SC_PAD_CONFIG_OUT_IN << PADRING_CONFIG_SHIFT) | \
@@ -117,7 +119,7 @@ int board_late_init(void)
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
-	char carrier_name[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_NAME_STR_LEN] = {0};
 
 	build_info();
 
