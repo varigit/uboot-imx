@@ -35,6 +35,9 @@ int var_setup_mac(struct var_eeprom *eeprom);
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define CARRIER_NAME_STR_LEN 16
+#define SOM_REV_STR_LEN 16
+
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 #define GPIO_PAD_CTRL	(PAD_CTL_DSE1 | PAD_CTL_PUE | PAD_CTL_PE  | PAD_CTL_HYS)
 #define SMARC_ID_PAD_CTRL	(PAD_CTL_DSE1 | PAD_CTL_PE  | PAD_CTL_HYS)
@@ -388,7 +391,7 @@ int vendor_board_fix_fdt(void *fdt_blob)
 {
 	struct var_carrier_eeprom *carrier_ep = VAR_CARRIER_EEPROM_DATA;
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
-	char carrier_name[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_NAME_STR_LEN] = {0};
 	int som_rev = SOMREV_MAJOR(ep->somrev);
 
 	if (!fdt_blob) {
@@ -477,8 +480,8 @@ int board_late_init(void)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
-	char carrier_name[CARRIER_REV_LEN] = {0};
-	char som_rev[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_NAME_STR_LEN] = {0};
+	char som_rev[SOM_REV_STR_LEN] = {0};
 
 #ifdef CONFIG_MMC
 	board_late_mmc_env_init();
@@ -523,7 +526,7 @@ int board_late_init(void)
 			env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
 
 			/* SoM Rev ENV*/
-			snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev),
+			snprintf(som_rev, sizeof(som_rev), "%ld.%ld", SOMREV_MAJOR(ep->somrev),
 				 SOMREV_MINOR(ep->somrev));
 			env_set("som_rev", som_rev);
 		} else {
