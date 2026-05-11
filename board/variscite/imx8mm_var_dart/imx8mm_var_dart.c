@@ -28,6 +28,9 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define CARRIER_NAME_STR_LEN 16
+#define SOM_REV_STR_LEN 16
+
 extern int var_setup_mac(struct var_eeprom *eeprom);
 
 #define GPIO_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1 | PAD_CTL_PUE | PAD_CTL_PE)
@@ -218,8 +221,8 @@ int board_late_init(void)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
-	char carrier_name[CARRIER_REV_LEN] = {0};
-	char som_rev[CARRIER_REV_LEN] = {0};
+	char carrier_name[CARRIER_NAME_STR_LEN] = {0};
+	char som_rev[SOM_REV_STR_LEN] = {0};
 
 #ifdef CONFIG_EXTCON_PTN5150
 	extcon_ptn5150_setup(&usb_ptn5150);
@@ -231,7 +234,7 @@ int board_late_init(void)
 	var_eeprom_print_prod_info(ep);
 
 	/* SoM Rev ENV*/
-	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
+	snprintf(som_rev, sizeof(som_rev), "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	env_set("som_rev", som_rev);
 
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int)(gd->ram_size / 1024 / 1024));
