@@ -181,7 +181,7 @@ int board_late_init(void)
 	/* SoM Features ENV */
 	env_set("som_has_wbe", (ep->features & VAR_EEPROM_F_WBE) ? "1" : "0");
 
-#ifdef CONFIG_ENV_IS_IN_MMC
+#ifdef CONFIG_MMC
 	board_late_mmc_env_init();
 #endif
 
