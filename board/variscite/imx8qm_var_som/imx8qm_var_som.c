@@ -193,7 +193,7 @@ int board_late_init(void)
 	env_set("sec_boot", "yes");
 #endif
 
-#ifdef CONFIG_ENV_IS_IN_MMC
+#ifdef CONFIG_MMC
 	board_late_mmc_env_init();
 #endif
 
