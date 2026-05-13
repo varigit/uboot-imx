@@ -26,6 +26,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define SOM_REV_STR_LEN 16
+
 #define CARRIER_EEPROM_ADDR 0x54
 
 #define UART_PAD_CTRL	(PAD_CTL_DSE(6) | PAD_CTL_FSEL2)
@@ -145,7 +147,7 @@ int board_late_init(void)
 	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 	struct var_carrier_eeprom carrier_eeprom;
 	char carrier_rev[CARRIER_REV_LEN] = {0};
-	char som_rev[CARRIER_REV_LEN] = {0};
+	char som_rev[SOM_REV_STR_LEN] = {0};
 
 #ifdef CONFIG_EXTCON_PTN5150
 	if (id == VAR_SOM_MX91)
@@ -185,7 +187,7 @@ int board_late_init(void)
 		env_set("som_has_wbe", "0");
 
 	/* SoM Rev ENV */
-	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
+	snprintf(som_rev, sizeof(som_rev), "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	env_set("som_rev", som_rev);
 
 #ifdef CONFIG_MMC
