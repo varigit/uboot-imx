@@ -331,6 +331,8 @@ static int setup_fec(int fec_id)
 
 int board_phy_config(struct phy_device *phydev)
 {
+	int bmcr;
+
 	switch (phydev->phy_id) {
 	case AR8033_PHY_ID:
 		printf("AR8033 PHY detected at addr %d\n", phydev->addr);
@@ -342,6 +344,14 @@ int board_phy_config(struct phy_device *phydev)
 		break;
 	case ADIN1300_PHY_ID:
 		printf("ADIN1300 PHY detected at addr %d\n", phydev->addr);
+		bmcr = phy_read(phydev, MDIO_DEVAD_NONE, MII_BMCR);
+		if (bmcr < 0)
+			return bmcr;
+
+		if (bmcr & BMCR_PDOWN) {
+			bmcr &= ~BMCR_PDOWN;
+			phy_write(phydev, MDIO_DEVAD_NONE, MII_BMCR, bmcr);
+		}
 		break;
 	default:
 		printf("%s: unknown phy_id 0x%x at addr %d\n", __func__,
