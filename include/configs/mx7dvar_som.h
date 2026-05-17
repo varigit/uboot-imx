@@ -42,7 +42,6 @@
 	CONFIG_DFU_ENV_SETTINGS \
 	"bootenv=uEnv.txt\0" \
 	"script=boot.scr\0" \
-	"image=zImage\0" \
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcblk=0\0" \
 	"mmcautodetect=yes\0" \
@@ -100,6 +99,7 @@
 	OPT_ENV_SETTINGS \
 	"console=ttymxc0\0" \
 	"boot_fdt=try\0" \
+	"image=zImage\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"fdt_file=undefined\0" \
