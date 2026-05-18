@@ -19,7 +19,7 @@
 #define HW_ENV_SETTINGS \
 	"kernelbootargs=" \
 		"if test ${som_rev} -ge 2; then " \
-			"setenv wifi_args 'moal.mod_para=wifi_mod_para_iw612.conf'; " \
+			"setenv wifi_args 'moal.mod_para=wifi_mod_para_sd8987.conf'; " \
 		"else " \
 			"setenv wifi_args ''; " \
 		"fi; " \
