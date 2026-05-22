@@ -125,6 +125,11 @@
 			"elif test ${som_has_wbe} = 1; then " \
 				"setenv fdt_suffix -wbe; " \
 			"fi; " \
+			"if test ${board_name} = VAR-SMARC-MX8M-PLUS; then " \
+				"if test ${som_has_wbe} = 1; then " \
+					"setenv fdt_suffix -wbe; " \
+				"fi; " \
+			"fi; " \
 			"setenv fdt_file ${module_name}${fdt_suffix}-${carrier_name}.dtb; " \
 		"fi; \0" \
 	"loadfdt=run findfdt; " \
