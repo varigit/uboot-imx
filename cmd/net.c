@@ -601,6 +601,209 @@ U_BOOT_CMD(
 
 #endif	/* CONFIG_CMD_DNS */
 
+#if defined(CONFIG_CMD_UDP_WAIT)
+#include <net/udp_wait.h>
+
+static int do_udp_wait(struct cmd_tbl *cmdtp, int flag, int argc,
+		       char *const argv[])
+{
+	struct udp_ops ops = {
+		.prereq	= udp_wait_prereq,
+		.start	= udp_wait_start,
+		.data	= NULL,
+		.flags	= UDP_OPS_NO_IPADDR,
+	};
+	const char *port_env, *timeout_env;
+	int ret;
+
+	/* Port from argv or env */
+	if (argc >= 2) {
+		udp_wait_port = (int)dectoul(argv[1], NULL);
+	} else {
+		port_env = env_get("udp_port_for_trigger");
+		if (!port_env) {
+			puts("udp_wait: no port specified (argv or env "
+			     "'udp_port_for_trigger')\n");
+			return CMD_RET_USAGE;
+		}
+		udp_wait_port = (int)dectoul(port_env, NULL);
+	}
+
+	/* Timeout (ms) from argv or env, default 10s */
+	if (argc >= 3) {
+		udp_wait_timeout = dectoul(argv[2], NULL);
+	} else {
+		timeout_env = env_get("udp_trigger_timeout");
+		udp_wait_timeout = timeout_env ? dectoul(timeout_env, NULL)
+					       : 10000UL;
+	}
+
+	ret = udp_loop(&ops);
+	if (ret < 0) {
+		puts("udp_wait: failed or timed out\n");
+		return CMD_RET_FAILURE;
+	}
+
+	return CMD_RET_SUCCESS;
+}
+
+U_BOOT_CMD(
+	udp_wait,	3,	0,	do_udp_wait,
+	"wait for a UDP trigger packet",
+	"[<port> [<timeout_ms>]]\n"
+	"    - Listen for a trigger packet of the form\n"
+	"      <token>:<serverip>:<port>:<bootfile>\n"
+	"      and populate serverip / tftpport / bootfile env vars."
+);
+#endif	/* CONFIG_CMD_UDP_WAIT */
+
+#if defined(CONFIG_CMD_TFTP_TRIGGER_BOOT)
+/*
+ * Assign a deterministic IPv4 link-local address (169.254.x.y) derived from
+ * the last two bytes of the primary MAC. RFC 3927 reserves 169.254.0.0/24
+ * and 169.254.255.0/24, so the middle octet is clamped to 1..254.
+ *
+ * Why deterministic, not the U-Boot 'linklocal' RFC-3927 probe:
+ *   - The trigger sender needs to know where to push to; a MAC-keyed address
+ *     is computable off-line from the device's printed MAC.
+ *   - Conflicts in a single-switch firmware-push setup are not a concern.
+ *   - The probe path adds several seconds to every boot.
+ *
+ * Note: env_set() runs U-Boot's env callbacks with H_PROGRAMMATIC, which
+ * cause on_ipaddr/on_netmask to skip updating the cached net_ip/net_netmask.
+ * Update them directly here so the subsequent TFTP step sees them.
+ */
+static void tftp_trigger_set_linklocal(void)
+{
+	char ip[16];
+	u8 mid = net_ethaddr[4];
+	u8 lo = net_ethaddr[5];
+
+	if (mid == 0)
+		mid = 1;
+	else if (mid == 255)
+		mid = 254;
+
+	snprintf(ip, sizeof(ip), "169.254.%u.%u", mid, lo);
+	env_set("ipaddr", ip);
+	env_set("netmask", "255.255.0.0");
+	net_ip = string_to_ip(ip);
+	net_netmask = string_to_ip("255.255.0.0");
+
+	printf("tftp_trigger_boot: MAC %pM -> link-local ipaddr=%s/16\n",
+	       net_ethaddr, ip);
+}
+
+/*
+ * tftp_trigger_boot — orchestrate a UDP-triggered TFTP boot.
+ *
+ * Steps:
+ *   1. Assign a MAC-keyed IPv4 link-local address (169.254.x.y/16). We do
+ *      not rely on an 'ipaddr' env or DHCP — neither is expected to be
+ *      configured in the field, and DHCP outcomes are not predictable from
+ *      the pusher side.
+ *   2. Run `udp_wait` to receive a trigger packet.
+ *   3. TFTP-fetch the kernel image to ${loadaddr} and the device tree to
+ *      ${fdt_addr_tftpboot} (falls back to ${fdt_addr_r}, then ${fdt_addr}).
+ *   4. Set bootargs via the board's existing `mmcargs` helper (which derives
+ *      root= from env vars mmcblk / mmcpart), then `booti`.
+ *   5. On ANY failure of the above, fall back to `bootcmd_default`.
+ *
+ * For the TFTP fetch to succeed, the trigger sender / TFTP server must
+ * also be reachable on 169.254.0.0/16 — e.g. add a link-local alias to the
+ * server's NIC:  `ip addr add 169.254.0.20/16 dev eth0`.
+ */
+static int do_tftp_trigger_boot(struct cmd_tbl *cmdtp, int flag, int argc,
+				char *const argv[])
+{
+	const char *fdt_dst, *bootfile, *fdt_file;
+	char cmd[256];
+
+	puts("tftp_trigger_boot: starting\n");
+
+	/* Step 1: deterministic link-local IPv4 */
+	tftp_trigger_set_linklocal();
+
+	/* Step 2: wait for trigger (uses env defaults) */
+	if (run_command("udp_wait", 0) != 0)
+		goto fallback;
+
+	bootfile = env_get("bootfile");
+	if (!bootfile || !*bootfile) {
+		puts("tftp_trigger_boot: no bootfile after udp_wait\n");
+		goto fallback;
+	}
+
+	/* Step 3a: TFTP the kernel image */
+	if (run_command("tftpboot ${loadaddr} ${bootfile}", 0) != 0) {
+		puts("tftp_trigger_boot: kernel tftp failed\n");
+		goto fallback;
+	}
+
+	/* Step 3b: TFTP the DTB.
+	 * Use the Variscite findfdt machinery to populate fdt_file based on
+	 * board variant, then download it to fdt_addr_tftpboot (or fdt_addr_r).
+	 */
+	if (run_command("run findfdt", 0) != 0) {
+		puts("tftp_trigger_boot: findfdt failed\n");
+		goto fallback;
+	}
+	fdt_file = env_get("fdt_file");
+	if (!fdt_file || !*fdt_file) {
+		puts("tftp_trigger_boot: no fdt_file resolved\n");
+		goto fallback;
+	}
+	fdt_dst = env_get("fdt_addr_tftpboot");
+	if (!fdt_dst || !*fdt_dst)
+		fdt_dst = env_get("fdt_addr_r");
+	if (!fdt_dst || !*fdt_dst)
+		fdt_dst = env_get("fdt_addr");
+	if (!fdt_dst || !*fdt_dst) {
+		puts("tftp_trigger_boot: no destination address for DTB\n");
+		goto fallback;
+	}
+	snprintf(cmd, sizeof(cmd), "tftpboot %s %s", fdt_dst, fdt_file);
+	if (run_command(cmd, 0) != 0) {
+		puts("tftp_trigger_boot: dtb tftp failed\n");
+		goto fallback;
+	}
+
+	/* Step 4: bootargs via the board's mmcargs (root=/dev/mmcblk... etc.)
+	 * If the board doesn't define mmcargs, this is a soft failure: we
+	 * still try booti since the user may have already populated bootargs.
+	 */
+	if (env_get("mmcargs"))
+		run_command("run mmcargs", 0);
+	if (env_get("optargs"))
+		run_command("run optargs", 0);
+
+	/* Step 5: launch */
+	snprintf(cmd, sizeof(cmd), "booti ${loadaddr} - %s", fdt_dst);
+	if (run_command(cmd, 0) == 0) {
+		/* booti returns only on failure */
+	}
+	puts("tftp_trigger_boot: booti returned, falling back\n");
+
+fallback:
+	puts("tftp_trigger_boot: falling back to bootcmd_default\n");
+	if (env_get("bootcmd_default"))
+		run_command("run bootcmd_default", 0);
+	else
+		puts("tftp_trigger_boot: no 'bootcmd_default' in env\n");
+	return CMD_RET_FAILURE;
+}
+
+U_BOOT_CMD(
+	tftp_trigger_boot, 1, 0, do_tftp_trigger_boot,
+	"UDP-triggered TFTP boot helper",
+	"\n"
+	"    - Wait for a UDP trigger, then TFTP-load the kernel and DTB\n"
+	"      and boot. Falls back to 'run bootcmd_default' on any\n"
+	"      failure. Designed to be installed as the active bootcmd:\n"
+	"        setenv bootcmd 'run tftp_trigger_boot'; saveenv"
+);
+#endif	/* CONFIG_CMD_TFTP_TRIGGER_BOOT */
+
 #if defined(CONFIG_CMD_LINK_LOCAL)
 static int do_link_local(struct cmd_tbl *cmdtp, int flag, int argc,
 			 char *const argv[])

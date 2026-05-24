@@ -1500,6 +1500,14 @@ common:
 				return 1;
 			}
 		} else if (net_ip.s_addr == 0) {
+#if defined(CONFIG_PROT_UDP)
+			/*
+			 * Some udp_ops (e.g. udp_wait) only ever listen and
+			 * therefore do not need a configured local IP address.
+			 */
+			if (protocol == UDP && !udp_needs_ipaddr())
+				break;
+#endif
 			puts("*** ERROR: `ipaddr' not set\n");
 			return 1;
 		}

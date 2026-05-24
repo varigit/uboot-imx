@@ -19,6 +19,13 @@ int udp_prereq(void)
 	return ret;
 }
 
+bool udp_needs_ipaddr(void)
+{
+	if (!udp_ops)
+		return true;
+	return !(udp_ops->flags & UDP_OPS_NO_IPADDR);
+}
+
 int udp_start(void)
 {
 	return udp_ops->start(udp_ops->data);

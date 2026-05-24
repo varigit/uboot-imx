@@ -1880,6 +1880,55 @@ config CMD_DNS
 	help
 	  Lookup the IP of a hostname
 
+config CMD_UDP_WAIT
+	bool "udp_wait"
+	select PROT_UDP
+	help
+	  Wait for an authenticated UDP trigger packet on a given port and
+	  use it to populate the environment for a follow-up tftpboot.
+
+	  The expected payload is "<token>:<serverip>:<port>:<bootfile>"
+	  where <token> must match CONFIG_TFTP_TRIGGER_TOKEN. On success
+	  the variables 'serverip', 'tftpport' and 'bootfile' are set in
+	  the environment, plus 'trigger_srcip' and 'trigger_srcport' for
+	  diagnostics.
+
+	  Usage:
+	    udp_wait [<port> [<timeout_ms>]]
+	  Defaults are read from env 'udp_port_for_trigger' and
+	  'udp_trigger_timeout'.
+
+config TFTP_TRIGGER_TOKEN
+	string "Trigger handshake token"
+	default "edcbrd01"
+	depends on CMD_UDP_WAIT
+	help
+	  Plaintext token required as the first field of a UDP wait trigger
+	  payload. Any sender knowing this token can drive a TFTP boot, so
+	  treat it like a weak shared secret: it provides protection against
+	  accidental triggers, not against an adversary with code-read access
+	  to the U-Boot image.
+
+config CMD_TFTP_TRIGGER_BOOT
+	bool "tftp_trigger_boot"
+	depends on CMD_TFTPBOOT && CMD_BOOTI
+	select CMD_UDP_WAIT
+	help
+	  High-level boot helper that:
+	    1. Assigns a deterministic IPv4 link-local address (169.254.x.y)
+	       derived from the device MAC. No DHCP, no static config needed.
+	    2. Runs 'udp_wait' to receive a trigger packet.
+	    3. TFTP-fetches the kernel image and device tree blob.
+	    4. Falls back to 'bootcmd_default' on any failure.
+
+	  The trigger sender / TFTP server must be reachable on
+	  169.254.0.0/16; on a Linux server, add an alias:
+	    ip addr add 169.254.0.20/16 dev eth0
+
+	  This command is intentionally NOT wired into the default 'bootcmd';
+	  operators opt in explicitly with e.g.
+	    setenv bootcmd 'run tftp_trigger_boot'; saveenv
+
 config CMD_LINK_LOCAL
 	bool "linklocal"
 	select LIB_RAND
