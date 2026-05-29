@@ -17,11 +17,17 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #undef CONFIG_BOOTCOMMAND
+#define HW_ENV_SETTINGS \
+	"i2c_probe=" \
+		"i2c dev 3; " \
+		"i2c probe\0"
 #define BOOT_ENV_SETTINGS \
 	"bootcmd=" \
+		"run i2c_probe; " \
 		"bootmcu; boota ${fastboot_dev}\0"
 
 #define CONFIG_EXTRA_ENV_SETTINGS		\
+	HW_ENV_SETTINGS \
 	BOOT_ENV_SETTINGS \
 	"splashpos=m,m\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
