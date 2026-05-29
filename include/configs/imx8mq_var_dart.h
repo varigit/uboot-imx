@@ -142,6 +142,7 @@
 		"echo fdt_file=${fdt_file}; " \
 		"load mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${bootdir}/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run i2c_probe; " \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
@@ -157,6 +158,7 @@
 		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
+		"run i2c_probe; " \
 		"run netargs; " \
 		"run optargs; " \
 		"if test ${ip_dyn} = yes; then " \
@@ -182,6 +184,7 @@
 	"splashenable=setenv splashfile /boot/splash.bmp; " \
 	"setenv splashimage 0x43100000\0" \
 	"splashdisable=setenv splashfile; setenv splashimage\0" \
+	"i2c_probe=i2c dev 3; i2c probe\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 	"run ramsize_check; " \
 	"mmc dev ${mmcdev}; "\
