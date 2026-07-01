@@ -119,12 +119,24 @@
 	"findfdt=" \
 		"if test $fdt_file = undefined; then " \
 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
-				"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+				"if test ${som_rev} -lt 2; then " \
+					"setenv fdt_file imx8mm-var-som-1.x-symphony.dtb; " \
+				"elif test ${som_has_wbe} = 1; then " \
+					"setenv fdt_file imx8mm-var-som-wbe-symphony.dtb; " \
+				"else " \
+					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+				"fi; " \
 			"else " \
 				"if test $carrier_rev = legacy; then " \
 					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard-legacy.dtb; " \
 				"else " \
-					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
+					"if test ${som_rev} -lt 2; then " \
+						"setenv fdt_file imx8mm-var-dart-1.x-dt8mcustomboard.dtb; " \
+					"elif test ${som_has_wbe} = 1; then " \
+						"setenv fdt_file imx8mm-var-dart-wbe-dt8mcustomboard.dtb; " \
+					"else " \
+						"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
+					"fi; " \
 				"fi; " \
 			"fi; " \
 		"fi; \0" \
