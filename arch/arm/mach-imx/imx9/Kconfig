@@ -256,6 +256,10 @@ config TARGET_VERDIN_IMX95_19X19
 	imply BOOTSTD_BOOTCOMMAND
 	imply BOOTSTD_FULL
 
+config TARGET_IMX95_VAR_DART
+	bool "imx95_var_dart"
+	select IMX95
+
 config TARGET_IMX943_ORANGEBOX
 	bool "imx943_orangebox"
 	select IMX94
@@ -273,6 +277,7 @@ source "board/nxp/imx93_frdm/Kconfig"
 source "board/nxp/imx93_qsb/Kconfig"
 source "board/kontron/osm-s-mx93/Kconfig"
 source "board/phytec/phycore_imx93/Kconfig"
+source "board/variscite/imx95_var_dart/Kconfig"
 source "board/nxp/imx94_evk/Kconfig"
 source "board/nxp/imx94_orangebox/Kconfig"
 source "board/nxp/imx95_evk/Kconfig"
