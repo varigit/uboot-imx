@@ -672,7 +672,9 @@ int mmc_get_env_dev(void)
 
 	/* If not boot from sd/mmc, use default value */
 	if (devno < 0)
-	    return env_get_ulong("mmcdev", 10, CONFIG_ENV_MMC_DEVICE_INDEX);
+		return CONFIG_IS_ENABLED(ENV_SUPPORT) ?
+			env_get_ulong("mmcdev", 10, CONFIG_ENV_MMC_DEVICE_INDEX) :
+			CONFIG_ENV_MMC_DEVICE_INDEX;
 
 	return board_mmc_get_env_dev(devno);
 }
