@@ -33,6 +33,7 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		gpio = <&gpio1 7 GPIO_ACTIVE_LOW>;
+		regulator-boot-on;
 	};
 };
 

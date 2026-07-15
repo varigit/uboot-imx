@@ -18,6 +18,7 @@
 #include <usb.h>
 #include <dm.h>
 #include <dt-bindings/gpio/gpio.h>
+#include <fdt_support.h>
 #include <linux/libfdt.h>
 
 #include "../common/extcon-ptn5150.h"
@@ -182,7 +183,7 @@ int board_init(void)
 	return 0;
 }
 
-#ifdef CONFIG_OF_BOARD_SETUP
+#if defined(CONFIG_OF_BOARD_SETUP) || defined(CONFIG_OF_BOARD_FIXUP)
 static bool fdt_is_dart_mx8m_mini(void *blob)
 {
 	const char *model;
@@ -194,6 +195,29 @@ static bool fdt_is_dart_mx8m_mini(void *blob)
 	return false;
 }
 
+static bool is_som_rev_3_0(struct var_eeprom *ep)
+{
+	return var_eeprom_is_valid(ep) &&
+	       SOMREV_MAJOR(ep->somrev) == 3 &&
+	       SOMREV_MINOR(ep->somrev) == 0;
+}
+
+static int fdt_setprop_empty_with_resize(void *blob, int node,
+					 const char *name)
+{
+	int ret;
+
+	ret = fdt_setprop_empty(blob, node, name);
+	if (ret != -FDT_ERR_NOSPACE)
+		return ret;
+
+	ret = fdt_increase_size(blob, 128);
+	if (ret)
+		return ret;
+
+	return fdt_setprop_empty(blob, node, name);
+}
+
 static int fixup_fdt_eth_phy_regulator(void *blob)
 {
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
@@ -201,13 +225,10 @@ static int fixup_fdt_eth_phy_regulator(void *blob)
 	fdt32_t new_gpio[3];
 	int len, node, ret;
 
-	if (!var_eeprom_is_valid(ep))
-		return 0;
-
 	if (!fdt_is_dart_mx8m_mini(blob))
 		return 0;
 
-	if (SOMREV_MAJOR(ep->somrev) != 3 || SOMREV_MINOR(ep->somrev) != 0)
+	if (!is_som_rev_3_0(ep))
 		return 0;
 
 	node = fdt_path_offset(blob, "/regulator-eth-phy");
@@ -236,7 +257,8 @@ static int fixup_fdt_eth_phy_regulator(void *blob)
 	}
 
 	if (!fdt_get_property(blob, node, "enable-active-high", NULL)) {
-		ret = fdt_setprop_empty(blob, node, "enable-active-high");
+		ret = fdt_setprop_empty_with_resize(blob, node,
+						    "enable-active-high");
 		if (ret)
 			printf("Could not add Ethernet PHY regulator enable-active-high: %s\n",
 			       fdt_strerror(ret));
@@ -246,7 +268,16 @@ static int fixup_fdt_eth_phy_regulator(void *blob)
 
 	return 0;
 }
+#endif
 
+#ifdef CONFIG_OF_BOARD_FIXUP
+int imx8m_board_fix_fdt(void *blob)
+{
+	return fixup_fdt_eth_phy_regulator(blob);
+}
+#endif
+
+#ifdef CONFIG_OF_BOARD_SETUP
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
 	return fixup_fdt_eth_phy_regulator(blob);

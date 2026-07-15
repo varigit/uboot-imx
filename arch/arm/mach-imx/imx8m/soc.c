@@ -1446,8 +1446,15 @@ usb_modify_speed:
 
 #ifdef CONFIG_OF_BOARD_FIXUP
 #ifndef CONFIG_SPL_BUILD
+__weak int imx8m_board_fix_fdt(void *fdt)
+{
+	return 0;
+}
+
 int board_fix_fdt(void *fdt)
 {
+	int ret;
+
 	if (is_imx8mpul()) {
 		int i = 0;
 		int nodeoff, ret;
@@ -1472,6 +1479,10 @@ set_status:
 			}
 		}
 	}
+
+	ret = imx8m_board_fix_fdt(fdt);
+	if (ret)
+		return ret;
 
 	return 0;
 }
