@@ -17,6 +17,8 @@
 #include <asm/arch/clock.h>
 #include <usb.h>
 #include <dm.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <linux/libfdt.h>
 
 #include "../common/extcon-ptn5150.h"
 #include "../common/imx8_eeprom.h"
@@ -179,6 +181,77 @@ int board_init(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_OF_BOARD_SETUP
+static bool fdt_is_dart_mx8m_mini(void *blob)
+{
+	const char *model;
+
+	model = fdt_getprop(blob, 0, "model", NULL);
+	if (model && strstr(model, "DART-MX8M-MINI"))
+		return true;
+
+	return false;
+}
+
+static int fixup_fdt_eth_phy_regulator(void *blob)
+{
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	const fdt32_t *gpio;
+	fdt32_t new_gpio[3];
+	int len, node, ret;
+
+	if (!var_eeprom_is_valid(ep))
+		return 0;
+
+	if (!fdt_is_dart_mx8m_mini(blob))
+		return 0;
+
+	if (SOMREV_MAJOR(ep->somrev) != 3 || SOMREV_MINOR(ep->somrev) != 0)
+		return 0;
+
+	node = fdt_path_offset(blob, "/regulator-eth-phy");
+	if (node < 0) {
+		printf("Could not find Ethernet PHY regulator node: %s\n",
+		       fdt_strerror(node));
+		return 0;
+	}
+
+	gpio = fdt_getprop(blob, node, "gpio", &len);
+	if (!gpio || len < sizeof(new_gpio)) {
+		printf("Invalid Ethernet PHY regulator GPIO property\n");
+		return 0;
+	}
+
+	new_gpio[0] = gpio[0];
+	new_gpio[1] = gpio[1];
+	new_gpio[2] = cpu_to_fdt32(GPIO_ACTIVE_HIGH);
+
+	ret = fdt_setprop_inplace(blob, node, "gpio", new_gpio,
+				  sizeof(new_gpio));
+	if (ret) {
+		printf("Could not update Ethernet PHY regulator GPIO: %s\n",
+		       fdt_strerror(ret));
+		return ret;
+	}
+
+	if (!fdt_get_property(blob, node, "enable-active-high", NULL)) {
+		ret = fdt_setprop_empty(blob, node, "enable-active-high");
+		if (ret)
+			printf("Could not add Ethernet PHY regulator enable-active-high: %s\n",
+			       fdt_strerror(ret));
+	}
+
+	printf("Applied SOM rev 3.0 Ethernet PHY regulator GPIO polarity fixup\n");
+
+	return 0;
+}
+
+int ft_board_setup(void *blob, struct bd_info *bd)
+{
+	return fixup_fdt_eth_phy_regulator(blob);
+}
+#endif
 
 #define SDRAM_SIZE_STR_LEN 5
 int board_late_init(void)
