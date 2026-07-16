@@ -217,6 +217,7 @@
 			reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <100000>;
+			ti,min-output-impedance;
 			vddio-supply = <&vddio1>;
 
 			mxl-8611x,led0_cfg = <(
