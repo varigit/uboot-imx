@@ -138,6 +138,7 @@
 		"run ramsize_check; " \
 		"run netargs;  " \
 		"run optargs; " \
+		"run prepareexpanders; " \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
 		"else " \
