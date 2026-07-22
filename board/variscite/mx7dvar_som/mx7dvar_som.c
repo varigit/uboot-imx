@@ -19,6 +19,7 @@
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/io.h>
 #include <fsl_esdhc.h>
+#include <fdtdec.h>
 #include <linux/sizes.h>
 #include <mmc.h>
 #include <miiphy.h>
@@ -368,6 +369,51 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 #endif /* CONFIG_FEC_MXC */
+
+#ifdef CONFIG_OF_BOARD_FIXUP
+int board_fix_fdt(void *fdt_blob)
+{
+	int i, node, ret;
+	struct mx7d_var_eeprom *e = VAR_EEPROM_DATA;
+
+	if (!fdt_blob) {
+		printf("ERROR: Device tree blob not found.\n");
+		return -EINVAL;
+	}
+
+	if (!mx7d_var_eeprom_is_v2(e))
+		return 0;
+
+	/*
+	 * The common U-Boot device tree configures the PHY interface as
+	 * `rgmii-id`. On VAR-SOM-MX7_V2, the required clock delays are
+	 * provided by the hardware design, so the PHY's internal RX and TX
+	 * delays must be disabled by switching to plain `rgmii` mode.
+	 */
+	const char *fec_paths[] = {
+		"/soc/bus@30800000/ethernet@30be0000",
+		"/soc/bus@30800000/ethernet@30bf0000",
+	};
+
+	for (i = 0; i < ARRAY_SIZE(fec_paths); i++) {
+		node = fdt_path_offset(fdt_blob, fec_paths[i]);
+		if (node < 0) {
+			printf("WARNING: Couldn't find node %s: %s\n",
+				fec_paths[i], fdt_strerror(node));
+			continue;
+		}
+
+		ret = fdt_setprop_string(fdt_blob, node, "phy-mode", "rgmii");
+		if (ret < 0) {
+			printf("WARNING: Couldn't set phy-mode for %s: %s\n",
+				fec_paths[i], fdt_strerror(ret));
+			continue;
+		}
+	}
+
+	return 0;
+}
+#endif /* CONFIG_OF_BOARD_FIXUP */
 
 int board_early_init_f(void)
 {
