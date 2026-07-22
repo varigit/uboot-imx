@@ -328,6 +328,7 @@ static int setup_fec(int fec_id)
 
 #define AR8033_PHY_ID	0x004dd074
 #define ADIN1300_PHY_ID	0x0283bc30
+#define DP83867_PHY_ID	0x2000a231
 
 int board_phy_config(struct phy_device *phydev)
 {
@@ -352,6 +353,9 @@ int board_phy_config(struct phy_device *phydev)
 			bmcr &= ~BMCR_PDOWN;
 			phy_write(phydev, MDIO_DEVAD_NONE, MII_BMCR, bmcr);
 		}
+		break;
+	case DP83867_PHY_ID:
+		printf("DP83867 PHY detected at addr %d\n", phydev->addr);
 		break;
 	default:
 		printf("%s: unknown phy_id 0x%x at addr %d\n", __func__,
