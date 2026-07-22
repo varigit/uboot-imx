@@ -38,6 +38,62 @@ static struct var_eeprom eeprom = {0};
 
 extern struct dram_timing_info dram_timing_ddr4, dram_timing_lpddr4;
 
+#define ETH_PHY_PWR_GPIO	IMX_GPIO_NR(1, 7)
+#define ETH_PHY_PWR_PAD \
+	(IMX8MM_PAD_GPIO1_IO07_GPIO1_IO7 | MUX_PAD_CTRL(0x41))
+#define ETH_PHY_RESET_GPIO	IMX_GPIO_NR(1, 9)
+#define ETH_PHY_RESET_PAD \
+	(IMX8MM_PAD_GPIO1_IO09_GPIO1_IO9 | MUX_PAD_CTRL(0x19))
+
+static int spl_prepare_eth_phy(struct var_eeprom *ep)
+{
+	int enable_value = 0;
+	int ret;
+
+	/* SOM rev 3.0 uses the opposite regulator-enable polarity. */
+	if (var_eeprom_is_valid(ep) && SOMREV_MAJOR(ep->somrev) == 3 &&
+	    SOMREV_MINOR(ep->somrev) == 0)
+		enable_value = 1;
+
+	imx_iomux_v3_setup_pad(ETH_PHY_RESET_PAD);
+	ret = gpio_request(ETH_PHY_RESET_GPIO, "eth_phy_reset");
+	if (ret) {
+		printf("Failed to request Ethernet PHY reset GPIO: %d\n", ret);
+		return ret;
+	}
+
+	ret = gpio_direction_output(ETH_PHY_RESET_GPIO, 0);
+	if (ret) {
+		printf("Failed to assert Ethernet PHY reset: %d\n", ret);
+		return ret;
+	}
+
+	imx_iomux_v3_setup_pad(ETH_PHY_PWR_PAD);
+
+	ret = gpio_request(ETH_PHY_PWR_GPIO, "eth_phy_pwr");
+	if (ret) {
+		printf("Failed to request Ethernet PHY regulator GPIO: %d\n", ret);
+		return ret;
+	}
+
+	ret = gpio_direction_output(ETH_PHY_PWR_GPIO, enable_value);
+	if (ret) {
+		printf("Failed to enable Ethernet PHY regulator: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
+}
+
+static void spl_release_eth_phy_reset(void)
+{
+	int ret;
+
+	ret = gpio_set_value(ETH_PHY_RESET_GPIO, 1);
+	if (ret)
+		printf("Failed to release Ethernet PHY reset: %d\n", ret);
+}
+
 int spl_board_boot_device(enum boot_device boot_dev_spl)
 {
 	switch (boot_dev_spl) {
@@ -80,14 +136,18 @@ struct dram_fixup_param fixup_regs_ddrc_cfg[] = {
 
 static void spl_dram_init(void)
 {
-	int id;
+	int id, ret;
 
 	id = get_board_id();
 
 	if (id == DART_MX8M_MINI) {
 		var_eeprom_read_header(&eeprom);
+		ret = spl_prepare_eth_phy(&eeprom);
+		/* Check ret after DDR training to overlap the PHY power-up time. */
 		var_eeprom_adjust_dram(&eeprom, &dram_timing_lpddr4);
 		ddr_init(&dram_timing_lpddr4);
+		if (!ret)
+			spl_release_eth_phy_reset();
 	}
 	else if (id == VAR_SOM_MX8M_MINI) {
 		var_eeprom_read_header(&eeprom);

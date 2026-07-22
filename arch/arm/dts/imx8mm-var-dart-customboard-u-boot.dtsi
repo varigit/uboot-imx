@@ -17,5 +17,8 @@
 };
 
 &fec1 {
-       phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+	/* SPL now owns the PHY reset sequence before full U-Boot starts. */
+	/delete-property/ phy-reset-gpios;
+	/delete-property/ phy-reset-duration;
+	/delete-property/ phy-reset-post-delay;
 };
