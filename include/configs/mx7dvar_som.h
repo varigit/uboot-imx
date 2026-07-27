@@ -155,39 +155,31 @@
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
+			"setenv storage_suffix; " \
 			"if test $som_storage = EMMC; then " \
-				"if test ${use_m4} = yes; then " \
-					"if test -n $codec && test $codec = wm8731; then " \
-						"setenv fdt_file imx7d-var-som-emmc-m4-${codec}.dtb; " \
-					"else " \
-						"setenv fdt_file imx7d-var-som-emmc-m4.dtb; " \
-					"fi; " \
-				"else " \
-					"if test -n $codec && test $codec = wm8731; then " \
-						"setenv fdt_file imx7d-var-som-emmc-${codec}.dtb; " \
-					"else " \
-						"setenv fdt_file imx7d-var-som-emmc.dtb; " \
-					"fi; " \
-				"fi; " \
+				"setenv storage_suffix -emmc; " \
+			"elif test $som_storage = NAND; then " \
+				"setenv storage_suffix -nand; " \
 			"fi; " \
-			"if test $som_storage = NAND; then " \
+			"if test x$storage_suffix != x; then " \
 				"if test ${use_m4} = yes; then " \
-					"if test -n $codec && test $codec = wm8731; then " \
-						"setenv fdt_file imx7d-var-som-nand-m4-${codec}.dtb; " \
-					"else " \
-						"setenv fdt_file imx7d-var-som-nand-m4.dtb; " \
-					"fi; " \
+					"setenv m4_suffix -m4; " \
 				"else " \
-					"if test -n $codec && test $codec = wm8731; then " \
-						"setenv fdt_file imx7d-var-som-nand-${codec}.dtb; " \
-					"else " \
-						"setenv fdt_file imx7d-var-som-nand.dtb; " \
-					"fi; " \
+					"setenv m4_suffix; " \
 				"fi; " \
+				"if test -n $codec && test $codec = wm8731; then " \
+					"setenv codec_suffix -${codec}; " \
+				"else " \
+					"setenv codec_suffix; " \
+				"fi; " \
+				"setenv fdt_file imx7d-var-som${storage_suffix}${m4_suffix}${codec_suffix}.dtb; " \
 			"fi; " \
 			"if test $fdt_file = undefined; then " \
 				"echo WARNING: Could not determine dtb to use; " \
 			"fi; " \
+			"setenv codec_suffix; " \
+			"setenv m4_suffix; " \
+			"setenv storage_suffix; " \
 		"fi;\0"
 
 /* Physical Memory Map */
