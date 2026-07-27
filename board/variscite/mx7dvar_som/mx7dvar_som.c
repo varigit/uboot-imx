@@ -118,6 +118,16 @@ static void board_codec_detect(void)
 
 	printf("Codec: %s\n", env_get("codec"));
 }
+
+static void board_ver_detect(void)
+{
+	struct mx7d_var_eeprom *e = VAR_EEPROM_DATA;
+
+	if (mx7d_var_eeprom_is_v2(e))
+		env_set("som_ver", "2");
+	else
+		env_set("som_ver", "1");
+}
 #endif
 
 static int mx7d_var_eeprom_get_ram_size(void)
@@ -491,6 +501,8 @@ int board_late_init(void)
 	set_wdog_reset(wdog);
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	board_ver_detect();
+
 	board_codec_detect();
 #endif
 
