@@ -161,7 +161,13 @@
 			"elif test $som_storage = NAND; then " \
 				"setenv storage_suffix -nand; " \
 			"fi; " \
-			"if test x$storage_suffix != x; then " \
+			"setenv ver_suffix invalid; " \
+			"if test $som_ver = 1; then " \
+				"setenv ver_suffix; " \
+			"elif test $som_ver = 2; then " \
+				"setenv ver_suffix -v2; " \
+			"fi; " \
+			"if test x$storage_suffix != x && test x$ver_suffix != xinvalid; then " \
 				"if test ${use_m4} = yes; then " \
 					"setenv m4_suffix -m4; " \
 				"else " \
@@ -172,7 +178,7 @@
 				"else " \
 					"setenv codec_suffix; " \
 				"fi; " \
-				"setenv fdt_file imx7d-var-som${storage_suffix}${m4_suffix}${codec_suffix}.dtb; " \
+				"setenv fdt_file imx7d-var-som${ver_suffix}${storage_suffix}${m4_suffix}${codec_suffix}.dtb; " \
 			"fi; " \
 			"if test $fdt_file = undefined; then " \
 				"echo WARNING: Could not determine dtb to use; " \
