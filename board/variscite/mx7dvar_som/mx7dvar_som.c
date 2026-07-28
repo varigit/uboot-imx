@@ -292,9 +292,9 @@ static void check_emmc(void)
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (err)
-		env_set("som_rev", "NAND");
+		env_set("som_storage", "NAND");
 	else
-		env_set("som_rev", "EMMC");
+		env_set("som_storage", "EMMC");
 #endif
 
 	if (err) {

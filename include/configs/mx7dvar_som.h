@@ -155,7 +155,7 @@
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
-			"if test $som_rev = EMMC; then " \
+			"if test $som_storage = EMMC; then " \
 				"if test ${use_m4} = yes; then " \
 					"if test -n $codec && test $codec = wm8731; then " \
 						"setenv fdt_file imx7d-var-som-emmc-m4-${codec}.dtb; " \
@@ -170,7 +170,7 @@
 					"fi; " \
 				"fi; " \
 			"fi; " \
-			"if test $som_rev = NAND; then " \
+			"if test $som_storage = NAND; then " \
 				"if test ${use_m4} = yes; then " \
 					"if test -n $codec && test $codec = wm8731; then " \
 						"setenv fdt_file imx7d-var-som-nand-m4-${codec}.dtb; " \
