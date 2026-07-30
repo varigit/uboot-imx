@@ -490,7 +490,9 @@ int board_late_init(void)
 
 	set_wdog_reset(wdog);
 
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	board_codec_detect();
+#endif
 
 	return 0;
 }
