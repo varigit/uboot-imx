@@ -567,8 +567,10 @@ static int eth_post_probe(struct udevice *dev)
 			int ret;
 
 			ret = eth_get_ops(dev)->read_rom_hwaddr(dev);
-			if (!ret)
+			if (!ret) {
 				source = "ROM";
+				printf("%s MAC address in ROM is %pM\n", dev->name, pdata->enetaddr);
+			}
 		}
 	}
 
@@ -578,8 +580,9 @@ static int eth_post_probe(struct udevice *dev)
 		    memcmp(pdata->enetaddr, env_enetaddr, ARP_HLEN)) {
 			printf("\nWarning: %s MAC addresses don't match:\n",
 			       dev->name);
-			printf("Address in %s is\t\t%pM\n",
-			       source, pdata->enetaddr);
+			if (strcmp(source, "ROM"))
+				printf("Address in %s is\t\t%pM\n",
+				       source, pdata->enetaddr);
 			printf("Address in environment is\t%pM\n",
 			       env_enetaddr);
 		}
