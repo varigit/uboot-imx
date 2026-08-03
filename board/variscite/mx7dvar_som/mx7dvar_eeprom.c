@@ -51,7 +51,9 @@ static void print_production_info_common(const struct var_eeprom_print_info *inf
 	memcpy(day_buf, info->date_day, info->day_len);
 	day_buf[info->day_len] = '\0';
 
-	printf("Part number: VSM-MX7-%s, Assembly: AS%s, Date of production: %s %s %s\n",
+	printf("Part number: VSM-MX7-%s\n"
+	       "Assembly: AS%s\n"
+	       "Date of production: %s %s %s\n",
 	       part_buf, assy_buf, day_buf, month_buf, year_buf);
 }
 
