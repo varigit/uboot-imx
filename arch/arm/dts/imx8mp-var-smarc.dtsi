@@ -112,12 +112,18 @@
 			line-name = "sec_rstn";
 		};
 
-		/* Assert GRST line on TUSB8041 HUB */
-		usb_hub_grst {
+		hub_1v1_hog {
 			gpio-hog;
-			gpios = <11 GPIO_ACTIVE_LOW>;
+			gpios = <10 GPIO_ACTIVE_HIGH>;
 			output-high;
-			line-name = "usb_hub_grst";
+			line-name = "hub_1v1";
+		};
+
+		hub_grst_hog {
+			gpio-hog;
+			gpios = <11 GPIO_ACTIVE_HIGH>;
+			output-high;
+			line-name = "hub_grst";
 		};
 	};
 
