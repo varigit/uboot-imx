@@ -511,7 +511,12 @@ int board_late_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Variscite VAR-SOM-MX7\n");
+	struct mx7d_var_eeprom *e = VAR_EEPROM_DATA;
+
+	if (mx7d_var_eeprom_is_v2(e))
+		puts("Board: Variscite VAR-SOM-MX7_V2\n");
+	else
+		puts("Board: Variscite VAR-SOM-MX7\n");
 
 	return 0;
 }
