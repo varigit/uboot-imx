@@ -53,7 +53,6 @@
 			reg = <5>;
 			at803x,eee-disabled;
 			at803x,vddio-1p8v;
-			adi,phy-mode-override = "rgmii";
 			reset-gpios = <&pca9534 5 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <100000>;
