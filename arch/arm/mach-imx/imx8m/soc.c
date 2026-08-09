@@ -1570,7 +1570,6 @@ static int cleanup_nodes_for_efi(void *blob)
 	static const char * const path[][2] = {
 		{ "/soc@0/bus@32c00000/usb@32e40000", "extcon" },
 		{ "/soc@0/bus@32c00000/usb@32e50000", "extcon" },
-		{ "/soc@0/bus@30800000/ethernet@30be0000", "phy-reset-gpios" },
 		{ "/soc@0/bus@30800000/ethernet@30bf0000", "phy-reset-gpios" }
 	};
 	int nodeoff, i, rc;
