@@ -313,7 +313,10 @@ int board_late_init(void)
 	/* SoM Rev and Board name ENV */
 	snprintf(som_rev, CARRIER_REV_LEN, "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	env_set("som_rev", som_rev);
-	env_set("board_name", "DART-MX95");
+	if (SOMREV_MAJOR(ep->somrev) == 2)
+		env_set("board_name", "DART-MX95_V2");
+	else
+		env_set("board_name", "DART-MX95");
 
 	/* Carrier Rev ENV */
 	var_carrier_eeprom_read(CARRIER_EEPROM_I2C_NAME, CARRIER_EEPROM_ADDR, &carrier_eeprom);
