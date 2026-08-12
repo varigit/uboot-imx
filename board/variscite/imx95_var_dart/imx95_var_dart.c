@@ -22,6 +22,7 @@
 #include <i2c.h>
 #include <dm/uclass.h>
 #include <dm/uclass-internal.h>
+#include <dt-bindings/gpio/gpio.h>
 
 #include "../common/imx9_eeprom.h"
 #include "../common/extcon-ptn5150.h"
@@ -381,9 +382,163 @@ static void board_sm_cfg_info(void)
 	printf("SM: cfg: %s, msel: %u\n", cfgname, msel);
 }
 
-#if IS_ENABLED(CONFIG_OF_BOARD_FIXUP)
+#if !defined(CONFIG_SPL_BUILD) && IS_ENABLED(CONFIG_OF_BOARD_FIXUP)
+static void board_v2_fdt_fixup(void *fdt_blob)
+{
+	const char *node_path;
+	int node_offset, ret;
+	u32 phandle, phandle_with_args[3], fsl_pins[6];
+
+	/* Find the existing ethernet-phy@0 node via its path */
+	node_path = "/soc/netc-blk-ctrl@4cde0000/pcie@4cb00000/mdio@0,0/ethernet-phy@0";
+	node_offset = fdt_path_offset(fdt_blob, node_path);
+	if (node_offset < 0) {
+		printf("%s: Couldn't find %s: %s\n", __func__, node_path,
+			   fdt_strerror(node_offset));
+		return;
+	}
+
+	/* Delete the existing ethernet-phy@0 node */
+	ret = fdt_del_node(fdt_blob, node_offset);
+	if (ret < 0) {
+		printf("%s: Couldn't delete node %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+
+	/* Increase the size of the device tree to accommodate new node and properties */
+	ret = fdt_increase_size(fdt_blob, 16);
+	if (ret < 0) {
+		printf("%s: Couldn't increase size of device tree: %s\n", __func__,
+			   fdt_strerror(ret));
+		return;
+	}
+
+	/* Prepare <gpio2 18 GPIO_ACTIVE_LOW> for the PHY reset GPIO */
+	node_path = "/soc/gpio@43810000";
+	node_offset = fdt_path_offset(fdt_blob, node_path);
+	if (node_offset < 0) {
+		printf("%s: Couldn't find %s: %s\n", __func__, node_path,
+			   fdt_strerror(node_offset));
+		return;
+	}
+
+	phandle = fdt_get_phandle(fdt_blob, node_offset);
+	phandle_with_args[0] = cpu_to_fdt32(phandle);
+	phandle_with_args[1] = cpu_to_fdt32(18);
+	phandle_with_args[2] = cpu_to_fdt32(GPIO_ACTIVE_LOW);
+
+	/* Find the mdio@0,0 node where the new PHY node will be created */
+	node_path = "/soc/netc-blk-ctrl@4cde0000/pcie@4cb00000/mdio@0,0";
+	node_offset = fdt_path_offset(fdt_blob, node_path);
+	if (node_offset < 0) {
+		printf("%s: Couldn't find %s: %s\n", __func__, node_path,
+			   fdt_strerror(node_offset));
+		return;
+	}
+
+	/* Add the DART-MX95_V2-specific ethernet-phy@4 node under mdio@0,0 */
+	node_path = "ethernet-phy@4";
+	node_offset = fdt_add_subnode(fdt_blob, node_offset, node_path);
+	if (node_offset < 0) {
+		printf("%s: Couldn't create node %s: %s\n", __func__, node_path,
+			   fdt_strerror(node_offset));
+		return;
+	}
+
+	/* Set the required properties for the new ethernet-phy@4 node */
+	ret = fdt_setprop_u32(fdt_blob, node_offset, "reg", 4);
+	if (ret < 0) {
+		printf("%s: Couldn't set reg for %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+	ret = fdt_setprop_u32(fdt_blob, node_offset, "reset-assert-us", 10000);
+	if (ret < 0) {
+		printf("%s: Couldn't set reset-assert-us for %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+	ret = fdt_setprop_u32(fdt_blob, node_offset, "reset-deassert-us", 100000);
+	if (ret < 0) {
+		printf("%s: Couldn't set reset-deassert-us for %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+	ret = fdt_setprop(fdt_blob, node_offset, "reset-gpios",
+		phandle_with_args, sizeof(phandle_with_args));
+	if (ret < 0) {
+		printf("%s: Couldn't set reset-gpios for %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+
+	ret = fdt_setprop_empty(fdt_blob, node_offset, "ti,min-output-impedance");
+	if (ret < 0) {
+		printf("%s: Couldn't set ti,min-output-impedance for %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+
+	/* Create a phandle for ethernet-phy@4 to be referenced by ethernet@0,0 */
+	phandle = fdt_create_phandle(fdt_blob, node_offset);
+	if (!phandle) {
+		printf("%s: Couldn't create phandle for %s\n", __func__, node_path);
+		return;
+	}
+
+	/* Find the ethernet@0,0 node that will reference the new PHY */
+	node_path = "/soc/netc-blk-ctrl@4cde0000/pcie@4ca00000/ethernet@0,0";
+	node_offset = fdt_path_offset(fdt_blob, node_path);
+	if (node_offset < 0) {
+		printf("%s: Couldn't find %s: %s\n", __func__, node_path,
+			   fdt_strerror(node_offset));
+		return;
+	}
+
+	/* Update phy-handle to reference the newly created ethernet-phy@4 node */
+	ret = fdt_setprop_u32(fdt_blob, node_offset, "phy-handle", phandle);
+	if (ret < 0) {
+		printf("%s: Couldn't set phy-handle for %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+
+	/* Find the phy0resgrp node used for the PHY reset GPIO configuration */
+	node_path = "/firmware/scmi/protocol@19/phy0resgrp";
+	node_offset = fdt_path_offset(fdt_blob, node_path);
+	if (node_offset < 0) {
+		printf("%s: Couldn't find %s: %s\n", __func__, node_path,
+			   fdt_strerror(node_offset));
+		return;
+	}
+
+	/* Configure GPIO2_IO18 as the PHY reset GPIO */
+	/* IMX95_PAD_GPIO_IO18__GPIO2_IO_BIT18    0x0058 0x025C 0x0000 0x00 0x00 0x31e*/
+	fsl_pins[0] = cpu_to_fdt32(0x0058);
+	fsl_pins[1] = cpu_to_fdt32(0x025C);
+	fsl_pins[2] = cpu_to_fdt32(0x0000);
+	fsl_pins[3] = cpu_to_fdt32(0x00);
+	fsl_pins[4] = cpu_to_fdt32(0x00);
+	fsl_pins[5] = cpu_to_fdt32(0x31e);
+	ret = fdt_setprop(fdt_blob, node_offset, "fsl,pins", fsl_pins, sizeof(fsl_pins));
+	if (ret < 0) {
+		printf("%s: Couldn't set fsl,pins for %s: %s\n", __func__, node_path,
+			   fdt_strerror(ret));
+		return;
+	}
+}
+
 int board_fix_fdt(void *fdt)
 {
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	if (htons(ep->magic) == VAR_DART_EEPROM_MAGIC) {
+		if (SOMREV_MAJOR(ep->somrev) == 2)
+			board_v2_fdt_fixup(fdt);
+	} else {
+		printf("%s: Invalid EEPROM magic 0x%hx, expected 0x%hx\n", __func__,
+			   htons(ep->magic), VAR_DART_EEPROM_MAGIC);
+	}
 	/* Remove nodes based on fuses. */
 	return board_fix_fdt_fuse(fdt);
 }

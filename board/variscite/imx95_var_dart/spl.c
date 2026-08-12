@@ -16,6 +16,8 @@
 #include <asm/gpio.h>
 #include <linux/delay.h>
 
+#include "../common/imx9_eeprom.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 int spl_board_boot_device(enum boot_device boot_dev_spl)
@@ -39,6 +41,7 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 
 void spl_board_init(void)
 {
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
 	int ret;
 
 	puts("Normal Boot\n");
@@ -46,6 +49,11 @@ void spl_board_init(void)
 	ret = ele_start_rng();
 	if (ret)
 		printf("Fail to start RNG: %d\n", ret);
+
+	memset(ep, 0, sizeof(*ep));
+	ret = var_eeprom_read_header(ep);
+	if (ret)
+		printf("Failed to read EEPROM header: %d\n", ret);
 }
 
 void board_init_f(ulong dummy)
