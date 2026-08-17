@@ -152,6 +152,7 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			adi,phy-mode-override = "rgmii-rxid";
 			adi,rx-internal-delay-ps = <2000>;
+			ti,min-output-impedance;
 			reg = <0>;
 			vddio-supply = <&vddio0>;
 			reset-gpios = <&gpio5 11 GPIO_ACTIVE_LOW>;
@@ -168,6 +169,7 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			adi,phy-mode-override = "rgmii-rxid";
 			adi,rx-internal-delay-ps = <2000>;
+			ti,min-output-impedance;
 			reg = <1>;
 			vddio-supply = <&vddio1>;
 			reset-gpios = <&gpio4 3 GPIO_ACTIVE_LOW>;
