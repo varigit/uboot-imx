@@ -11,6 +11,8 @@
 };
 
 &usbotg1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <>;
 	dr_mode = "otg";
 	srp-disable;
 	hnp-disable;
