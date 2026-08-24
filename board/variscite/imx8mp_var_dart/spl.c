@@ -234,7 +234,7 @@ int board_fit_config_name_match(const char *name)
 {
 	int board_id = var_detect_board_id();
 
-	if ((board_id == BOARD_ID_DART) && !strcmp(name, "imx8mp-var-dart-dt8mcustomboard")) {
+	if ((board_id == BOARD_ID_DART) && !strcmp(name, "imx8mp-var-dart-sonataboard")) {
 		return 0;
 	} else if ((board_id == BOARD_ID_SOM) && !strcmp(name, "imx8mp-var-som-symphony")) {
 		return 0;
