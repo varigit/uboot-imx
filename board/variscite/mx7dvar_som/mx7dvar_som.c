@@ -396,7 +396,7 @@ int board_fix_fdt(void *fdt_blob)
 
 	/*
 	 * The common U-Boot device tree configures the PHY interface as
-	 * `rgmii-id`. On VAR-SOM-MX7_V2, the required clock delays are
+	 * `rgmii-id`. On VAR-SOM-MX7-5G_V2, the required clock delays are
 	 * provided by the hardware design, so the PHY's internal RX and TX
 	 * delays must be disabled by switching to plain `rgmii` mode.
 	 */
@@ -514,7 +514,7 @@ int checkboard(void)
 	struct mx7d_var_eeprom *e = VAR_EEPROM_DATA;
 
 	if (mx7d_var_eeprom_is_v2(e))
-		puts("Board: Variscite VAR-SOM-MX7_V2\n");
+		puts("Board: Variscite VAR-SOM-MX7-5G_V2\n");
 	else
 		puts("Board: Variscite VAR-SOM-MX7\n");
 
