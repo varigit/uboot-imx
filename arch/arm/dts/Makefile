@@ -944,6 +944,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-frdm.dtb \
 	imx8mp-icore-mx8mp-edimm2.2.dtb \
 	imx8mp-msc-sm2s.dtb \
+	imx8mp-var-dart-sonataboard.dtb \
+	imx8mp-var-som-symphony.dtb \
+	imx8mp-var-smarc-echo.dtb \
 	imx8mq-pico-pi.dtb \
 	imx8mq-kontron-pitx-imx8m.dtb \
 	imx8mq-librem5-r4.dtb

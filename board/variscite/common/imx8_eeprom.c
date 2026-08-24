@@ -8,6 +8,7 @@
 #include <i2c.h>
 #include <asm/io.h>
 #include <cpu_func.h>
+#include <linux/string.h>
 #include <u-boot/crc.h>
 
 #ifdef CONFIG_ARCH_IMX8M
@@ -207,8 +208,11 @@ void var_eeprom_print_prod_info(struct var_eeprom *ep)
 #elif CONFIG_TARGET_IMX8MP_VAR_DART
 	if (of_machine_is_compatible("variscite,imx8mp-var-dart"))
 		printf("\nPart number: VSM-DT8MP-%.*s\n", (int)sizeof(partnum), partnum);
-	else
+	else if (of_machine_is_compatible("variscite,imx8mp-var-som"))
 		printf("\nPart number: VSM-MX8MP-%.*s\n", (int)sizeof(partnum), partnum);
+	else
+		printf("\nPart number: VSMSMX8MP-%.*s\n", (int)sizeof(partnum), partnum);
+
 #elif CONFIG_TARGET_IMX8QXP_VAR_SOM
 	printf("\nPart number: VSM-MX8X-%.*s\n", (int)sizeof(partnum), partnum);
 #elif CONFIG_TARGET_IMX8QM_VAR_SOM
@@ -260,14 +264,22 @@ static void adjust_dram_table(u8 adj_table_offset, u8 adj_table_size,
 	int i, j = 0;
 	u8 off = adj_table_offset;
 	struct dram_cfg_param adj_table_row;
-#if CONFIG_IS_ENABLED(DM_I2C)
 	int ret;
+#if CONFIG_IS_ENABLED(DM_I2C)
 	struct udevice *dev;
 
 	/* Get EEPROM device */
 	ret = var_eeprom_get_dev(&dev);
 	if (ret) {
 		debug("%s: Failed to detect I2C EEPROM\n", __func__);
+		return;
+	}
+#else
+	/* Probe EEPROM */
+	i2c_set_bus_num(VAR_EEPROM_I2C_BUS);
+	ret = i2c_probe(VAR_EEPROM_I2C_ADDR);
+	if (ret) {
+		debug("%s: I2C EEPROM probe failed\n", __func__);
 		return;
 	}
 #endif
@@ -504,5 +516,30 @@ void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, s
 	if (var_carrier_eeprom_is_valid(ep))
 		strncpy(rev, (const char *)ep->carrier_rev, size);
 	else
-		strncpy(rev, "legacy", size);
+		strncpy(rev, "undefined", size);
+}
+
+int var_carrier_eeprom_get_name(struct var_carrier_eeprom *ep, char *name)
+{
+	char carrier_rev[CARRIER_REV_LEN] = {0};
+	const char *result = "undefined";
+
+	var_carrier_eeprom_get_revision(ep, carrier_rev, sizeof(carrier_rev));
+	if (!carrier_rev[0])
+		return -1;
+
+	if (strstr(carrier_rev, "sonata"))
+		result = "sonata";
+	else if (strstr(carrier_rev, "dt8m"))
+		result = "dt8mcustomboard";
+	else if (strstr(carrier_rev, "sym-2"))
+		result = "symphony";
+	else if (strstr(carrier_rev, "sym-1"))
+		result = "symphony-1.x";
+	else if (strstr(carrier_rev, "echo"))
+		result = "echo";
+
+	strcpy(name, result);
+
+	return strlen(result);
 }
