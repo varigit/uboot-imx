@@ -79,7 +79,6 @@
 
 &pinctrl_reg_usdhc2_vmmc {
 	bootph-pre-ram;
-	u-boot,off-on-delay-us = <20000>;
 };
 
 &pinctrl_usdhc2_gpio {
@@ -100,6 +99,7 @@
 
 &reg_usdhc2_vmmc {
 	bootph-pre-ram;
+	off-on-delay-us = <20000>;
 };
 
 &sec_jr0 {
