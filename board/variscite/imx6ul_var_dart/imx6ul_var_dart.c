@@ -17,6 +17,7 @@
 #include <asm/global_data.h>
 #include <asm/mach-imx/boot_mode.h>
 #include <asm/mach-imx/iomux-v3.h>
+#include <env.h>
 
 #include "imx6ul_var_dart-common.h"
 #include "mx6var_eeprom_v2.h"
