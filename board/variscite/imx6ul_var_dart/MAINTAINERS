@@ -1,8 +1,12 @@
 IMX6UL_VAR_DART BOARD
 M:	Marius Bagassien <marius.b@variscite.com>
+M:	Francesco Ferraro <francesco.f@variscite.com>
 S:	Maintained
 F:	board/variscite/imx6ul_var_dart/
-F:	configs/imx6ul_var_dart_defconfig
+F:	configs/imx6ul_var_dart_mmc_SECURE_BOOT_defconfig
+F:	configs/imx6ul_var_dart_nand_defconfig
+F:	configs/imx6ul_var_dart_nand_SECURE_BOOT_defconfig
+F:	configs/imx6ul_var_dart_mmc_defconfig
 F:	include/configs/imx6ul_var_dart.h
 F:	arch/arm/dts/imx6ul-imx6ull-var-common-u-boot.dtsi
 F:	arch/arm/dts/imx6ul-imx6ull-var-dart-6ulcustomboard-sd-card.dtsi
