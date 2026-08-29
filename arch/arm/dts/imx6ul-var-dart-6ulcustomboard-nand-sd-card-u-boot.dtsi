@@ -1,0 +1,14 @@
+/*
+ * Copyright (C) 2025 Variscite Ltd. - https://www.variscite.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+#include "imx6ul-imx6ull-var-common-u-boot.dtsi"
+
+/ {
+        model = "Variscite DART-6UL with i.MX6UL, NAND flash & SD card support on VAR-6ULCustomBoard";
+        compatible = "variscite,imx6ul-var-dart", "fsl,imx6ul";
+};

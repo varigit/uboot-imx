@@ -1,0 +1,12 @@
+/*
+ * Copyright (C) 2025 Variscite Ltd. - https://www.variscite.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+ / {
+        model = "Variscite DART-6UL with i.MX6ULZ, eMMC & SD card support on VAR-6ULCustomBoard";
+        compatible = "variscite,imx6ul-var-dart", "fsl,imx6ulz";
+};
