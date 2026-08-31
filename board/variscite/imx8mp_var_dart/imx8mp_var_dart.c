@@ -411,20 +411,7 @@ int vendor_board_fix_fdt(void *fdt_blob)
 		}
 
 		if (var_carrier_eeprom_get_name(carrier_ep, carrier_name) > 0) {
-			if (strstr(carrier_name, "dt8m") || strstr(carrier_name, "legacy")) {
-				/*
-				 * Remove GPIO Expander 3 device tree node for DT8MCustomBoard,
-				 * as it is present only on the Sonata carrier board.
-				 */
-				const char *gpio_exp_name = "gpio@22";
-				const char *gpio_exp_parent_node = "/soc@0/bus@30800000/i2c@30a30000";
-				ret = var_delete_dt_node(gpio_exp_name, gpio_exp_parent_node, fdt_blob);
-				if (ret < 0) {
-					printf("WARNING: Couldn't delete subnode %s: %s\n",
-					       gpio_exp_name, fdt_strerror(ret));
-					return ret;
-				}
-			} else if (strstr(carrier_name, "sonata")) {
+			if (strstr(carrier_name, "sonata")) {
 				/*
 				 * Append pinctrl for Sonata to enable internal
 				 * pull-up that sets the MDIO address.

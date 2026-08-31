@@ -325,7 +325,7 @@ void board_init_f(ulong dummy)
 #endif
 
 	if (board_id == BOARD_ID_DART)
-		/* I2C Bus 1 initialization - DT8MCB Carrier EEPROM reading */
+		/* I2C Bus 1 initialization - DART carrier EEPROM reading */
 		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c1_pads_dart);
 	else if (board_id == BOARD_ID_SOM)
 		/* I2C Bus 3 initialization - Symphony Carrier EEPROM reading */

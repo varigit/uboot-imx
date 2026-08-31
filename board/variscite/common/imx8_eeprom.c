@@ -508,8 +508,6 @@ int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
 /* Returns carrier board revision string via 'rev' argument.
  * For legacy carrier board revisions the "legacy" string is returned.
  * For new carrier board revisions the actual carrier revision is returned.
- * Symphony-Board 1.4 and below are legacy, 1.4a and above are new.
- * DT8MCustomBoard 1.4 and below are legacy, 2.0 and above are new.
  */
 void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size)
 {
@@ -530,12 +528,8 @@ int var_carrier_eeprom_get_name(struct var_carrier_eeprom *ep, char *name)
 
 	if (strstr(carrier_rev, "sonata"))
 		result = "sonata";
-	else if (strstr(carrier_rev, "dt8m"))
-		result = "dt8mcustomboard";
 	else if (strstr(carrier_rev, "sym-2"))
 		result = "symphony";
-	else if (strstr(carrier_rev, "sym-1"))
-		result = "symphony-1.x";
 	else if (strstr(carrier_rev, "echo"))
 		result = "echo";
 
