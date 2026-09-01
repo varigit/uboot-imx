@@ -1184,7 +1184,7 @@ static int delete_fdt_nodes(void *blob, const char *const nodes_path[], int size
 			printf("Unable to delete node %s, err=%s\n",
 			       nodes_path[i], fdt_strerror(rc));
 		} else {
-			printf("Delete node %s\n", nodes_path[i]);
+			debug("Delete node %s\n", nodes_path[i]);
 		}
 	}
 
