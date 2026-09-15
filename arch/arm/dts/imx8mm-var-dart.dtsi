@@ -122,6 +122,12 @@
 		>;
 	};
 
+	pinctrl_tpm_reset: tpm-resetgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_SAI3_TXFS_GPIO4_IO31		0x19
+		>;
+	};
+
 	pinctrl_i2c3: i2c3grp {
 		fsl,pins = <
 			MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
@@ -198,6 +204,19 @@
 	};
 };
 
+/* Release the active-low TPM reset line. */
+&gpio4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_tpm_reset>;
+
+	sec_rstn {
+		gpio-hog;
+		gpios = <31 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "sec_rstn";
+	};
+};
+
 &i2c1 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default", "gpio";
@@ -206,6 +225,11 @@
 	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
 	status = "okay";
+
+	tpm@2e {
+		compatible = "infineon,slb9673", "tcg,tpm-tis-i2c";
+		reg = <0x2e>;
+	};
 };
 
 &i2c3 {
