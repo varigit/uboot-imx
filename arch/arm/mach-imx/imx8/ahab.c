@@ -125,7 +125,7 @@ static inline bool check_in_dram(ulong addr)
 	return false;
 }
 
-static int authenticate_os_container(ulong addr)
+int authenticate_os_container(ulong addr)
 {
 	struct container_hdr *phdr;
 	int i, ret = 0;
