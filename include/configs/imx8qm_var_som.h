@@ -139,18 +139,14 @@
 	"loadhdprx=load mmc ${mmcdev}:${mmcpart} ${hdprx_addr} ${bootdir}/${hdprx_file}\0" \
 	"boot_os=booti ${loadaddr} - ${fdt_addr};\0" \
 	"loadcntr=load mmc ${mmcdev}:${mmcpart} ${cntr_addr} ${bootdir}/${cntr_file}\0" \
-	"auth_os=auth_cntr ${cntr_addr}\0" \
+	"auth_os=booti ${cntr_addr}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		HDP_LOAD_ENV \
 		HDPRX_LOAD_ENV \
 		"run mmcargs; " \
 		"run optargs; " \
 		"if test ${sec_boot} = yes; then " \
-			"if run auth_os; then " \
-				"run boot_os; " \
-			"else " \
-				"echo ERR: failed to authenticate; " \
-			"fi; " \
+			"run auth_os; " \
 		"else " \
 			"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 				"if run loadfdt; then " \
@@ -178,11 +174,7 @@
 			"${get_cmd} ${cntr_addr} ${cntr_file}; " \
 			"run netargs; " \
 			"run optargs; " \
-			"if run auth_os; then " \
-				"run boot_os; " \
-			"else " \
-				"echo ERR: failed to authenticate; " \
-			"fi; " \
+			"run auth_os; " \
 		"else " \
 			"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
 			"run netargs; " \
