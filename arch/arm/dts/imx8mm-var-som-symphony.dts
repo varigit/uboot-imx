@@ -26,7 +26,7 @@
 		gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		startup-delay-us = <100>;
-		u-boot,off-on-delay-us = <12000>;
+		off-on-delay-us = <12000>;
 	};
 
 	reg_usb_otg2_vbus: regulator-usb-otg2-vbus {
