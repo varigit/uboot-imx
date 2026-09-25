@@ -220,6 +220,8 @@ config TARGET_IMX8MM_VAR_DART
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 	select IMX_REDUCE_DMEM_PADDING
+	imply BOOTSTD_FULL
+	imply BOOTSTD_BOOTCOMMAND
 
 config TARGET_IMX8MM_VENICE
 	bool "Support Gateworks Venice iMX8M Mini module"
