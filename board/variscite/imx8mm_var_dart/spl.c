@@ -4,11 +4,12 @@
  * Copyright 2019-2026 Variscite Ltd.
  */
 
-#include <common.h>
+#include <command.h>
 #include <cpu_func.h>
 #include <hang.h>
 #include <image.h>
 #include <init.h>
+#include <log.h>
 #include <spl.h>
 #include <asm/global_data.h>
 #include <errno.h>

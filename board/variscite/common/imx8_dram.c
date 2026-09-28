@@ -32,6 +32,11 @@ static int get_dram_size(phys_size_t *size)
 #define PHYS_SDRAM_LOW_MAX_ADDR		0x100000000ULL
 #define PHYS_SDRAM_LOW_MAX_SIZE		(PHYS_SDRAM_LOW_MAX_ADDR - CFG_SYS_SDRAM_BASE)
 
+int board_phys_sdram_size(phys_size_t *size)
+{
+	return get_dram_size(size);
+}
+
 int dram_init_banksize(void)
 {
 	int bank = 0;

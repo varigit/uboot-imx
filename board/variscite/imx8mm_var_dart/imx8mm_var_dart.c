@@ -4,7 +4,7 @@
  * Copyright 2018-2026 Variscite Ltd.
  */
 
-#include <common.h>
+#include <config.h>
 #include <efi_loader.h>
 #include <env.h>
 #include <init.h>
