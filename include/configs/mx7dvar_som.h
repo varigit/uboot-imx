@@ -33,6 +33,7 @@
 #define CONFIG_FEC_ENET_DEV		0
 
 #define CONFIG_PHYLIB
+#define CONFIG_PHY_GIGE
 #define CONFIG_PHY_ATHEROS
 
 #if (CONFIG_FEC_ENET_DEV == 0)
