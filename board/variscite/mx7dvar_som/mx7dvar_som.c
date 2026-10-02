@@ -132,7 +132,6 @@ struct i2c_pads_info i2c_pad_info2 = {
 #endif
 
 #ifdef CONFIG_SYS_I2C
-#if !defined(CONFIG_SPL_BUILD)
 #define CODEC_I2C_BUS	1
 #define CODEC_I2C_ADDR	0x1a
 #define CODEC_CHIP_ID	0
@@ -172,7 +171,6 @@ static void board_codec_detect(void)
 
 	printf("Codec: %s\n", env_get("codec"));
 }
-#endif
 
 static int var_eeprom_get_ram_size(void)
 {
@@ -862,7 +860,9 @@ int board_late_init(void)
 
 	set_wdog_reset(wdog);
 
+#ifdef CONFIG_SYS_I2C
 	board_codec_detect();
+#endif
 
 	return 0;
 }
