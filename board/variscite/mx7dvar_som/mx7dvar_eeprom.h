@@ -20,13 +20,13 @@
 
 struct __attribute__((packed)) var_eeprom_cfg
 {
-	u16 eeprom_magic; /* == EEPROM_MAGIC ? */
-	u8 part_number[8];
-	u8 assembly[11];
-	u8 date[9];
-	u8 reserved;
-	u8 dram_size; /* in 128MB units */
-	u32 dcd_table[120];
+	u16 eeprom_magic;	/* 00 - 0x00 - magic ID, must be EEPROM_MAGIC */
+	u8 part_number[8];	/* 02 - 0x02 - part number suffix */
+	u8 assembly[11];	/* 10 - 0x0a - assembly number suffix */
+	u8 date[9];		/* 21 - 0x15 - production date (YYYYMMMDD) */
+	u8 reserved;		/* 30 - 0x1e - reserved */
+	u8 dram_size;		/* 31 - 0x1f - DRAM size in 128MB units */
+	u32 dcd_table[120];	/* 32 - 0x20 - DRAM DCD register table */
 };
 
 #endif /* _MX7DVAR_EEPROM_H_ */
