@@ -701,9 +701,12 @@ static int setup_fec(int fec_id)
 
 #define AR8033_PHY_ID 	0x004dd074
 #define ADIN1300_PHY_ID	0x0283bc30
+#define DP83867_PHY_ID	0x2000a231
 
 int board_phy_config(struct phy_device *phydev)
 {
+	int val;
+
 	switch (phydev->phy_id) {
 	case AR8033_PHY_ID:
 		printf("AR8033 PHY detected at addr %d\n", phydev->addr);
@@ -715,6 +718,28 @@ int board_phy_config(struct phy_device *phydev)
 		break;
 	case ADIN1300_PHY_ID:
 		printf("ADIN1300 PHY detected at addr %d\n", phydev->addr);
+		break;
+	case DP83867_PHY_ID:
+		printf("DP83867 PHY detected at addr %d\n", phydev->addr);
+#ifndef CONFIG_DM_ETH
+		/*
+		 * Access DP83867 MMD devad 0x1f/reg 0x170 through 0xd/0xe,
+		 * then update only IO_MUX_CFG[4:0] to set minimum output impedance.
+		 */
+		phy_write(phydev, phydev->addr, 0xd, 0x1f);
+		phy_write(phydev, phydev->addr, 0xe, 0x170);
+		phy_write(phydev, phydev->addr, 0xd, 0x401f);
+		val = phy_read(phydev, phydev->addr, 0xe);
+		if (val < 0) {
+			printf("%s: failed reading DP83867 IO_MUX_CFG\n", __func__);
+			break;
+		}
+		val |= 0x1f;
+		phy_write(phydev, phydev->addr, 0xd, 0x1f);
+		phy_write(phydev, phydev->addr, 0xe, 0x170);
+		phy_write(phydev, phydev->addr, 0xd, 0x401f);
+		phy_write(phydev, phydev->addr, 0xe, val);
+#endif
 		break;
 	default:
 		printf("%s: unknown phy_id 0x%x at addr %d\n", __func__, phydev->phy_id, phydev->addr);
