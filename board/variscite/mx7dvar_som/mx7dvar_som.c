@@ -198,7 +198,7 @@ static int var_eeprom_get_ram_size(void)
 		return -1;
 	}
 
-	if (EEPROM_MAGIC != read_eeprom_magic) {
+	if (!var_eeprom_is_valid(read_eeprom_magic)) {
 		eeprom_debug("\nError: Data on EEPROM is invalid\n");
 		return -1;
 	}
@@ -1051,11 +1051,6 @@ static inline void check_bits_set(u32 reg, u32 mask)
 	while ((readl(reg) & mask) != mask);
 }
 
-static inline bool var_eeprom_is_valid(const struct var_eeprom_cfg *p_var_eeprom_cfg)
-{
-	return (EEPROM_MAGIC == p_var_eeprom_cfg->eeprom_magic);
-}
-
 static int var_eeprom_read_struct(struct var_eeprom_cfg *p_var_eeprom_cfg)
 {
 	i2c_set_bus_num(EEPROM_I2C_BUS);
@@ -1071,7 +1066,7 @@ static int var_eeprom_read_struct(struct var_eeprom_cfg *p_var_eeprom_cfg)
 		return -1;
 	}
 
-	if (!var_eeprom_is_valid(p_var_eeprom_cfg)) {
+	if (!var_eeprom_is_valid(p_var_eeprom_cfg->eeprom_magic)) {
 		eeprom_debug("\nError: Data on EEPROM is invalid\n");
 		return -1;
 	}
