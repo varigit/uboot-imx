@@ -172,6 +172,22 @@ static void board_codec_detect(void)
 	printf("Codec: %s\n", env_get("codec"));
 }
 
+static void board_ver_detect(void)
+{
+	u16 eeprom_magic = 0;
+
+	i2c_set_bus_num(EEPROM_I2C_BUS);
+	if (!i2c_probe(EEPROM_I2C_ADDR))
+		i2c_read(EEPROM_I2C_ADDR,
+			 offsetof(struct var_eeprom_cfg, eeprom_magic),
+			 1, (u8 *)&eeprom_magic, sizeof(eeprom_magic));
+
+	if (var_eeprom_is_valid_v2(eeprom_magic))
+		env_set("som_ver", "2");
+	else
+		env_set("som_ver", "1");
+}
+
 static int var_eeprom_get_ram_size(void)
 {
 	u16 read_eeprom_magic;
@@ -886,6 +902,8 @@ int board_late_init(void)
 	set_wdog_reset(wdog);
 
 #ifdef CONFIG_SYS_I2C
+	board_ver_detect();
+
 	board_codec_detect();
 #endif
 
