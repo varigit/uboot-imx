@@ -453,14 +453,6 @@ int board_init(void)
 
 #define SDRAM_SIZE_STR_LEN 5
 
-int board_phys_sdram_size(phys_size_t *size)
-{
-	if (!size)
-		return -EINVAL;
-
-	return var_eeprom_get_dram_size(VAR_EEPROM_DATA, size);
-}
-
 int board_late_init(void)
 {
 	int board_id;
