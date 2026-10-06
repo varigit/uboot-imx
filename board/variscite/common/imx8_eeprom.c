@@ -517,6 +517,8 @@ int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
 /* Returns carrier board revision string via 'rev' argument.
  * For legacy carrier board revisions the "legacy" string is returned.
  * For new carrier board revisions the actual carrier revision is returned.
+ * Symphony-Board 1.4 and below are legacy, 2.0 and above are new.
+ * DT8MCustomBoard is legacy; Sonata is the new carrier.
  */
 void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size)
 {
@@ -526,6 +528,16 @@ void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, s
 		strncpy(rev, "undefined", size);
 }
 
+/*
+ * var_carrier_eeprom_get_name - get carrier board name for device tree
+ * @ep: pointer to carrier EEPROM data structure
+ * @name: buffer to store the carrier name (output)
+ *
+ * Reads the carrier revision from EEPROM and maps it to the corresponding
+ * carrier name used as suffix in device tree filenames.
+ *
+ * Return: Length of the carrier name string on success, -1 on failure
+ */
 int var_carrier_eeprom_get_name(struct var_carrier_eeprom *ep, char *name)
 {
 	char carrier_rev[CARRIER_REV_LEN] = {0};
