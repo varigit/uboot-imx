@@ -7,6 +7,13 @@
 
 #include "imx8mp-u-boot.dtsi"
 
+/*
+ * CM7 DDR carveout: [0x7b000000, 0x7c000000).
+ * RDC DDR encoding: (physical address - DDR base) >> 1.
+ */
+#define VAR_M7_DDR_START ((0x7b000000 - 0x40000000) >> 1)
+#define VAR_M7_DDR_END   ((0x7c000000 - 0x40000000) >> 1)
+
 / {
 	wdt-reboot {
 		compatible = "wdt-reboot";
@@ -24,7 +31,7 @@
 			     */
 		start-config = <
 			    RDC_MEM_REGION 22 TCM_START TCM_END MEM_D1_ACCESS
-			    RDC_MEM_REGION 39 M4_DDR_START M4_DDR_END MEM_D1_ACCESS
+			    RDC_MEM_REGION 39 VAR_M7_DDR_START VAR_M7_DDR_END MEM_D1_ACCESS
 			    0x0      0x0            0x0  0x0 0x0
 			  >;
 			    /* rdc config when MCU stops
@@ -35,7 +42,7 @@
 			     */
 		stop-config = <
 			    RDC_MEM_REGION 22 TCM_START TCM_END MEM_D0D1_ACCESS
-			    RDC_MEM_REGION 39 M4_DDR_START M4_DDR_END MEM_D0D1_ACCESS
+			    RDC_MEM_REGION 39 VAR_M7_DDR_START VAR_M7_DDR_END MEM_D0D1_ACCESS
 			    0x0      0x0            0x0  0x0 0x0
 			  >;
 	};
