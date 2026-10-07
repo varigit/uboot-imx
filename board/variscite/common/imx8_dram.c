@@ -116,6 +116,20 @@ int dram_init(void)
 	return 0;
 }
 
+phys_size_t get_effective_memsize(void)
+{
+	/* return the first bank as effective memory */
+	if (rom_pointer[1])
+		return ((phys_addr_t)rom_pointer[0] - PHYS_SDRAM);
+
+	if (gd->ram_size > PHYS_SDRAM_LOW_MAX_SIZE) {
+		debug("%s: size=0x%llx\n", __func__, PHYS_SDRAM_LOW_MAX_SIZE);
+		return PHYS_SDRAM_LOW_MAX_SIZE;
+	}
+
+	debug("%s: size=0x%llx\n", __func__, gd->ram_size);
+	return gd->ram_size;
+}
 #endif
 
 #ifdef CONFIG_IMX8_BOARD_INIT_DRAM
