@@ -80,6 +80,11 @@ int var_eeprom_read_header(struct var_eeprom *e)
 		return ret;
 	}
 
+	if (!var_eeprom_is_valid(e)) {
+		printf("%s: EEPROM data is invalid\n", __func__);
+		return -1;
+	}
+
 	return 0;
 }
 
