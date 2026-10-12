@@ -7,6 +7,7 @@
 #include <config.h>
 #include <efi_loader.h>
 #include <env.h>
+#include <fdt_support.h>
 #include <init.h>
 #include <asm/io.h>
 #include <asm/global_data.h>
@@ -33,6 +34,35 @@ DECLARE_GLOBAL_DATA_PTR;
 extern int var_setup_mac(struct var_eeprom *eeprom);
 
 #define GPIO_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1 | PAD_CTL_PUE | PAD_CTL_PE)
+
+#if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_OF_BOARD_FIXUP)
+/* Enable the TPM and release reset in U-Boot's control DT on DART 3.x. */
+int vendor_board_fix_fdt(void *fdt)
+{
+	struct var_eeprom *ep = VAR_EEPROM_DATA;
+	int node, ret;
+
+	if (get_board_id() != DART_MX8M_MINI ||
+	    !var_eeprom_is_valid(ep) || SOMREV_MAJOR(ep->somrev) != 3)
+		return 0;
+
+	node = fdt_path_offset(fdt, "/soc@0/bus@30800000/i2c@30a20000/tpm@2e");
+	if (node < 0)
+		return node;
+	ret = fdt_setprop_string(fdt, node, "status", "okay");
+	if (ret)
+		return ret;
+
+	node = fdt_path_offset(fdt, "/soc@0/bus@30000000/gpio@30230000/sec_rstn");
+	if (node < 0)
+		return node;
+	ret = fdt_delprop(fdt, node, "input");
+	if (ret && ret != -FDT_ERR_NOTFOUND)
+		return ret;
+
+	return fdt_setprop(fdt, node, "output-high", NULL, 0);
+}
+#endif
 
 #ifdef CONFIG_SPL_BUILD
 #define ID_GPIO		IMX_GPIO_NR(2, 11)

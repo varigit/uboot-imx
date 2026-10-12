@@ -204,7 +204,7 @@
 	};
 };
 
-/* Release the active-low TPM reset line. */
+/* Leave TXFS undriven; the board fixup releases TPM reset on DART 3.x. */
 &gpio4 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_tpm_reset>;
@@ -212,7 +212,7 @@
 	sec_rstn {
 		gpio-hog;
 		gpios = <31 GPIO_ACTIVE_HIGH>;
-		output-high;
+		input;
 		line-name = "sec_rstn";
 	};
 };
@@ -229,6 +229,7 @@
 	tpm@2e {
 		compatible = "infineon,slb9673", "tcg,tpm-tis-i2c";
 		reg = <0x2e>;
+		status = "disabled";
 	};
 };
 
