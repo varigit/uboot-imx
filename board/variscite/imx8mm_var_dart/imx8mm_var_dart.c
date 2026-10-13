@@ -230,6 +230,8 @@ int board_late_init(void)
 	/* SoM Rev ENV*/
 	snprintf(som_rev, sizeof(som_rev), "%ld.%ld", SOMREV_MAJOR(ep->somrev), SOMREV_MINOR(ep->somrev));
 	env_set("som_rev", som_rev);
+	if (!var_eeprom_is_valid(ep))
+		env_set("som_rev", "undefined");
 
 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d", (int)(gd->ram_size / 1024 / 1024));
 	env_set("sdram_size", sdram_size_str);
