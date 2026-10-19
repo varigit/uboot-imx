@@ -685,12 +685,9 @@ int tpm2_get_pcr_info(struct udevice *dev, struct tpml_pcr_selection *pcrs)
 		return ret;
 
 	pcrs->count = get_unaligned_be32(response);
-	/*
-	 * check against the supported algorithms in hash_algo_list,
-	 * instead of TPM2_NUM_PCR_BANKS
-	 */
-	if (pcrs->count > ARRAY_SIZE(hash_algo_list) || pcrs->count < 1) {
-		printf("%s: too many pcrs: %u\n", __func__, pcrs->count);
+	/* The TPM may report banks for algorithms unsupported by U-Boot. */
+	if (pcrs->count > ARRAY_SIZE(pcrs->selection) || pcrs->count < 1) {
+		printf("%s: invalid PCR bank count: %u\n", __func__, pcrs->count);
 		return -EMSGSIZE;
 	}
 
