@@ -8,8 +8,6 @@
 #include <env.h>
 #include <efi_loader.h>
 #include <init.h>
-#include <miiphy.h>
-#include <netdev.h>
 #include <asm/global_data.h>
 #include <asm/arch-imx9/ccm_regs.h>
 #include <asm/arch/sys_proto.h>
@@ -110,14 +108,6 @@ int board_phys_sdram_size(phys_size_t *size)
 	struct var_eeprom *ep = VAR_EEPROM_DATA;
 
 	var_eeprom_get_dram_size(ep, size);
-
-	return 0;
-}
-
-int board_phy_config(struct phy_device *phydev)
-{
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
 
 	return 0;
 }
