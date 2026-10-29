@@ -29,14 +29,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define CARRIER_EEPROM_ADDR 0x54
 
-#define UART_PAD_CTRL	(PAD_CTL_DSE(6) | PAD_CTL_FSEL2)
-#define WDOG_PAD_CTRL	(PAD_CTL_DSE(6) | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
-
-static iomux_v3_cfg_t const uart_pads[] = {
-	MX93_PAD_UART1_RXD__LPUART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
-	MX93_PAD_UART1_TXD__LPUART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
-};
-
 int var_setup_mac(struct var_eeprom *eeprom);
 
 int get_board_id(void)
@@ -95,13 +87,6 @@ struct efi_capsule_update_info update_info = {
 	.images = fw_images,
 };
 #endif /* EFI_HAVE_CAPSULE_SUPPORT */
-
-int board_early_init_f(void)
-{
-	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
-
-	return 0;
-}
 
 int board_phys_sdram_size(phys_size_t *size)
 {
