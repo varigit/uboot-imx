@@ -310,6 +310,10 @@ int board_fit_config_name_match(const char *name)
 {
 	int id = get_board_id();
 
+	if (id == DART_MX8M_MINI && var_eeprom_is_valid(&eeprom) &&
+	    SOMREV_MAJOR(eeprom.somrev) == 3)
+		return strcmp(name, "imx8mm-var-dart-3.x-dt8mcustomboard");
+
 	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-dt8mcustomboard"))
 		return 0;
 	else if ((id == VAR_SOM_MX8M_MINI) && !strcmp(name, "imx8mm-var-som-symphony"))

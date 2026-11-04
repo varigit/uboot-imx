@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2026 Variscite Ltd.
+ */
+
+#include "imx8mm-var-dart-dt8mcustomboard.dts"
+#include "imx8mm-var-dart-tpm.dtsi"
+
+/ {
+	model = "Variscite DART-MX8M-MINI 3.x";
+};
