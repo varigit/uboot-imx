@@ -286,13 +286,13 @@ static struct i2c_pads_info i2c_pads_som = {
 
 #ifndef CONFIG_SPL_BOOTROM_SUPPORT
 /* When SPL loads image from SD Card, to make it work on imx8mp-var-som-symphony
- * with CONFIG_DEFAULT_DEVICE_TREE set to imx8mp-var-dart-dt8mcustomboard, we need
+ * with CONFIG_DEFAULT_DEVICE_TREE set to imx8mp-var-dart-sonataboard, we need
  * to fix gpios properties of the mmc node for BOARD_ID_SOM.
  */
 static void spl_fdtdec_board_fixup(void) {
 
 	if ((var_detect_board_id() == BOARD_ID_SOM) && !strcmp(CONFIG_DEFAULT_DEVICE_TREE,
-							"imx8mp-var-dart-dt8mcustomboard")) {
+							"imx8mp-var-dart-sonataboard")) {
 		const char *node_path;
 		int node_offset, ret;
 		u32 phandle, phandle_with_args[3], states[4], fsl_pins[6];
